@@ -822,6 +822,7 @@ function rotateRing(step) {
   layoutCards();
   // every character that is now on show plays its move, staggered left to right
   const now = performance.now() / 1000;
+  if (current) current.start = now;   // the big one on the pedestal moves too
   cards.forEach((_, p) => {
     const s = cardSlots[p];
     if (s >= 0 && s <= 2) cardActors[p].start = now + s * 0.12;
