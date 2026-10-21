@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500&display=swap">
 <style>
-/* Layout: gallery-style home (header, full-bleed hero, sideways group rail, characters, atelier); the lobby opens as a full-screen salon */
+/* Layout: gallery-style home (header, full-bleed hero, sideways group rail); profile is its own page; the character lobby opens from it as a full-screen salon */
 :root {
   --paper: #f7f5f1;
   --header: #efece7;
@@ -180,25 +180,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .section h2 { margin: 0; font: 500 clamp(34px, 4.5vw, 56px)/1.05 var(--serif); letter-spacing: 0.04em; text-transform: uppercase; text-wrap: balance; }
 .section-head p { margin: 0; max-width: 56ch; color: var(--muted); }
 .section .label { color: var(--muted); }
-.tiles { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px 22px; }
-.tile { display: grid; gap: 8px; padding: 0; border: none; background: none; color: inherit; text-align: center; cursor: pointer; }
-.tile .frame { position: relative; overflow: hidden; background: linear-gradient(180deg, #eeeae3, #d8d1c5); }
-.tile canvas { display: block; width: 100%; aspect-ratio: 400 / 472; transition: transform 0.6s ease; }
-.tile:hover canvas, .tile:focus-visible canvas { transform: scale(1.04); }
-.tile h3 { margin: 10px 0 0; font: 500 28px/1.1 var(--serif); }
-.tile .label { color: var(--walnut); font-size: 11px; }
 .tag {
   position: absolute; top: 8px; left: 8px; padding: 3px 8px;
   background: var(--brass); color: #1b140c;
   font: 500 10px var(--sans); letter-spacing: 0.16em; text-transform: uppercase;
 }
-.about { background: var(--header); }
-.about-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(32px, 6vw, 90px); align-items: center; }
-.about figure { margin: 0; background: radial-gradient(80% 90% at 50% 40%, #8a857e, #3a3631); }
-.about figure canvas { display: block; width: 100%; aspect-ratio: 900 / 700; }
-.about-copy { display: grid; gap: 16px; justify-items: start; min-width: 0; }
-.divider { color: var(--brass); letter-spacing: 0.6em; }
-.about-copy p { margin: 0; color: var(--muted); max-width: 52ch; }
 .btn-text {
   background: none; border: none; border-bottom: 1px solid var(--walnut); padding: 6px 0; cursor: pointer;
   color: var(--walnut); font: 500 13px var(--sans); letter-spacing: 0.24em; text-transform: uppercase;
@@ -215,42 +201,41 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .site-footer a { color: #d8d2c8; text-decoration: none; font: 500 12px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; }
 .site-footer small { color: #8f887d; font-size: 12px; letter-spacing: 0.12em; }
 
-/* Profile drawer */
-.scrim { position: fixed; inset: 0; z-index: 39; background: rgba(20, 16, 12, 0.45); }
-.drawer {
-  position: fixed; top: 0; bottom: 0; right: 0; z-index: 40;
-  width: min(420px, 92vw);
-  display: flex; flex-direction: column; gap: 22px; overflow-y: auto;
-  background: var(--paper); color: var(--ink); border-left: 1px solid var(--line);
-  transform: translateX(105%); transition: transform 0.4s cubic-bezier(.3,.7,.2,1);
-  padding-top: calc(24px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  padding-left: 24px;
+/* Profile page */
+.profile-page {
+  padding-block: clamp(32px, 6vw, 72px) clamp(64px, 8vw, 110px);
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
   padding-right: max(24px, env(safe-area-inset-right, 0px));
 }
-.drawer.open { transform: none; }
-.drawer header { display: flex; align-items: center; justify-content: space-between; }
-.drawer h2 { margin: 0; font: 500 32px var(--serif); letter-spacing: 0.06em; text-transform: uppercase; }
-.close-x { width: 40px; height: 40px; border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer; font-size: 15px; }
-.portrait { display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: center; }
-.portrait canvas { width: 112px; height: 112px; border-radius: 50%; display: block; background: radial-gradient(circle at 50% 35%, #fbf8f2, #d8cfc1); }
-.portrait b { display: block; font: 500 30px/1.05 var(--serif); }
+.pp-inner { max-width: 1100px; margin: 0 auto; display: grid; gap: 14px; }
+.pp-inner > .btn-text { justify-self: start; margin-bottom: 18px; }
+.pp-inner .label { color: var(--muted); }
+.pp-inner h1 { margin: 0 0 24px; font: 500 clamp(44px, 7vw, 92px)/1 var(--serif); text-transform: uppercase; letter-spacing: 0.02em; overflow-wrap: anywhere; }
+.pp-grid { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); align-items: start; }
+.pp-char {
+  display: grid; gap: 6px; justify-items: start; text-align: left; padding: 0 0 20px; cursor: pointer;
+  border: 1px solid var(--line); background: #fff; color: inherit;
+}
+.pp-char canvas {
+  width: 100%; aspect-ratio: 400 / 472; display: block; margin-bottom: 14px;
+  background: radial-gradient(80% 70% at 50% 35%, #3d3026, #15120f); transition: filter 0.3s;
+}
+.pp-char:hover canvas { filter: brightness(1.08); }
+.pp-char .label, .pp-char b, .pp-char .pp-cta { margin-inline: 22px; }
+.pp-char b { font: 500 36px/1.05 var(--serif); }
+.pp-cta { font: 500 12px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; color: var(--walnut); border-bottom: 1px solid var(--walnut); padding-bottom: 4px; margin-top: 6px; }
+.pp-details { display: grid; gap: 34px; align-content: start; min-width: 0; }
 .field { display: grid; gap: 6px; }
-.drawer .label { color: var(--muted); font-size: 11px; }
-.drawer input {
+.pp-details input {
   border: none; border-bottom: 1px solid var(--ink); border-radius: 0; background: transparent;
-  padding: 6px 0; color: var(--ink); font: 500 24px var(--serif);
+  padding: 6px 0; color: var(--ink); font: 500 30px var(--serif); min-width: 0;
 }
-.drawer input:focus { outline: none; border-color: var(--walnut); }
-.chooser { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-.choice {
-  position: relative; display: grid; padding: 0; cursor: pointer; color: inherit;
-  border: 1px solid var(--line); background: linear-gradient(180deg, #f3efe8, #e0d8ca);
-}
-.choice canvas { width: 100%; aspect-ratio: 1; display: block; }
-.choice span { padding: 4px 2px 6px; font: 500 10px var(--sans); letter-spacing: 0.14em; text-transform: uppercase; }
-.choice.on { border-color: var(--walnut); box-shadow: inset 0 0 0 1px var(--walnut); }
-.drawer .btn-walnut { width: 100%; padding: 16px; }
+.pp-details input:focus { outline: none; border-color: var(--walnut); }
+.pp-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pp-stats div { border-top: 1px solid var(--ink); padding-top: 12px; display: grid; }
+.pp-stats b { font: 500 46px/1 var(--serif); font-variant-numeric: tabular-nums; }
+.pp-stats span { font: 500 11px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
+.pp-details p { margin: 0; color: var(--muted); max-width: 46ch; }
 
 /* Lobby */
 .lobby {
@@ -300,6 +285,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .tool:hover { border-color: var(--brass); color: var(--brass-hi); }
 .tool.primary { background: var(--brass); color: #1b140c; border-color: var(--brass); }
 .tool.primary:hover { background: var(--brass-hi); color: #1b140c; }
+.tool.equip { background: var(--cream); color: #1b140c; border-color: var(--cream); }
+.tool.equip:disabled { background: transparent; color: var(--brass-hi); border-color: var(--brass); cursor: default; }
 .dock {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; pointer-events: none;
   display: grid; justify-items: center; gap: 8px;
@@ -409,19 +396,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .row .tool { flex: 1; padding: 12px; }
 body.creating .dock, body.creating .stage-tools { display: none; }
 
-@media (max-width: 960px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 860px) {
   .nav a { display: none; }
   .logo svg { width: 60px; height: 60px; }
-  .about-inner { grid-template-columns: 1fr; }
+  .pp-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) { .group-card, .new-card { flex-basis: 82%; } .rail-head { display: none; } }
-@media (max-width: 680px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; } .tile h3 { font-size: 22px; } }
 @media (max-width: 520px) {
   .nav .btn-walnut { display: none; }
   .profile-chip .who span { display: none; }
-  .lobby .profile-chip .who { display: none; }
-  .lobby .profile-chip { padding: 4px; }
   .hero-copy { left: max(20px, env(safe-area-inset-left, 0px)); bottom: 32px; }
   .stage-tools { top: auto; bottom: calc(var(--ch, 150px) + 70px + env(safe-area-inset-bottom, 0px)); }
   .creator {
@@ -433,12 +416,12 @@ body.creating .dock, body.creating .stage-tools { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .card, .drawer, .tile canvas { transition: none; }
+  .card { transition: none; }
 }
 </style>
 
 <header class="site-header">
-  <a class="logo" href="#top" aria-label="SplitSmart, home">
+  <a class="logo" href="#top" data-home aria-label="SplitSmart, home">
     <svg viewBox="0 0 100 100" aria-hidden="true">
       <defs><path id="ringA" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs>
       <circle cx="50" cy="50" r="47.5" fill="none" stroke="currentColor" stroke-width="1"/>
@@ -449,11 +432,10 @@ body.creating .dock, body.creating .stage-tools { display: none; }
     </svg>
   </a>
   <nav class="nav" aria-label="Main">
-    <a href="#groups">Groups</a>
-    <a href="#collection">Characters</a>
-    <button class="btn-walnut" data-enter>Enter lobby</button>
+    <a href="#groups" data-home>Groups</a>
+    <button class="btn-walnut" data-new-group>+ New group</button>
   </nav>
-  <button class="profile-chip" data-profile aria-haspopup="dialog" aria-controls="drawer">
+  <button class="profile-chip" data-profile aria-label="Your profile">
     <canvas width="96" height="96"></canvas>
     <span class="who"><b data-pname>Srikrishna</b><span data-pchar>Echo</span></span>
   </button>
@@ -486,28 +468,6 @@ body.creating .dock, body.creating .stage-tools { display: none; }
     <div class="rail" id="rail" tabindex="0" aria-label="Groups"></div>
   </section>
 
-  <section class="section" id="collection">
-    <div class="section-head">
-      <span class="label">The Characters</span>
-      <h2>Twelve characters</h2>
-      <p>Every member of a group is shown as one of these figures, each finished in lacquer, velvet and brushed gold with a signature move. Hover to see it; select one to view it in the lobby.</p>
-    </div>
-    <div class="tiles" id="tiles"></div>
-  </section>
-
-  <section class="section about" id="atelier">
-    <div class="about-inner">
-      <figure><canvas id="groupShot" width="900" height="700" aria-label="Sam, Echo and Jack standing together"></canvas></figure>
-      <div class="about-copy">
-        <span class="label">The Atelier</span>
-        <h2>Commission your own</h2>
-        <span class="divider">· · ·</span>
-        <p>Every character in the collection lends its parts to the atelier: a head piece, a top and a bottom. Twelve of each gives 1,728 combinations, before you choose a skin tone and a signature move. Finished pieces join your lobby and stay in this browser.</p>
-        <button class="btn-text" id="openAtelier">Open the atelier →</button>
-      </div>
-    </div>
-  </section>
-
   <footer class="site-footer">
     <svg viewBox="0 0 100 100" aria-hidden="true">
       <defs><path id="ringB" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs>
@@ -517,23 +477,44 @@ body.creating .dock, body.creating .stage-tools { display: none; }
       <text x="50" y="58.5" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="25" font-weight="600" fill="currentColor">SS</text>
     </svg>
     <nav aria-label="Footer">
+      <a href="#top">Home</a>
       <a href="#groups">Groups</a>
-      <a href="#collection">Characters</a>
-      <a href="#top" data-enter>Lobby</a>
     </nav>
     <small>© 2026 SplitSmart</small>
   </footer>
 </main>
 
+<section class="profile-page" id="profilePage" hidden aria-label="Your profile">
+  <div class="pp-inner">
+    <button class="btn-text" id="ppBack">← Back to groups</button>
+    <span class="label">Your profile</span>
+    <h1 data-pname>Srikrishna</h1>
+    <div class="pp-grid">
+      <button class="pp-char" id="ppChar">
+        <canvas width="400" height="472"></canvas>
+        <span class="label">Your character</span>
+        <b data-pchar>Echo</b>
+        <span class="pp-cta">Open the character lobby →</span>
+      </button>
+      <div class="pp-details">
+        <label class="field" for="nameInput"><span class="label">Your name</span>
+          <input id="nameInput" maxlength="18" autocomplete="nickname">
+        </label>
+        <div class="pp-stats">
+          <div><b id="ppGroups">0</b><span>Groups</span></div>
+          <div><b id="ppChars">12</b><span>Characters</span></div>
+        </div>
+        <p>Your character stands for you in every group. Open the character lobby to browse all of them, watch their moves, or make your own in the atelier.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="lobby" id="lobby" hidden aria-label="Lobby">
   <div id="lobbyStage"></div>
 
   <div class="lobby-top-left">
-    <button class="ghost" id="backHome">← Home</button>
-    <button class="profile-chip" data-profile aria-haspopup="dialog" aria-controls="drawer">
-      <canvas width="96" height="96"></canvas>
-      <span class="who"><b data-pname>Srikrishna</b><span data-pchar>Echo</span></span>
-    </button>
+    <button class="ghost" id="backHome">← Profile</button>
   </div>
 
   <div class="nameplate">
@@ -542,6 +523,7 @@ body.creating .dock, body.creating .stage-tools { display: none; }
   </div>
 
   <div class="stage-tools">
+    <button class="tool equip" id="equip">Use this character</button>
     <button class="tool primary" id="openGallery">All characters</button>
     <button class="tool primary" id="openCreator">+ Create</button>
     <button class="tool" id="replay">↻ Replay</button>
@@ -632,26 +614,6 @@ body.creating .dock, body.creating .stage-tools { display: none; }
     </div>
   </form>
 </div>
-
-<div class="scrim" id="scrim" hidden></div>
-<aside class="drawer" id="drawer" role="dialog" aria-label="Profile" aria-hidden="true">
-  <header>
-    <h2>Profile</h2>
-    <button class="close-x" id="closeDrawer" aria-label="Close profile">✕</button>
-  </header>
-  <div class="portrait">
-    <canvas id="portraitBig" width="224" height="224"></canvas>
-    <div><b data-pname>Srikrishna</b><span class="label" data-pchar>Echo</span></div>
-  </div>
-  <label class="field" for="nameInput"><span class="label">Your name</span>
-    <input id="nameInput" maxlength="18" autocomplete="nickname">
-  </label>
-  <div class="field">
-    <span class="label">Your character</span>
-    <div class="chooser" id="chooser"></div>
-  </div>
-  <button class="btn-walnut" id="drawerEnter" data-enter>Enter the lobby</button>
-</aside>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
@@ -1299,50 +1261,30 @@ function updateProfileUI() {
   const actor = { ch: buildCharacter(c), c, start: -99 };
   applyPose(actor.ch, idlePose(0));
   document.querySelectorAll('[data-profile] canvas').forEach(cv => drawActor(actor, cv, faceCam));
-  drawActor(actor, $('portraitBig'), faceCam);
-  $('drawerEnter').textContent = `Enter the lobby as ${c.name}`;
+  drawActor(actor, $('ppChar').querySelector('canvas'));
 }
 
-function buildChooser() {
-  const box = $('chooser');
-  box.innerHTML = '';
-  CHARS.forEach((c, id) => {
-    const b = document.createElement('button');
-    b.className = 'choice' + (id === profile.charId ? ' on' : '');
-    b.innerHTML = '<canvas width="160" height="160"></canvas><span></span>';
-    b.querySelector('span').textContent = c.name;
-    b.setAttribute('aria-label', `Choose ${c.name}`);
-    b.setAttribute('aria-pressed', String(id === profile.charId));
-    b.addEventListener('click', () => chooseCharacter(id));
-    box.appendChild(b);
-    drawStill(c, b.querySelector('canvas'), faceCam);
-  });
-}
-
-function chooseCharacter(id) {
-  profile.charId = id;
-  saveProfile();
+// Profile page replaces the home content; the character lobby is only reachable from here
+function openProfile() {
+  if (view === 'lobby') leaveLobby();
+  $('home').hidden = true;
+  $('profilePage').hidden = false;
+  $('nameInput').value = profile.name;
+  $('ppGroups').textContent = groups.length;
+  $('ppChars').textContent = CHARS.length;
   updateProfileUI();
-  [...$('chooser').children].forEach((b, i) => {
-    b.classList.toggle('on', i === id);
-    b.setAttribute('aria-pressed', String(i === id));
-  });
-  if (view === 'lobby') select(id);
+  scrollTo(0, 0);
 }
-
-const drawer = $('drawer'), scrim = $('scrim'), nameInput = $('nameInput');
-function setDrawer(open) {
-  if (open) { nameInput.value = profile.name; buildChooser(); $('drawerEnter').hidden = view === 'lobby'; }
-  drawer.classList.toggle('open', open);
-  drawer.setAttribute('aria-hidden', String(!open));
-  scrim.hidden = !open;
-  if (open) nameInput.focus();
+function closeProfile() {
+  $('profilePage').hidden = true;
+  $('home').hidden = false;
 }
-document.querySelectorAll('[data-profile]').forEach(b => b.addEventListener('click', () => setDrawer(true)));
-$('closeDrawer').addEventListener('click', () => setDrawer(false));
-scrim.addEventListener('click', () => setDrawer(false));
-nameInput.addEventListener('input', () => {
-  profile.name = nameInput.value.trim();
+document.querySelectorAll('[data-profile]').forEach(b => b.addEventListener('click', openProfile));
+document.querySelectorAll('[data-home]').forEach(a => a.addEventListener('click', closeProfile));
+$('ppBack').addEventListener('click', () => { closeProfile(); $('groups').scrollIntoView(); });
+$('ppChar').addEventListener('click', () => enterLobby(profile.charId));
+$('nameInput').addEventListener('input', e => {
+  profile.name = e.target.value.trim();
   saveProfile();
   document.querySelectorAll('[data-pname]').forEach(el => el.textContent = profile.name || 'Guest');
 });
@@ -1377,61 +1319,6 @@ function lobbyView() {
   controls.target.set(0, sheet ? -0.6 : portrait ? 0.3 : 0.45, 0);
   camera.position.set(0, 1.2, portrait ? 7.4 : 6.0);
   controls.update();
-}
-
-// ---------- Home: collection tiles ----------
-const tileActors = [], tileCanvases = [];
-let tileHovered = null;
-
-function buildTiles() {
-  const box = $('tiles');
-  box.innerHTML = '';
-  CHARS.forEach((c, id) => {
-    const b = document.createElement('button');
-    b.className = 'tile';
-    b.innerHTML = '<div class="frame"><canvas width="400" height="472"></canvas></div><h3></h3><span class="label">View in the lobby</span>';
-    b.querySelector('h3').textContent = c.name;
-    if (c.custom) b.querySelector('.frame').insertAdjacentHTML('beforeend', '<span class="tag">Atelier</span>');
-    b.setAttribute('aria-label', `${c.name}, ${c.label}. View in the lobby`);
-    tileCanvases[id] = b.querySelector('canvas');
-    tileActors[id] = drawStill(c, tileCanvases[id]);
-    const play = () => { tileHovered = id; tileActors[id].start = performance.now() / 1000; };
-    const stop = () => {
-      if (tileHovered === id) tileHovered = null;
-      applyPose(tileActors[id].ch, idlePose(0));
-      drawActor(tileActors[id], tileCanvases[id]);
-    };
-    b.addEventListener('pointerenter', play);
-    b.addEventListener('pointerleave', stop);
-    b.addEventListener('focus', play);
-    b.addEventListener('blur', stop);
-    b.addEventListener('click', () => enterLobby(id));
-    box.appendChild(b);
-  });
-}
-
-// A small group portrait for the atelier section, each figure caught mid-move
-function drawGroupShot() {
-  const cv = $('groupShot');
-  cardRenderer.setSize(cv.width, cv.height);
-  const cam = new THREE.PerspectiveCamera(28, cv.width / cv.height, 0.1, 20);
-  cam.position.set(0, 1.0, 5.4);
-  cam.lookAt(0, 0.85, 0);
-  const cast = [[2, 'salute', 1.2, -0.95, 0, 0.3], [0, 'cheer', 0.3, 0, 0.3, 0], [10, 'dance', 0.3, 0.95, 0, -0.3]];
-  const roots = cast.map(([id, emote, t, x, z, ry]) => {
-    const ch = buildCharacter(CHARS[id]);
-    applyPose(ch, samplePose(EMOTES[emote], t));
-    ch.root.position.set(x, 0, z);
-    ch.root.rotation.y += ry;
-    cardScene.add(ch.root);
-    return ch.root;
-  });
-  cardRenderer.render(cardScene, cam);
-  roots.forEach(r => cardScene.remove(r));
-  const g = cv.getContext('2d');
-  g.clearRect(0, 0, cv.width, cv.height);
-  g.drawImage(cardRenderer.domElement, 0, 0);
-  cardRenderer.setSize(CW, CH);
 }
 
 // ---------- Lobby: roster ring ----------
@@ -1484,12 +1371,25 @@ function select(id) {
   cur = id;
   layoutCards();
   showMain(CHARS[cur]);
+  updateEquip();
   const now = performance.now() / 1000;
   cards.forEach((_, i) => {
     const s = cardSlots[i];
     if (s >= 0 && s <= 2) cardActors[i].start = now + 0.2 + s * 0.12;
   });
 }
+function updateEquip() {
+  const mine = cur === profile.charId;
+  $('equip').disabled = mine;
+  $('equip').textContent = mine ? '✓ Your character' : `Use ${CHARS[cur].name}`;
+}
+$('equip').addEventListener('click', () => {
+  profile.charId = cur;
+  saveProfile();
+  updateProfileUI();
+  updateEquip();
+});
+
 function rotateRing(step) {
   const N = CHARS.length;
   select((cur + step + N) % N);
@@ -1520,7 +1420,6 @@ function mountStage() {
   sizeStage();
 }
 function enterLobby(id = profile.charId) {
-  setDrawer(false);
   view = 'lobby';
   $('lobby').hidden = false;
   document.body.classList.add('in-lobby');
@@ -1535,9 +1434,7 @@ function leaveLobby() {
   $('lobby').hidden = true;
   document.body.classList.remove('in-lobby');
 }
-document.querySelectorAll('[data-enter]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); enterLobby(); }));
-$('backHome').addEventListener('click', leaveLobby);
-$('openAtelier').addEventListener('click', () => { enterLobby(); openCreator(); });
+$('backHome').addEventListener('click', () => { leaveLobby(); updateProfileUI(); });
 
 // ---------- Lobby: all-characters page ----------
 // Cards stand still; only the one under the pointer plays its move (on a loop while hovered).
@@ -1636,7 +1533,6 @@ $('cSave').addEventListener('click', () => {
   const id = CHARS.length - 1;
   addCard(id);
   saveCustoms();
-  buildTiles();
   closeCreator();
   select(id);
 });
@@ -1646,7 +1542,6 @@ $('openCreator').addEventListener('click', openCreator);
 addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (!$('groupModal').hidden) return closeGroupForm();
-    if (drawer.classList.contains('open')) return setDrawer(false);
     if (!gallery.hidden) return closeGallery();
     if (draft) { closeCreator(); showMain(CHARS[cur], false); return; }
   }
@@ -1852,12 +1747,7 @@ document.querySelectorAll('[data-new-group]').forEach(b => b.addEventListener('c
 // ---------- Loop ----------
 function frame() {
   const now = performance.now() / 1000;
-  if (view === 'home') {
-    if (tileHovered !== null) {
-      animate(tileActors[tileHovered], now, true);
-      drawActor(tileActors[tileHovered], tileCanvases[tileHovered]);
-    }
-  } else {
+  if (view === 'lobby') {
     if (current) {
       const t = animate(current, now);
       current.ch.root.scale.setScalar(Math.min(1, 0.6 + t * 2));   // pop-in when a character arrives
@@ -1883,7 +1773,5 @@ addEventListener('resize', () => {
 drawHeroArt();
 updateProfileUI();
 renderGroups();
-buildTiles();
-drawGroupShot();
 requestAnimationFrame(frame);
 </script>
