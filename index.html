@@ -1,10 +1,10 @@
 <meta charset="utf-8">
-<title>Character Lobby</title>
+<title>SplitSmart</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500&display=swap">
 <style>
-/* Layout: gallery-style home (header, full-bleed hero, collection grid, atelier), lobby opens as a full-screen salon */
+/* Layout: gallery-style home (header, full-bleed hero, sideways group rail, characters, atelier); the lobby opens as a full-screen salon */
 :root {
   --paper: #f7f5f1;
   --header: #efece7;
@@ -69,12 +69,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .hero {
   position: relative; overflow: hidden; color: #fff;
   height: clamp(560px, calc(100vh - 112px), 880px);
-  background:
-    repeating-linear-gradient(90deg, transparent 0 190px, rgba(0, 0, 0, 0.22) 190px 192px, rgba(255, 255, 255, 0.05) 192px 194px),
-    radial-gradient(70% 80% at 68% 45%, #86817a 0%, #55514b 45%, #2e2b27 100%);
+  background: linear-gradient(100deg, #e98a6e, #d97ba6 35%, #a98fd6 60%, #8396d6 80%, #86bdb8);
 }
-.hero-stage { position: absolute; inset: 0; pointer-events: none; }
-.hero-stage canvas { display: block; width: 100%; height: 100%; }
+.hero-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(20deg, rgba(36, 22, 40, 0.55), rgba(36, 22, 40, 0.15) 45%, transparent 70%);
+}
+.hero-copy { z-index: 1; }
 .hero-copy {
   position: absolute; bottom: 56px;
   left: max(40px, env(safe-area-inset-left, 0px));
@@ -90,18 +92,83 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .hero-copy p { margin: 0; max-width: 36ch; font-size: 17px; color: rgba(255, 255, 255, 0.88); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35); }
 .btn-outline {
+  display: inline-block; text-decoration: none;
   background: transparent; color: #fff; border: 1px solid #fff; cursor: pointer;
   padding: 16px 34px; font: 500 13px var(--sans); letter-spacing: 0.28em; text-transform: uppercase;
 }
 .btn-outline:hover { background: #fff; color: var(--ink); }
-.plinth-card {
-  position: absolute; top: 40px;
-  right: max(40px, env(safe-area-inset-right, 0px));
-  display: grid; gap: 2px; text-align: right;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero .btn-walnut { padding: 17px 30px; }
+
+/* Groups rail */
+.groups { padding-inline: 0; }
+.groups .section-head { padding-inline: max(24px, env(safe-area-inset-left, 0px)); }
+.rail-head { display: flex; justify-content: center; gap: 10px; }
+.rail-btn {
+  width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+  border: 1px solid var(--line); background: transparent; color: var(--ink);
+  font: 500 22px/1 var(--serif);
 }
-.plinth-card b { font: 500 30px/1.1 var(--serif); }
-.plinth-card span:last-child { font-size: 14px; color: rgba(255, 255, 255, 0.8); }
+.rail-btn:hover { border-color: var(--walnut); color: var(--walnut); }
+.rail {
+  display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  padding-block: 8px 20px;
+  padding-inline: max(24px, calc((100% - 1200px) / 2));
+  scroll-padding-inline: max(24px, calc((100% - 1200px) / 2));
+  scrollbar-width: thin;
+}
+.group-card, .new-card { flex: 0 0 300px; scroll-snap-align: start; }
+.group-card { background: #fff; border: 1px solid var(--line); display: grid; grid-template-rows: auto 1fr; }
+.group-card .cover { position: relative; height: 140px; }
+.group-card .cover canvas { display: block; width: 100%; height: 100%; }
+.group-card .faces { position: absolute; left: 18px; bottom: -26px; display: flex; }
+.group-card .faces img, .group-card .faces span {
+  width: 52px; height: 52px; border-radius: 50%; margin-right: -12px;
+  border: 3px solid #fff; background: radial-gradient(circle at 50% 35%, #fbf8f2, #d9d0c2);
+}
+.group-card .faces span { display: grid; place-items: center; font: 500 13px var(--sans); color: var(--muted); }
+.group-card .body { padding: 38px 20px 22px; display: grid; gap: 6px; align-content: start; }
+.group-card h3 { margin: 0; font: 500 28px/1.1 var(--serif); }
+.group-card .meta { font-size: 14px; color: var(--muted); }
+.group-card .names { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.group-card .tag { top: 10px; left: auto; right: 10px; }
+.new-card {
+  display: grid; place-content: center; justify-items: center; gap: 14px; min-height: 300px;
+  border: 1px dashed rgba(107, 44, 18, 0.5); background: transparent; color: var(--walnut); cursor: pointer;
+}
+.new-card:hover { background: rgba(107, 44, 18, 0.04); }
+.new-card .plus-ring {
+  width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--walnut); color: #fff; font: 400 34px/1 var(--serif);
+}
+.new-card b { font: 500 26px var(--serif); color: var(--ink); }
+.new-card span { font: 500 11px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; }
+
+/* New group dialog */
+.modal-wrap { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(20, 16, 12, 0.5); }
+.modal {
+  width: min(520px, 100%); max-height: calc(100% - 32px); overflow-y: auto;
+  background: var(--paper); color: var(--ink); padding: 28px; display: grid; gap: 20px;
+}
+.modal header { display: flex; align-items: center; justify-content: space-between; }
+.modal h2 { margin: 0; font: 500 32px var(--serif); letter-spacing: 0.04em; text-transform: uppercase; }
+.modal .label { color: var(--muted); font-size: 11px; }
+.modal input {
+  border: none; border-bottom: 1px solid var(--ink); border-radius: 0; background: transparent;
+  padding: 6px 0; color: var(--ink); font: 500 22px var(--serif); min-width: 0;
+}
+.modal input:focus { outline: none; border-color: var(--walnut); }
+.members { display: grid; gap: 10px; }
+.member { display: grid; grid-template-columns: 52px 1fr 36px; gap: 12px; align-items: center; }
+.member .avatar-btn { width: 52px; height: 52px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: radial-gradient(circle at 50% 35%, #fbf8f2, #d9d0c2); cursor: pointer; overflow: hidden; }
+.member .avatar-btn img { width: 100%; height: 100%; display: block; }
+.member input { font-size: 19px; }
+.member .remove { width: 36px; height: 36px; border: 1px solid var(--line); background: transparent; cursor: pointer; color: var(--muted); }
+.member .you { font: 500 10px var(--sans); letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); text-align: center; }
+.add-member { justify-self: start; }
+.form-error { color: #a12a1c; font-size: 14px; min-height: 1.4em; margin: 0; }
+.modal-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+.btn-plain { background: transparent; border: 1px solid var(--line); padding: 13px 22px; cursor: pointer; font: 500 13px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink); }
 
 /* Sections */
 .section {
@@ -347,8 +414,8 @@ body.creating .dock, body.creating .stage-tools { display: none; }
   .nav a { display: none; }
   .logo svg { width: 60px; height: 60px; }
   .about-inner { grid-template-columns: 1fr; }
-  .plinth-card { display: none; }
 }
+@media (max-width: 520px) { .group-card, .new-card { flex-basis: 82%; } .rail-head { display: none; } }
 @media (max-width: 680px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; } .tile h3 { font-size: 22px; } }
 @media (max-width: 520px) {
   .nav .btn-walnut { display: none; }
@@ -371,19 +438,19 @@ body.creating .dock, body.creating .stage-tools { display: none; }
 </style>
 
 <header class="site-header">
-  <a class="logo" href="#top" aria-label="The Character Lobby, home">
+  <a class="logo" href="#top" aria-label="SplitSmart, home">
     <svg viewBox="0 0 100 100" aria-hidden="true">
       <defs><path id="ringA" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs>
       <circle cx="50" cy="50" r="47.5" fill="none" stroke="currentColor" stroke-width="1"/>
       <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="0.4"/>
       <circle cx="50" cy="50" r="29" fill="none" stroke="currentColor" stroke-width="0.6"/>
-      <text font-family="Jost, sans-serif" font-size="6.4" fill="currentColor"><textPath href="#ringA" textLength="226" lengthAdjust="spacing">THE CHARACTER LOBBY · ATELIER ·</textPath></text>
-      <text x="50" y="58.5" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="25" font-weight="600" fill="currentColor">CL</text>
+      <text font-family="Jost, sans-serif" font-size="6.4" fill="currentColor"><textPath href="#ringA" textLength="226" lengthAdjust="spacing">SPLITSMART · SHARE THE BILL ·</textPath></text>
+      <text x="50" y="58.5" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="25" font-weight="600" fill="currentColor">SS</text>
     </svg>
   </a>
   <nav class="nav" aria-label="Main">
-    <a href="#collection">Collection</a>
-    <a href="#atelier">Atelier</a>
+    <a href="#groups">Groups</a>
+    <a href="#collection">Characters</a>
     <button class="btn-walnut" data-enter>Enter lobby</button>
   </nav>
   <button class="profile-chip" data-profile aria-haspopup="dialog" aria-controls="drawer">
@@ -394,25 +461,36 @@ body.creating .dock, body.creating .stage-tools { display: none; }
 
 <main id="home">
   <section class="hero" id="top">
-    <div class="hero-stage" id="heroStage"></div>
+    <canvas class="hero-art" id="heroArt" aria-hidden="true"></canvas>
     <div class="hero-copy">
       <span class="label">Welcome to</span>
-      <h1>The Character<br>Lobby</h1>
-      <p>Twelve collectible characters in lacquer, velvet and gold, each with a move of its own.</p>
-      <button class="btn-outline" data-enter>Enter the lobby</button>
+      <h1>SplitSmart</h1>
+      <p>Scan a receipt, give each item to the people who shared it, and settle up with the fewest payments.</p>
+      <div class="hero-actions">
+        <a class="btn-outline" href="#groups">See your groups</a>
+        <button class="btn-walnut" data-new-group>+ New group</button>
+      </div>
     </div>
-    <div class="plinth-card">
-      <span class="label">On the plinth</span>
-      <b id="heroName">Echo</b>
-      <span id="heroMove">Clap &amp; cheer</span>
+  </section>
+
+  <section class="section groups" id="groups">
+    <div class="section-head">
+      <span class="label">Your groups</span>
+      <h2>Who are you splitting with?</h2>
+      <p>Every room, wing trip and canteen run gets its own group. Scroll sideways to see them all.</p>
+      <div class="rail-head">
+        <button class="rail-btn" id="railPrev" aria-label="Scroll groups left">‹</button>
+        <button class="rail-btn" id="railNext" aria-label="Scroll groups right">›</button>
+      </div>
     </div>
+    <div class="rail" id="rail" tabindex="0" aria-label="Groups"></div>
   </section>
 
   <section class="section" id="collection">
     <div class="section-head">
-      <span class="label">The Collection</span>
+      <span class="label">The Characters</span>
       <h2>Twelve characters</h2>
-      <p>Each figure is finished in lacquer, velvet and brushed gold, and each has a signature move. Hover to see it; select one to view it in the lobby.</p>
+      <p>Every member of a group is shown as one of these figures, each finished in lacquer, velvet and brushed gold with a signature move. Hover to see it; select one to view it in the lobby.</p>
     </div>
     <div class="tiles" id="tiles"></div>
   </section>
@@ -435,15 +513,15 @@ body.creating .dock, body.creating .stage-tools { display: none; }
       <defs><path id="ringB" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs>
       <circle cx="50" cy="50" r="47.5" fill="none" stroke="currentColor" stroke-width="1"/>
       <circle cx="50" cy="50" r="29" fill="none" stroke="currentColor" stroke-width="0.6"/>
-      <text font-family="Jost, sans-serif" font-size="6.4" fill="currentColor"><textPath href="#ringB" textLength="226" lengthAdjust="spacing">THE CHARACTER LOBBY · ATELIER ·</textPath></text>
-      <text x="50" y="58.5" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="25" font-weight="600" fill="currentColor">CL</text>
+      <text font-family="Jost, sans-serif" font-size="6.4" fill="currentColor"><textPath href="#ringB" textLength="226" lengthAdjust="spacing">SPLITSMART · SHARE THE BILL ·</textPath></text>
+      <text x="50" y="58.5" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="25" font-weight="600" fill="currentColor">SS</text>
     </svg>
     <nav aria-label="Footer">
-      <a href="#collection">Collection</a>
-      <a href="#atelier">Atelier</a>
+      <a href="#groups">Groups</a>
+      <a href="#collection">Characters</a>
       <a href="#top" data-enter>Lobby</a>
     </nav>
-    <small>© 2026 The Character Lobby</small>
+    <small>© 2026 SplitSmart</small>
   </footer>
 </main>
 
@@ -532,6 +610,28 @@ body.creating .dock, body.creating .stage-tools { display: none; }
     </div>
   </aside>
 </section>
+
+<div class="modal-wrap" id="groupModal" hidden>
+  <form class="modal" id="groupForm" role="dialog" aria-modal="true" aria-labelledby="groupTitle" novalidate>
+    <header>
+      <h2 id="groupTitle">New group</h2>
+      <button type="button" class="close-x" id="closeGroup" aria-label="Close">✕</button>
+    </header>
+    <label class="field" for="groupName"><span class="label">Group name</span>
+      <input id="groupName" maxlength="40" placeholder="Night Canteen Gang" autocomplete="off">
+    </label>
+    <div class="field">
+      <span class="label">Members · tap a face to change the character</span>
+      <div class="members" id="members"></div>
+      <button type="button" class="btn-text add-member" id="addMember">+ Add member</button>
+    </div>
+    <p class="form-error" id="groupError" role="alert"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn-plain" id="cancelGroup">Cancel</button>
+      <button type="submit" class="btn-walnut">Create group</button>
+    </div>
+  </form>
+</div>
 
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" role="dialog" aria-label="Profile" aria-hidden="true">
@@ -1227,8 +1327,7 @@ function chooseCharacter(id) {
     b.classList.toggle('on', i === id);
     b.setAttribute('aria-pressed', String(i === id));
   });
-  if (view === 'home') showMain(CHARS[id]);
-  else select(id);
+  if (view === 'lobby') select(id);
 }
 
 const drawer = $('drawer'), scrim = $('scrim'), nameInput = $('nameInput');
@@ -1259,8 +1358,6 @@ function showMain(c, play = true) {
   current = { ch, c, start: play ? performance.now() / 1000 : -99 };
   $('charName').textContent = c.name;
   $('charEmote').textContent = c.label;
-  $('heroName').textContent = c.name;
-  $('heroMove').textContent = c.label;
 }
 
 function sizeStage() {
@@ -1269,16 +1366,6 @@ function sizeStage() {
   renderer.setSize(host.clientWidth, host.clientHeight, false);
   camera.aspect = host.clientWidth / host.clientHeight;
   camera.updateProjectionMatrix();
-}
-
-// Hero: fixed camera, character placed right of the title on wide screens, plinth turns slowly
-function heroView() {
-  const wide = $('heroStage').clientWidth > 760;
-  controls.enabled = false;
-  const tx = wide ? -1.05 : 0;
-  controls.target.set(tx, wide ? 0.7 : -0.3, 0);
-  camera.position.set(tx, wide ? 1.0 : 0.3, wide ? 5.8 : 8.4);
-  controls.update();
 }
 
 // Lobby: free orbit; when the creator sheet covers the bottom on a phone, lift the character
@@ -1429,8 +1516,7 @@ renderer.domElement.addEventListener('dblclick', () => { if (view === 'lobby' &&
 
 // ---------- Switching between home and lobby ----------
 function mountStage() {
-  const host = view === 'home' ? $('heroStage') : $('lobbyStage');
-  if (renderer.domElement.parentNode !== host) host.appendChild(renderer.domElement);
+  if (!renderer.domElement.parentNode) $('lobbyStage').appendChild(renderer.domElement);
   sizeStage();
 }
 function enterLobby(id = profile.charId) {
@@ -1448,9 +1534,6 @@ function leaveLobby() {
   view = 'home';
   $('lobby').hidden = true;
   document.body.classList.remove('in-lobby');
-  mountStage();
-  heroView();
-  showMain(CHARS[profile.charId]);
 }
 document.querySelectorAll('[data-enter]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); enterLobby(); }));
 $('backHome').addEventListener('click', leaveLobby);
@@ -1562,6 +1645,7 @@ $('openCreator').addEventListener('click', openCreator);
 
 addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    if (!$('groupModal').hidden) return closeGroupForm();
     if (drawer.classList.contains('open')) return setDrawer(false);
     if (!gallery.hidden) return closeGallery();
     if (draft) { closeCreator(); showMain(CHARS[cur], false); return; }
@@ -1571,24 +1655,204 @@ addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') rotateRing(-1);
 });
 
-// ---------- Loop ----------
-const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-let heroVisible = true;
-new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting; }).observe($('top'));
-
-let last = performance.now() / 1000;
-function frame() {
-  const now = performance.now() / 1000, dt = Math.min(0.05, now - last);
-  last = now;
-  if (view === 'home') {
-    if (heroVisible) {
-      if (current) {
-        const t = animate(current, now);
-        current.ch.root.scale.setScalar(Math.min(1, 0.6 + t * 2));
-      }
-      if (!reduceMotion) stage.rotation.y += dt * 0.3;
-      renderer.render(scene, camera);
+// ---------- Hero art ----------
+// Coral-to-teal ground with translucent polygons, a white node network and concrete speckle.
+// Seeded so a group's cover looks the same on every visit.
+function rng(seed) {
+  return () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const ART_STOPS = ['#e98a6e', '#d97ba6', '#a98fd6', '#8396d6', '#86bdb8'];
+function drawArt(cv, seed, density = 1) {
+  const g = cv.getContext('2d'), w = cv.width, h = cv.height, r = rng(seed);
+  const grad = g.createLinearGradient(0, h * 0.2, w, h * 0.8);
+  ART_STOPS.forEach((c, i) => grad.addColorStop(i / (ART_STOPS.length - 1), c));
+  g.fillStyle = grad;
+  g.fillRect(0, 0, w, h);
+  const unit = Math.max(w, h);
+  for (let i = 0; i < 16; i++) {
+    g.globalAlpha = 0.12 + r() * 0.22;
+    g.fillStyle = ART_STOPS[Math.floor(r() * ART_STOPS.length)];
+    g.beginPath();
+    const cx = r() * w, cy = r() * h, n = 3 + Math.floor(r() * 2);
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * TAU + r() * 0.8, d = unit * (0.15 + r() * 0.3);
+      g.lineTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d);
     }
+    g.fill();
+  }
+  g.globalAlpha = 1;
+  const nodes = [];
+  const count = Math.round(14 * density);
+  for (let i = 0; i < count; i++) nodes.push([r() * w, r() * h]);
+  g.strokeStyle = 'rgba(255,255,255,0.4)';
+  g.lineWidth = Math.max(1, unit / 900);
+  nodes.forEach(([x, y], i) => {
+    nodes.map(([x2, y2], j) => [Math.hypot(x2 - x, y2 - y), j])
+      .filter(([, j]) => j !== i).sort((a, b) => a[0] - b[0]).slice(0, 3)
+      .forEach(([, j]) => { g.beginPath(); g.moveTo(x, y); g.lineTo(nodes[j][0], nodes[j][1]); g.stroke(); });
+  });
+  g.fillStyle = 'rgba(255,255,255,0.5)';
+  nodes.forEach(([x, y]) => { g.beginPath(); g.arc(x, y, unit * (0.009 + r() * 0.009), 0, TAU); g.fill(); });
+  for (let i = 0; i < w * h / 260; i++) {
+    g.fillStyle = r() < 0.6 ? 'rgba(255,255,255,0.22)' : 'rgba(40,20,40,0.12)';
+    g.fillRect(r() * w, r() * h, 1.4, 1.4);
+  }
+}
+function drawHeroArt() {
+  const cv = $('heroArt'), dpr = Math.min(devicePixelRatio, 2);
+  cv.width = Math.round(cv.clientWidth * dpr);
+  cv.height = Math.round(cv.clientHeight * dpr);
+  drawArt(cv, 7, 1.3);
+}
+
+// ---------- Groups ----------
+// A group = { id, name, members: [{ name, charId }], created, example? }. Stored in this browser only.
+const portraitCache = {};
+function portraitURL(id) {
+  if (!portraitCache[id]) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 160;
+    drawStill(CHARS[id] ?? CHARS[0], cv, faceCam);
+    portraitCache[id] = cv.toDataURL();
+  }
+  return portraitCache[id];
+}
+
+const EXAMPLE_GROUPS = [
+  { id: 'ex1', name: 'Night Canteen Gang', created: '2026-10-18', example: true,
+    members: [{ name: 'Riya', charId: 0 }, { name: 'Arjun', charId: 8 }, { name: 'Meera', charId: 3 }, { name: 'Kabir', charId: 10 }] },
+  { id: 'ex2', name: 'Wing B Goa Trip', created: '2026-10-09', example: true,
+    members: [{ name: 'Dev', charId: 2 }, { name: 'Sana', charId: 5 }, { name: 'Ishaan', charId: 11 }, { name: 'Tara', charId: 1 }, { name: 'Neel', charId: 7 }] },
+  { id: 'ex3', name: 'Room 214', created: '2026-09-30', example: true,
+    members: [{ name: 'Aditya', charId: 6 }, { name: 'Rohan', charId: 9 }, { name: 'Vikram', charId: 4 }] },
+];
+function loadGroups() {
+  try {
+    const raw = localStorage.getItem('splitsmart-groups');
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return EXAMPLE_GROUPS.map(g => ({ ...g, members: g.members.map(m => ({ ...m })) }));
+}
+function saveGroups() {
+  try { localStorage.setItem('splitsmart-groups', JSON.stringify(groups)); } catch (e) {}
+}
+let groups = loadGroups();
+
+const hashSeed = str => [...str].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) | 0, 17);
+const dateFmt = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' });
+
+function renderGroups() {
+  const rail = $('rail');
+  rail.innerHTML = '';
+  groups.forEach(gr => {
+    const card = document.createElement('article');
+    card.className = 'group-card';
+    card.innerHTML = '<div class="cover"><canvas width="600" height="280"></canvas><div class="faces"></div></div><div class="body"><h3></h3><div class="meta"></div><div class="names"></div></div>';
+    drawArt(card.querySelector('canvas'), hashSeed(gr.id), 0.8);
+    const faces = card.querySelector('.faces');
+    gr.members.slice(0, 5).forEach(m => {
+      const img = new Image();
+      img.src = portraitURL(m.charId);
+      img.alt = '';
+      faces.appendChild(img);
+    });
+    if (gr.members.length > 5) faces.insertAdjacentHTML('beforeend', `<span>+${gr.members.length - 5}</span>`);
+    card.querySelector('h3').textContent = gr.name;
+    card.querySelector('.meta').textContent = `${gr.members.length} members · since ${dateFmt.format(new Date(gr.created))}`;
+    card.querySelector('.names').textContent = gr.members.map(m => m.name).join(', ');
+    if (gr.example) card.querySelector('.cover').insertAdjacentHTML('beforeend', '<span class="tag">Example</span>');
+    rail.appendChild(card);
+  });
+  const add = document.createElement('button');
+  add.className = 'new-card';
+  add.dataset.newGroup = '';
+  add.innerHTML = '<span class="plus-ring">+</span><b>New group</b><span>Add the people you split with</span>';
+  add.addEventListener('click', openGroupForm);
+  rail.appendChild(add);
+}
+const railStep = () => $('rail').clientWidth * 0.8;
+$('railPrev').addEventListener('click', () => $('rail').scrollBy({ left: -railStep() }));
+$('railNext').addEventListener('click', () => $('rail').scrollBy({ left: railStep() }));
+
+// New group form: you are always the first member
+let formMembers = [];
+function renderMembers() {
+  const box = $('members');
+  box.innerHTML = '';
+  formMembers.forEach((m, i) => {
+    const row = document.createElement('div');
+    row.className = 'member';
+    row.innerHTML = '<button type="button" class="avatar-btn"><img alt=""></button><input maxlength="24" autocomplete="off">' +
+      (i === 0 ? '<span class="you">You</span>' : '<button type="button" class="remove">✕</button>');
+    const avatar = row.querySelector('.avatar-btn');
+    avatar.querySelector('img').src = portraitURL(m.charId);
+    avatar.setAttribute('aria-label', `${CHARS[m.charId].name}; change character`);
+    avatar.title = `${CHARS[m.charId].name} · tap to change`;
+    avatar.addEventListener('click', () => {
+      m.charId = (m.charId + 1) % CHARS.length;
+      avatar.querySelector('img').src = portraitURL(m.charId);
+      avatar.setAttribute('aria-label', `${CHARS[m.charId].name}; change character`);
+      avatar.title = `${CHARS[m.charId].name} · tap to change`;
+    });
+    const input = row.querySelector('input');
+    input.value = m.name;
+    input.placeholder = i === 0 ? 'Your name' : `Member ${i + 1}`;
+    input.setAttribute('aria-label', i === 0 ? 'Your name' : `Member ${i + 1} name`);
+    input.addEventListener('input', () => { m.name = input.value; });
+    if (i > 0) {
+      const rm = row.querySelector('.remove');
+      rm.setAttribute('aria-label', `Remove member ${i + 1}`);
+      rm.addEventListener('click', () => { formMembers.splice(i, 1); renderMembers(); });
+    }
+    box.appendChild(row);
+  });
+}
+function openGroupForm() {
+  $('groupName').value = '';
+  $('groupError').textContent = '';
+  formMembers = [{ name: profile.name, charId: profile.charId }, { name: '', charId: (profile.charId + 3) % BASE_COUNT }];
+  renderMembers();
+  $('groupModal').hidden = false;
+  $('groupName').focus();
+}
+function closeGroupForm() { $('groupModal').hidden = true; }
+$('addMember').addEventListener('click', () => {
+  formMembers.push({ name: '', charId: (formMembers.at(-1).charId + 5) % BASE_COUNT });
+  renderMembers();
+  $('members').lastElementChild.querySelector('input').focus();
+});
+$('closeGroup').addEventListener('click', closeGroupForm);
+$('cancelGroup').addEventListener('click', closeGroupForm);
+$('groupModal').addEventListener('click', e => { if (e.target === $('groupModal')) closeGroupForm(); });
+$('groupForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('groupName').value.trim();
+  const members = formMembers.map(m => ({ name: m.name.trim(), charId: m.charId }));
+  const err = !name ? 'Give the group a name.'
+    : members.some(m => !m.name) ? 'Every member needs a name, or remove the empty row.'
+    : members.length < 2 ? 'A group needs at least two people.'
+    : new Set(members.map(m => m.name.toLowerCase())).size < members.length ? 'Two members have the same name. Add an initial to tell them apart.'
+    : '';
+  $('groupError').textContent = err;
+  if (err) return;
+  groups.unshift({ id: 'g' + Date.now(), name, members, created: new Date().toISOString().slice(0, 10) });
+  saveGroups();
+  renderGroups();
+  closeGroupForm();
+  $('groups').scrollIntoView({ behavior: 'smooth' });
+  $('rail').scrollTo({ left: 0 });
+});
+document.querySelectorAll('[data-new-group]').forEach(b => b.addEventListener('click', openGroupForm));
+
+// ---------- Loop ----------
+function frame() {
+  const now = performance.now() / 1000;
+  if (view === 'home') {
     if (tileHovered !== null) {
       animate(tileActors[tileHovered], now, true);
       drawActor(tileActors[tileHovered], tileCanvases[tileHovered]);
@@ -1609,16 +1873,17 @@ function frame() {
   requestAnimationFrame(frame);
 }
 
+let resizeTimer;
 addEventListener('resize', () => {
-  sizeStage();
-  if (view === 'home') heroView(); else layoutCards();
+  if (view === 'lobby') { sizeStage(); layoutCards(); }
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(drawHeroArt, 150);
 });
 
-mountStage();
-heroView();
+drawHeroArt();
 updateProfileUI();
+renderGroups();
 buildTiles();
 drawGroupShot();
-showMain(CHARS[profile.charId]);
 requestAnimationFrame(frame);
 </script>
