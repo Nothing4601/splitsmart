@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Character Lobby</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +18,7 @@
   --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: dark;
 }
+[hidden] { display: none !important; }
 html, body { height: 100%; }
 body {
   background: var(--bg);
@@ -142,13 +144,13 @@ body {
 }
 .card:hover { border-color: var(--gold); }
 .card canvas { width: 100%; height: calc(100% - 34px); object-fit: cover; display: block; transition: opacity 0.25s; }
-.card .cap {
+.cap {
   height: 34px; display: grid; place-content: center; text-align: center; line-height: 1.05;
   background: rgba(10, 16, 32, 0.85);
   border-top: 1px solid var(--line);
 }
-.card .cap b { font: 700 13px var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
-.card .cap span { font-size: 10.5px; color: var(--muted); }
+.cap b { font: 700 13px var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+.cap span { font-size: 10.5px; color: var(--muted); }
 
 /* Profile drawer */
 .drawer {
@@ -186,11 +188,104 @@ body {
 .close { margin-left: auto; }
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9; }
 
+.tool.primary { background: var(--gold); color: #1a1206; border-color: var(--gold); font-weight: 600; }
+.tool.primary:hover { color: #1a1206; filter: brightness(1.08); }
+
+/* All-characters page */
+.overlay {
+  position: fixed; inset: 0; z-index: 8;
+  display: flex; flex-direction: column;
+  background: rgba(8, 12, 24, 0.95);
+  backdrop-filter: blur(6px);
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.overlay header, .overlay .hint { width: 100%; max-width: 1100px; margin-inline: auto; }
+.overlay header { display: flex; align-items: center; gap: 12px; }
+.overlay h2, .creator h2 { margin: 0; font: 700 24px var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
+.overlay h2 span { color: var(--gold); }
+.overlay .hint { text-align: left; margin-top: 4px; }
+.grid {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;
+  align-content: start;
+  width: 100%; max-width: 1100px; margin: 14px auto 0; padding: 4px 2px 16px;
+}
+.gcard {
+  position: relative; padding: 0; overflow: hidden;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: linear-gradient(180deg, #5b8fe0, #2c4f9e);
+  color: var(--fg); cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.gcard canvas { width: 100%; aspect-ratio: 220 / 260; display: block; }
+.gcard:hover, .gcard:focus-visible { border-color: var(--gold); transform: translateY(-3px); }
+.gcard.current { box-shadow: 0 0 0 2px var(--gold); }
+.tag {
+  position: absolute; top: 6px; left: 6px; padding: 2px 6px; border-radius: 4px;
+  background: var(--gold); color: #1a1206;
+  font: 600 10px var(--body); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.addbar {
+  display: flex; justify-content: center; align-items: center; gap: 12px;
+  padding-top: 12px; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line);
+}
+.addbar span { color: var(--muted); font-size: 14px; }
+.plus {
+  width: 56px; height: 56px; border-radius: 50%; border: none;
+  background: var(--gold); color: #1a1206;
+  font: 700 30px var(--display); line-height: 1; cursor: pointer;
+  box-shadow: 0 6px 20px rgba(242, 181, 74, 0.35);
+}
+
+/* Creator panel */
+.creator {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 7;
+  width: min(360px, 92vw);
+  display: flex; flex-direction: column; gap: 16px; overflow-y: auto;
+  background: var(--panel); border-left: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  padding-left: 20px;
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.creator header { display: flex; align-items: center; gap: 12px; }
+.creator .field, .part > span { display: grid; gap: 6px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.part { display: grid; gap: 6px; }
+.creator input, .creator select {
+  padding: 9px 10px; border-radius: 6px;
+  background: rgba(255,255,255,0.05); color: var(--fg);
+  border: 1px solid var(--line); font: 500 15px var(--body);
+}
+.creator select option { background: var(--bg); }
+.picker { display: flex; align-items: center; gap: 8px; }
+.picker output {
+  flex: 1; min-width: 0; text-align: center; padding: 8px;
+  border: 1px solid var(--line); border-radius: 6px; font-weight: 600;
+}
+.arrow.sm { width: 34px; height: 34px; font-size: 18px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; padding: 0; }
+.swatch.on { border-color: var(--gold); box-shadow: 0 0 0 2px var(--bg) inset; }
+.combo { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.row { display: flex; gap: 8px; }
+.row .tool { flex: 1; padding: 11px; }
+body.creating .dock, body.creating .stage-tools { display: none; }
+
 button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 @media (max-width: 520px) {
   .profile-btn .who span { display: none; }
   .stage-tools { top: auto; bottom: calc(var(--ch, 150px) + 70px + env(safe-area-inset-bottom, 0px)); }
+  .creator {
+    top: auto; left: 0; width: auto; max-height: 55%;
+    border-left: none; border-top: 1px solid var(--line); border-radius: 14px 14px 0 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .card, .drawer { transition: none; }
@@ -211,6 +306,8 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   </div>
 
   <div class="stage-tools">
+    <button class="tool primary" id="openGallery">☰ All characters</button>
+    <button class="tool primary" id="openCreator">+ Create</button>
     <button class="tool" id="replay">↻ Replay</button>
     <button class="tool" id="resetView">⌖ Reset view</button>
   </div>
@@ -239,9 +336,62 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     </label>
     <div class="stats">
       <div class="stat"><b id="equipped">Echo</b><span>Equipped</span></div>
-      <div class="stat"><b>12</b><span>Characters</span></div>
+      <div class="stat"><b id="charCount">12</b><span>Characters</span></div>
       <div class="stat"><b>142</b><span>Matches</span></div>
       <div class="stat"><b>38</b><span>Wins</span></div>
+    </div>
+  </aside>
+
+  <section class="overlay" id="gallery" hidden aria-label="All characters">
+    <header>
+      <h2>All characters <span id="galleryCount">12</span></h2>
+      <button class="tool close" id="closeGallery" aria-label="Close">✕</button>
+    </header>
+    <div class="hint">Hover a character to see its move · tap one to put it on the pedestal</div>
+    <div class="grid" id="galleryGrid"></div>
+    <div class="addbar">
+      <button class="plus" id="galleryPlus" aria-label="Create a new character">+</button>
+      <span>Create your own</span>
+    </div>
+  </section>
+
+  <aside class="creator" id="creator" hidden aria-label="Create character">
+    <header>
+      <h2>Create</h2>
+      <button class="tool close" id="closeCreator" aria-label="Cancel">✕</button>
+    </header>
+    <label class="field" for="cName">Name
+      <input id="cName" maxlength="14">
+    </label>
+    <div class="part"><span>Head layer</span>
+      <div class="picker">
+        <button class="arrow sm" data-part="h" data-step="-1" aria-label="Previous head layer">‹</button>
+        <output id="hName"></output>
+        <button class="arrow sm" data-part="h" data-step="1" aria-label="Next head layer">›</button>
+      </div>
+    </div>
+    <div class="part"><span>Top</span>
+      <div class="picker">
+        <button class="arrow sm" data-part="t" data-step="-1" aria-label="Previous top">‹</button>
+        <output id="tName"></output>
+        <button class="arrow sm" data-part="t" data-step="1" aria-label="Next top">›</button>
+      </div>
+    </div>
+    <div class="part"><span>Bottom</span>
+      <div class="picker">
+        <button class="arrow sm" data-part="b" data-step="-1" aria-label="Previous bottom">‹</button>
+        <output id="bName"></output>
+        <button class="arrow sm" data-part="b" data-step="1" aria-label="Next bottom">›</button>
+      </div>
+    </div>
+    <div class="part"><span>Skin</span><div class="swatches" id="skins"></div></div>
+    <label class="field" for="cEmote">Move
+      <select id="cEmote"></select>
+    </label>
+    <div class="combo" id="combo"></div>
+    <div class="row">
+      <button class="tool" id="cRandom">⚄ Randomize</button>
+      <button class="tool primary" id="cSave">Save to roster</button>
     </div>
   </aside>
 </div>
@@ -430,9 +580,11 @@ const CHARS = [
   {
     name: 'Leo', emote: 'kick', label: 'High kick',
     skin: 0xe8b48f, top: 0x2e5bd8, bottom: 0x2a3f8f, shoe: 0xffffff, longSleeve: true,
-    dress(h, k) {
+    dress(h) {
       face(h);
       put(h, hemi(0.355, 0.42), M(0x3b2416, { r: 0.8 }), 0, 0.03, -0.02, -0.3);
+    },
+    topExtra(k) {
       put(k.spine, Cy(0.172, 0.172, 0.05, 28), WHITE, 0, 0.19, 0, 0, 0, 0, [1.1, 1, 0.85]);
     },
   },
@@ -531,6 +683,48 @@ const CHARS = [
   },
 ];
 
+// ---------- Mix-and-match parts ----------
+// Every base character donates a head layer, a top and a bottom: 12 x 12 x 12 = 1,728 looks.
+const PART_NAMES = [
+  ['Headphones & mask', 'Pink hoodie', 'Lime trousers'],
+  ['Crab hat', 'Orange tee', 'Beige shorts'],
+  ['Star top hat', 'Blue jacket', 'Light jeans'],
+  ['Fox hood', 'White tee', 'Green shorts'],
+  ['Paper bag', 'Mustard jacket', 'Charcoal trousers'],
+  ['3D glasses & curls', 'Black jacket', 'Candy-stripe pants'],
+  ['Short hair', 'Sporty jacket', 'Navy trousers'],
+  ['TV head', 'Green jacket', 'Black trousers'],
+  ['Chicken hood', 'Red tee & gloves', 'Sand shorts'],
+  ['Smiley helmet', 'Puffer jacket', 'Blue trousers'],
+  ['Pumpkin head', 'Red sweater', 'Black jeans'],
+  ['Antlers & shades', 'Forest jacket', 'Red trousers'],
+];
+CHARS.forEach((c, i) => [c.headName, c.topName, c.bottomName] = PART_NAMES[i]);
+const BASE_COUNT = CHARS.length;
+const SKINS = [...new Set(CHARS.map(c => c.skin))];
+const EMOTE_LABEL = {};
+CHARS.forEach(c => EMOTE_LABEL[c.emote] = c.label);
+
+// spec = { name, h, t, b, s, emote }: indexes of the head/top/bottom donors and the skin tone
+function compose(spec) {
+  const H = CHARS[spec.h], T = CHARS[spec.t], Bo = CHARS[spec.b];
+  return {
+    name: spec.name || 'My character', emote: spec.emote, label: EMOTE_LABEL[spec.emote], custom: { ...spec },
+    skin: SKINS[spec.s], dress: H.dress, headType: H.headType,
+    top: T.top, longSleeve: T.longSleeve, puffy: T.puffy, hands: T.hands, handR: T.handR, topExtra: T.topExtra,
+    bottom: Bo.bottom, bottomMap: Bo.bottomMap, shorts: Bo.shorts, shoe: Bo.shoe,
+  };
+}
+
+// Saved custom characters live in this browser only
+function loadCustoms() {
+  try { return JSON.parse(localStorage.getItem('lobby-customs') || '[]'); } catch (e) { return []; }
+}
+function saveCustoms() {
+  try { localStorage.setItem('lobby-customs', JSON.stringify(CHARS.filter(c => c.custom).map(c => c.custom))); } catch (e) {}
+}
+loadCustoms().forEach(spec => CHARS.push(compose(spec)));
+
 // ---------- Chibi body ----------
 // Each joint is a THREE.Group; rotating a group bends everything attached below it.
 function buildCharacter(c) {
@@ -570,6 +764,7 @@ function buildCharacter(c) {
 
   const joints = { spine, neck, shL, elL, shR, elR, hipL, knL, hipR, knR };
   c.dress(head, joints);
+  if (c.topExtra) c.topExtra(joints);
   return { root, joints };
 }
 
@@ -722,7 +917,8 @@ controls.maxPolarAngle = Math.PI * 0.53;
 
 function homeView() {
   const portrait = innerWidth / innerHeight < 0.8;
-  controls.target.set(0, portrait ? 0.45 : 0.62, 0);
+  const sheet = portrait && document.body.classList.contains('creating');
+  controls.target.set(0, sheet ? -0.5 : portrait ? 0.45 : 0.62, 0);
   camera.position.set(0, 1.15, portrait ? 6.0 : 4.6);
   controls.update();
 }
@@ -736,7 +932,7 @@ function resize() {
 }
 
 // ---------- Live card renderer ----------
-// One hidden WebGL renderer draws each card's character, then the picture is copied into that card's 2D canvas.
+// One hidden WebGL renderer draws each small character, then the picture is copied into that card's 2D canvas.
 const cardRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 cardRenderer.setSize(220, 260);
 cardRenderer.outputEncoding = THREE.sRGBEncoding;
@@ -747,37 +943,50 @@ const cardCam = new THREE.PerspectiveCamera(30, 220 / 260, 0.1, 20);
 cardCam.position.set(0.5, 1.05, 4.2);
 cardCam.lookAt(0, 0.95, 0);
 
-// Pose a character from its emote clock: emote first, then idle breathing
-function animate(actor, now) {
-  const keys = EMOTES[CHARS[actor.id].emote];
-  const t = now - actor.start;
+// An actor = { ch: built character, c: its definition, start: when its move began }
+// Pose it from that clock: the move first, then idle breathing. loop = start the move again when it ends.
+function animate(actor, now, loop = false) {
+  const keys = EMOTES[actor.c.emote];
   const end = keys[keys.length - 1][0];
+  let t = now - actor.start;
+  if (loop && t >= end) { actor.start = now; t = 0; }
   applyPose(actor.ch, t < end ? samplePose(keys, t) : idlePose(t - end));
   return t;
 }
 
+function drawActor(actor, cv) {
+  actor.ch.root.rotation.y += 0.15;
+  cardScene.add(actor.ch.root);
+  cardRenderer.render(cardScene, cardCam);
+  cardScene.remove(actor.ch.root);
+  const g = cv.getContext('2d');
+  g.clearRect(0, 0, cv.width, cv.height);
+  g.drawImage(cardRenderer.domElement, 0, 0);
+}
+
+const $ = id => document.getElementById(id);
+
 // ---------- Selection state ----------
 // All characters sit on one circle. cur = the one on the pedestal; the cards show the next three.
-const N = CHARS.length;
 let cur = 0;
-let current = null;   // { ch, id, start }
+let current = null;   // actor on the pedestal
 
-function showMain(id) {
+function showMain(c, play = true) {
   if (current) scene.remove(current.ch.root);
-  const ch = buildCharacter(CHARS[id]);
+  const ch = buildCharacter(c);
   scene.add(ch.root);
-  current = { ch, id, start: performance.now() / 1000 };
-  document.getElementById('charName').textContent = CHARS[id].name;
-  document.getElementById('charEmote').textContent = CHARS[id].label;
-  document.getElementById('equipped').textContent = CHARS[id].name;
+  current = { ch, c, start: play ? performance.now() / 1000 : -99 };
+  $('charName').textContent = c.name;
+  $('charEmote').textContent = c.label;
 }
 
 // ---------- Roster ring (bottom carousel) ----------
 // One card per character (index = character id); turning the circle only moves cards around.
-const track = document.getElementById('track');
-const cardActors = [];   // per card: { ch, id, start }
-const cardSlots = [];    // per card: which seat it is in (-1..3), null = parked out of sight
-const cards = CHARS.map((c, id) => {
+const track = $('track');
+const cards = [], cardActors = [], cardSlots = [];   // cardSlots: seat -1..3, null = parked out of sight
+
+function addCard(id) {
+  const c = CHARS[id];
   const b = document.createElement('button');
   b.className = 'card';
   b.innerHTML = '<canvas width="220" height="260"></canvas><div class="cap"><b></b><span></span></div>';
@@ -786,18 +995,20 @@ const cards = CHARS.map((c, id) => {
   b.setAttribute('aria-label', `Switch to ${c.name}`);
   b.addEventListener('click', () => select(id));
   track.appendChild(b);
-  cardActors[id] = { ch: buildCharacter(c), id, start: -99 };   // start long ago = idle
-  return b;
-});
+  cards[id] = b;
+  cardActors[id] = { ch: buildCharacter(c), c, start: -99 };   // start long ago = idle
+}
+CHARS.forEach((_, id) => addCard(id));
 
 function layoutCards() {
+  const N = CHARS.length;
   const W = track.clientWidth, gap = 10;
   const cw = (W - gap * 2) / 3;
   const ch = Math.min(170, cw * 1.32);
   document.documentElement.style.setProperty('--cw', cw + 'px');
   document.documentElement.style.setProperty('--ch', ch + 'px');
   cards.forEach((b, id) => {
-    // rel = how many places after the pedestal character this one sits, minus one
+    // rel = places after the pedestal character, minus one
     // 0,1,2 visible; 3+ wait on the right; N-1 is the pedestal character itself (exits left)
     const rel = ((id - cur - 1) % N + N) % N;
     const slot = rel <= 3 ? rel : rel === N - 1 ? -1 : 3;
@@ -817,7 +1028,8 @@ function layoutCards() {
 function select(id) {
   cur = id;
   layoutCards();
-  showMain(cur);
+  showMain(CHARS[cur]);
+  $('equipped').textContent = CHARS[cur].name;
   // the characters now on show play their move, staggered left to right
   const now = performance.now() / 1000;
   cards.forEach((_, i) => {
@@ -827,48 +1039,155 @@ function select(id) {
 }
 
 function rotateRing(step) {
+  const N = CHARS.length;
   select((cur + step + N) % N);
 }
 
 function drawCards(now) {
   cards.forEach((b, id) => {
     if (cardSlots[id] === null || cardSlots[id] === undefined) return;
-    const a = cardActors[id];
-    animate(a, now);
-    a.ch.root.rotation.y += 0.15;
-    cardScene.add(a.ch.root);
-    cardRenderer.render(cardScene, cardCam);
-    cardScene.remove(a.ch.root);
-    const g = b.querySelector('canvas').getContext('2d');
-    g.clearRect(0, 0, 220, 260);
-    g.drawImage(cardRenderer.domElement, 0, 0);
+    animate(cardActors[id], now);
+    drawActor(cardActors[id], b.querySelector('canvas'));
   });
 }
 
-document.getElementById('next').addEventListener('click', () => rotateRing(1));
-document.getElementById('prev').addEventListener('click', () => rotateRing(-1));
-document.getElementById('replay').addEventListener('click', () => { if (current) current.start = performance.now() / 1000; });
-document.getElementById('resetView').addEventListener('click', homeView);
+$('next').addEventListener('click', () => rotateRing(1));
+$('prev').addEventListener('click', () => rotateRing(-1));
+$('replay').addEventListener('click', () => { if (current) current.start = performance.now() / 1000; });
+$('resetView').addEventListener('click', homeView);
 canvas.addEventListener('dblclick', () => { if (current) current.start = performance.now() / 1000; });
 
+// ---------- All-characters page ----------
+// Cards stand still; only the one under the mouse plays its move (on a loop while hovered).
+const gallery = $('gallery'), grid = $('galleryGrid');
+const galleryActors = [], galleryCanvases = [];
+let hovered = null;
+
+function stillGallery(id) {
+  const a = galleryActors[id];
+  applyPose(a.ch, idlePose(0));   // idlePose(0) is the plain standing pose
+  drawActor(a, galleryCanvases[id]);
+}
+
+function openGallery() {
+  grid.innerHTML = '';
+  $('galleryCount').textContent = CHARS.length;
+  CHARS.forEach((c, id) => {
+    const b = document.createElement('button');
+    b.className = 'gcard' + (id === cur ? ' current' : '');
+    b.innerHTML = '<canvas width="220" height="260"></canvas><div class="cap"><b></b><span></span></div>';
+    b.querySelector('b').textContent = c.name;
+    b.querySelector('span').textContent = c.label;
+    if (c.custom) b.insertAdjacentHTML('beforeend', '<span class="tag">Custom</span>');
+    b.setAttribute('aria-label', `Pick ${c.name}`);
+    const play = () => { hovered = id; galleryActors[id].start = performance.now() / 1000; };
+    const stop = () => { if (hovered === id) hovered = null; stillGallery(id); };
+    b.addEventListener('pointerenter', play);
+    b.addEventListener('pointerleave', stop);
+    b.addEventListener('focus', play);
+    b.addEventListener('blur', stop);
+    b.addEventListener('click', () => { closeGallery(); select(id); });
+    grid.appendChild(b);
+    galleryCanvases[id] = b.querySelector('canvas');
+    if (!galleryActors[id]) galleryActors[id] = { ch: buildCharacter(c), c, start: -99 };
+    stillGallery(id);
+  });
+  gallery.hidden = false;
+  $('closeGallery').focus();
+}
+function closeGallery() { gallery.hidden = true; hovered = null; }
+
+$('openGallery').addEventListener('click', openGallery);
+$('closeGallery').addEventListener('click', closeGallery);
+$('galleryPlus').addEventListener('click', () => { closeGallery(); openCreator(); });
+
+// ---------- Creator ----------
+// The pedestal shows the draft live while you flip through parts.
+const creator = $('creator');
+let draft = null;
+const rand = n => Math.floor(Math.random() * n);
+
+SKINS.forEach((hex, i) => {
+  const b = document.createElement('button');
+  b.className = 'swatch';
+  b.style.background = '#' + hex.toString(16).padStart(6, '0');
+  b.setAttribute('aria-label', `Skin tone ${i + 1}`);
+  b.addEventListener('click', () => { draft.s = i; refreshCreator(); previewDraft(false); });
+  $('skins').appendChild(b);
+});
+Object.entries(EMOTE_LABEL).forEach(([key, label]) => $('cEmote').add(new Option(label, key)));
+
+function refreshCreator() {
+  $('cName').value = draft.name;
+  $('hName').textContent = CHARS[draft.h].headName;
+  $('tName').textContent = CHARS[draft.t].topName;
+  $('bName').textContent = CHARS[draft.b].bottomName;
+  $('cEmote').value = draft.emote;
+  [...$('skins').children].forEach((b, i) => b.classList.toggle('on', i === draft.s));
+  const n = BASE_COUNT;
+  $('combo').textContent = `Look ${(draft.h * n * n + draft.t * n + draft.b + 1).toLocaleString()} of ${(n ** 3).toLocaleString()}`;
+}
+function previewDraft(play) { showMain(compose(draft), play); }
+
+function randomDraft() {
+  const keys = Object.keys(EMOTE_LABEL);
+  Object.assign(draft, { h: rand(BASE_COUNT), t: rand(BASE_COUNT), b: rand(BASE_COUNT), s: rand(SKINS.length), emote: keys[rand(keys.length)] });
+}
+
+function openCreator() {
+  draft = { name: 'My character', s: 0 };
+  randomDraft();
+  document.body.classList.add('creating');
+  creator.hidden = false;
+  refreshCreator();
+  previewDraft(true);
+  homeView();
+}
+function closeCreator() {
+  document.body.classList.remove('creating');
+  creator.hidden = true;
+  draft = null;
+  homeView();
+}
+
+creator.querySelectorAll('[data-part]').forEach(b => b.addEventListener('click', () => {
+  draft[b.dataset.part] = (draft[b.dataset.part] + Number(b.dataset.step) + BASE_COUNT) % BASE_COUNT;
+  refreshCreator();
+  previewDraft(false);
+}));
+$('cName').addEventListener('input', e => { draft.name = e.target.value; $('charName').textContent = draft.name || 'My character'; });
+$('cEmote').addEventListener('change', e => { draft.emote = e.target.value; previewDraft(true); $('charEmote').textContent = EMOTE_LABEL[draft.emote]; });
+$('cRandom').addEventListener('click', () => { randomDraft(); refreshCreator(); previewDraft(true); });
+$('cSave').addEventListener('click', () => {
+  CHARS.push(compose(draft));
+  const id = CHARS.length - 1;
+  addCard(id);
+  saveCustoms();
+  $('charCount').textContent = CHARS.length;
+  closeCreator();
+  select(id);
+});
+$('closeCreator').addEventListener('click', () => { closeCreator(); showMain(CHARS[cur], false); });
+$('openCreator').addEventListener('click', openCreator);
+
 // ---------- Profile drawer ----------
-const drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
+const drawer = $('drawer'), scrim = $('scrim');
 function setDrawer(open) {
   drawer.classList.toggle('open', open);
   drawer.setAttribute('aria-hidden', String(!open));
   scrim.hidden = !open;
-  if (open) document.getElementById('nameInput').focus();
+  if (open) $('nameInput').focus();
 }
-document.getElementById('profileBtn').addEventListener('click', () => setDrawer(true));
-document.getElementById('closeDrawer').addEventListener('click', () => setDrawer(false));
+$('profileBtn').addEventListener('click', () => setDrawer(true));
+$('closeDrawer').addEventListener('click', () => setDrawer(false));
 scrim.addEventListener('click', () => setDrawer(false));
 
 function setName(n) {
   const name = n.trim() || 'Player';
-  ['nameSmall', 'nameBig'].forEach(id => document.getElementById(id).textContent = name);
-  ['avatarSmall', 'avatarBig'].forEach(id => document.getElementById(id).textContent = name[0].toUpperCase());
+  ['nameSmall', 'nameBig'].forEach(id => $(id).textContent = name);
+  ['avatarSmall', 'avatarBig'].forEach(id => $(id).textContent = name[0].toUpperCase());
 }
-const nameInput = document.getElementById('nameInput');
+const nameInput = $('nameInput');
 try { const saved = localStorage.getItem('lobby-name'); if (saved) nameInput.value = saved; } catch (e) {}
 setName(nameInput.value);
 nameInput.addEventListener('input', () => {
@@ -877,8 +1196,12 @@ nameInput.addEventListener('input', () => {
 });
 
 addEventListener('keydown', e => {
-  if (e.key === 'Escape') setDrawer(false);
-  if (e.target === nameInput) return;
+  if (e.key === 'Escape') {
+    setDrawer(false);
+    if (!gallery.hidden) closeGallery();
+    else if (draft) { closeCreator(); showMain(CHARS[cur], false); }
+  }
+  if (['INPUT', 'SELECT'].includes(e.target.tagName) || !gallery.hidden || draft) return;
   if (e.key === 'ArrowRight') rotateRing(1);
   if (e.key === 'ArrowLeft') rotateRing(-1);
 });
@@ -890,7 +1213,11 @@ function frame() {
     const t = animate(current, now);
     current.ch.root.scale.setScalar(Math.min(1, 0.6 + t * 2));   // pop-in when a character arrives
   }
-  drawCards(now);
+  if (gallery.hidden) drawCards(now);
+  else if (hovered !== null) {
+    animate(galleryActors[hovered], now, true);
+    drawActor(galleryActors[hovered], galleryCanvases[hovered]);
+  }
   rimRing.material.emissiveIntensity = 0.6 + 0.3 * Math.sin(now * 2);
   controls.update();
   renderer.render(scene, camera);
@@ -900,6 +1227,7 @@ function frame() {
 addEventListener('resize', resize);
 resize();
 homeView();
-showMain(cur);
+select(0);
+$('charCount').textContent = CHARS.length;
 requestAnimationFrame(frame);
 </script>
