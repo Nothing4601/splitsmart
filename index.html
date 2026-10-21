@@ -1,0 +1,897 @@
+<title>Character Lobby</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: full-screen 3D stage, profile button pinned top-left, 3-card roster ring docked at the bottom */
+:root {
+  --bg: #0b1020;
+  --bg-2: #1d3566;
+  --panel: rgba(14, 20, 36, 0.82);
+  --line: rgba(214, 226, 255, 0.14);
+  --fg: #eef1f7;
+  --muted: #9aa6bf;
+  --gold: #f2b54a;
+  --gold-soft: rgba(242, 181, 74, 0.18);
+  --display: "Chakra Petch", "Arial Narrow", system-ui, sans-serif;
+  --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  overflow: hidden;
+}
+#app {
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(120% 70% at 50% 100%, rgba(242, 181, 74, 0.10), transparent 60%),
+    radial-gradient(90% 60% at 50% 30%, var(--bg-2), transparent 75%),
+    var(--bg);
+}
+#stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+#stage:active { cursor: grabbing; }
+
+/* Profile button */
+.profile-btn {
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 14px 6px 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  z-index: 5;
+}
+.profile-btn:hover { border-color: var(--gold); }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--gold), #b9762a);
+  color: #1a1206;
+  font-family: var(--display); font-weight: 700; font-size: 16px;
+  flex: none;
+}
+.profile-btn .who { display: grid; text-align: left; line-height: 1.15; }
+.profile-btn .who b { font-family: var(--display); font-weight: 700; font-size: 15px; letter-spacing: 0.04em; }
+.profile-btn .who span { font-size: 12px; color: var(--muted); }
+
+/* Name plate */
+.nameplate {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
+  text-align: right;
+  z-index: 4;
+  pointer-events: none;
+}
+.nameplate h1 {
+  margin: 0;
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(26px, 5vw, 44px);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  line-height: 1;
+}
+.nameplate .emote {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 8px; padding: 4px 10px;
+  border: 1px solid var(--gold); border-radius: 4px;
+  background: var(--gold-soft); color: var(--gold);
+  font-family: var(--display); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.stage-tools {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  top: calc(110px + env(safe-area-inset-top, 0px));
+  display: grid; gap: 8px; z-index: 4;
+}
+.tool {
+  padding: 8px 12px;
+  background: var(--panel); color: var(--fg);
+  border: 1px solid var(--line); border-radius: 6px;
+  font: 500 13px var(--body); cursor: pointer;
+}
+.tool:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Roster ring */
+.dock {
+  position: fixed; left: 0; right: 0;
+  bottom: 0;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; justify-items: center; gap: 8px;
+  z-index: 4;
+  pointer-events: none;
+}
+.hint { font-size: 12px; color: var(--muted); text-align: center; }
+.roster {
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 8px;
+  width: min(100%, 470px);
+}
+.arrow {
+  flex: none; width: 40px; height: 40px; border-radius: 50%;
+  background: var(--panel); color: var(--fg);
+  border: 1px solid var(--line);
+  font: 700 20px var(--display); cursor: pointer;
+  display: grid; place-items: center;
+}
+.arrow:hover { border-color: var(--gold); color: var(--gold); }
+.track {
+  position: relative; flex: 1; min-width: 0;
+  height: var(--ch, 150px);
+  perspective: 700px;
+}
+.card {
+  position: absolute; left: 0; top: 0;
+  width: var(--cw, 110px); height: var(--ch, 150px);
+  padding: 0; overflow: hidden;
+  background: linear-gradient(180deg, #5b8fe0, #2c4f9e);
+  border: 1px solid var(--line); border-radius: 10px;
+  color: var(--fg); cursor: pointer;
+  transition: transform 0.45s cubic-bezier(.3,.7,.2,1), opacity 0.45s ease;
+  transform-origin: 50% 100%;
+}
+.card:hover { border-color: var(--gold); }
+.card img { width: 100%; height: calc(100% - 34px); object-fit: cover; display: block; transition: opacity 0.25s; }
+.card .cap {
+  height: 34px; display: grid; place-content: center; text-align: center; line-height: 1.05;
+  background: rgba(10, 16, 32, 0.85);
+  border-top: 1px solid var(--line);
+}
+.card .cap b { font: 700 13px var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+.card .cap span { font-size: 10.5px; color: var(--muted); }
+
+/* Profile drawer */
+.drawer {
+  position: fixed; top: 0; bottom: 0; left: 0;
+  width: min(320px, 86vw);
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: 20px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+  transform: translateX(-105%);
+  transition: transform 0.35s cubic-bezier(.3,.7,.2,1);
+  z-index: 10;
+  display: flex; flex-direction: column; gap: 18px;
+  overflow-y: auto;
+}
+.drawer.open { transform: none; }
+.drawer header { display: flex; align-items: center; gap: 12px; }
+.drawer header .avatar { width: 56px; height: 56px; font-size: 22px; }
+.drawer h2 { margin: 0; font: 700 20px var(--display); letter-spacing: 0.05em; }
+.drawer .sub { font-size: 13px; color: var(--muted); }
+.drawer label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.drawer input {
+  padding: 9px 10px; border-radius: 6px;
+  background: rgba(255,255,255,0.05); color: var(--fg);
+  border: 1px solid var(--line); font: 500 15px var(--body);
+}
+.drawer input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat { padding: 10px; border: 1px solid var(--line); border-radius: 8px; }
+.stat b { display: block; font: 700 20px var(--display); color: var(--gold); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+.close { margin-left: auto; }
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9; }
+
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+@media (max-width: 520px) {
+  .profile-btn .who span { display: none; }
+  .stage-tools { top: auto; bottom: calc(var(--ch, 150px) + 70px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .drawer { transition: none; }
+}
+</style>
+
+<div id="app">
+  <canvas id="stage" aria-label="3D character viewer. Drag to rotate, scroll or pinch to zoom."></canvas>
+
+  <button class="profile-btn" id="profileBtn" aria-haspopup="dialog" aria-controls="drawer">
+    <span class="avatar" id="avatarSmall">S</span>
+    <span class="who"><b id="nameSmall">Srikrishna</b><span>Level 27 · Profile</span></span>
+  </button>
+
+  <div class="nameplate">
+    <h1 id="charName">Echo</h1>
+    <div class="emote" id="charEmote">Clap &amp; cheer</div>
+  </div>
+
+  <div class="stage-tools">
+    <button class="tool" id="replay">↻ Replay</button>
+    <button class="tool" id="resetView">⌖ Reset view</button>
+  </div>
+
+  <div class="dock">
+    <div class="hint">Drag to rotate · Scroll or pinch to zoom · Tap a card to switch</div>
+    <div class="roster">
+      <button class="arrow" id="prev" aria-label="Previous characters">‹</button>
+      <div class="track" id="track"></div>
+      <button class="arrow" id="next" aria-label="Next characters">›</button>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" role="dialog" aria-label="Profile" aria-hidden="true">
+    <header>
+      <span class="avatar" id="avatarBig">S</span>
+      <div>
+        <h2 id="nameBig">Srikrishna</h2>
+        <div class="sub">Level 27 · sample profile</div>
+      </div>
+      <button class="tool close" id="closeDrawer" aria-label="Close profile">✕</button>
+    </header>
+    <label for="nameInput">Player name
+      <input id="nameInput" maxlength="18" value="Srikrishna">
+    </label>
+    <div class="stats">
+      <div class="stat"><b id="equipped">Echo</b><span>Equipped</span></div>
+      <div class="stat"><b>12</b><span>Characters</span></div>
+      <div class="stat"><b>142</b><span>Matches</span></div>
+      <div class="stat"><b>38</b><span>Wins</span></div>
+    </div>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const TAU = Math.PI * 2;
+
+// ---------- Shape helpers ----------
+const M = (color, o = {}) => new THREE.MeshStandardMaterial({
+  color, roughness: o.r ?? 0.55, metalness: o.m ?? 0.02, side: o.side ?? THREE.FrontSide,
+  map: o.map ?? null, emissive: o.em ?? 0x000000, emissiveIntensity: o.ei ?? 1, emissiveMap: o.emMap ?? null,
+  transparent: o.o !== undefined, opacity: o.o ?? 1,
+});
+const S = (r, w = 24, h = 16) => new THREE.SphereGeometry(r, w, h);
+const B = (x, y, z) => new THREE.BoxGeometry(x, y, z);
+const Cy = (rt, rb, h, seg = 24) => new THREE.CylinderGeometry(rt, rb, h, seg);
+const Co = (r, h, seg = 12) => new THREE.ConeGeometry(r, h, seg);
+const T = (r, t, arc = TAU) => new THREE.TorusGeometry(r, t, 10, 36, arc);
+const Cap = (r, len) => new THREE.CapsuleGeometry(r, len, 6, 14);
+const hemi = (r, frac = 0.55) => new THREE.SphereGeometry(r, 32, 16, 0, TAU, 0, Math.PI * frac);
+
+// put(parent, geometry, material, x, y, z, rx, ry, rz, [sx, sy, sz])
+function put(parent, geo, mat, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, s) {
+  const m = new THREE.Mesh(geo, mat);
+  m.position.set(x, y, z);
+  m.rotation.set(rx, ry, rz);
+  if (s) m.scale.set(...s);
+  m.castShadow = true;
+  parent.add(m);
+  return m;
+}
+
+function canvasTex(w, h, draw) {
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  draw(cv.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(cv);
+  t.encoding = THREE.sRGBEncoding;
+  return t;
+}
+const stripes = (a, b, n) => canvasTex(64, 64, (g) => {
+  for (let i = 0; i < n; i++) { g.fillStyle = i % 2 ? b : a; g.fillRect(i * 64 / n, 0, 64 / n + 1, 64); }
+});
+
+const BLACK = M(0x161616, { r: 0.3 });
+const WHITE = M(0xffffff);
+
+// Head is a group centred on the head sphere (radius R); the face looks along +z
+const R = 0.34;
+
+// Default cartoon face: glossy eyes, optional mouth and cheeks
+function face(h, { eyes = true, mouth = 'smile', cheeks = true, skin } = {}) {
+  if (eyes) for (const s of [1, -1]) {
+    put(h, S(0.042), BLACK, s * 0.11, 0.03, 0.315, 0, 0, 0, [1, 1.3, 0.6]);
+    put(h, S(0.013, 8, 6), WHITE, s * 0.11 + 0.013, 0.055, 0.337);
+  }
+  if (mouth === 'smile') put(h, T(0.06, 0.013, Math.PI), M(0x5a1a1a), 0, -0.1, 0.31, -0.35, 0, Math.PI);
+  if (mouth === 'open') {
+    put(h, S(0.07, 20, 14), M(0x5a1a1a), 0, -0.12, 0.29, 0, 0, 0, [1, 0.8, 0.55]);
+    put(h, S(0.035, 12, 8), M(0xe0566a), 0, -0.145, 0.315, 0, 0, 0, [1, 0.6, 0.5]);
+  }
+  if (cheeks) for (const s of [1, -1]) put(h, S(0.045, 12, 8), M(0xff8a9a, { o: 0.55 }), s * 0.2, -0.06, 0.27, 0, 0, 0, [1, 0.7, 0.4]);
+}
+
+// Animal hood: a shell with a window cut out for the face, plus a cap over the forehead
+function hood(h, color) {
+  const m = M(color, { side: THREE.DoubleSide, r: 0.8 });
+  put(h, new THREE.SphereGeometry(0.375, 32, 20, Math.PI / 2 + 0.85, TAU - 1.7), m);
+  put(h, new THREE.SphereGeometry(0.377, 32, 10, 0, TAU, 0, Math.PI * 0.3), m);
+  return m;
+}
+
+function heart(size) {
+  const s = new THREE.Shape(), k = size;
+  s.moveTo(0, -k);
+  s.bezierCurveTo(-1.3 * k, 0, -k, k, 0, 0.5 * k);
+  s.bezierCurveTo(k, k, 1.3 * k, 0, 0, -k);
+  return new THREE.ExtrudeGeometry(s, { depth: 0.02, bevelEnabled: false });
+}
+
+// ---------- The 12 characters ----------
+// Body colours + a dress() function that adds the head gear on top of the shared chibi body
+const CHARS = [
+  {
+    name: 'Echo', emote: 'cheer', label: 'Clap & cheer',
+    skin: 0xf1c39b, top: 0xff6fb0, bottom: 0xc9d84a, shoe: 0xff8ac2, longSleeve: true,
+    dress(h) {
+      face(h, { mouth: 'none' });
+      const hair = M(0x4a2c1d, { r: 0.8 });
+      put(h, hemi(0.355), hair, 0, 0.02, -0.01, -0.35);
+      put(h, S(0.3), hair, 0, -0.02, -0.1, 0, 0, 0, [1.1, 1, 0.8]);
+      for (const s of [1, -1]) put(h, S(0.16), hair, s * 0.25, -0.03, -0.04, 0, 0, 0, [0.6, 1.1, 1]);
+      const pink = M(0xff4fa3, { r: 0.35 });
+      put(h, T(0.38, 0.035, Math.PI), pink, 0, 0.02, 0);
+      for (const s of [1, -1]) {
+        put(h, Cy(0.11, 0.11, 0.09, 28), M(0x2f8bff, { r: 0.35 }), s * 0.37, 0.0, 0, 0, 0, Math.PI / 2);
+        put(h, Cy(0.07, 0.07, 0.1, 20), pink, s * 0.38, 0.0, 0, 0, 0, Math.PI / 2);
+      }
+      put(h, new THREE.SphereGeometry(0.352, 24, 12, Math.PI / 2 - 0.95, 1.9, Math.PI * 0.53, Math.PI * 0.27),
+        M(0xa8dcf2, { side: THREE.DoubleSide, r: 0.9 }));
+    },
+  },
+  {
+    name: 'Crabby', emote: 'point', label: 'Point & laugh',
+    skin: 0xf2c49b, top: 0xf5a524, bottom: 0xe8d3a6, shoe: 0x8a5a34, shorts: true,
+    dress(h) {
+      face(h, { eyes: false, mouth: 'open' });
+      const orange = M(0xff7a1a, { r: 0.45 });
+      put(h, hemi(0.365, 0.5), orange, 0, 0.06, 0);
+      put(h, T(0.365, 0.03), orange, 0, 0.06, 0, Math.PI / 2);
+      for (const s of [1, -1]) {
+        put(h, Cy(0.025, 0.03, 0.18), orange, s * 0.12, 0.45, 0.05);
+        put(h, S(0.07), WHITE, s * 0.12, 0.55, 0.06);
+        put(h, S(0.035), BLACK, s * 0.12, 0.56, 0.12);
+        put(h, Cap(0.04, 0.2), orange, s * 0.38, 0.3, 0, 0, 0, -s * 0.8);
+        put(h, S(0.11), orange, s * 0.5, 0.46, 0, 0, 0, 0, [1, 0.8, 0.7]);
+        put(h, Co(0.05, 0.15), orange, s * 0.56, 0.57, 0, 0, 0, -s * 0.5);
+        put(h, Co(0.045, 0.12), orange, s * 0.46, 0.58, 0, 0, 0, s * 0.35);
+        put(h, heart(0.075), M(0xff4f9a, { r: 0.25 }), s * 0.115, 0.05, 0.315);
+      }
+      put(h, B(0.06, 0.012, 0.012), M(0xff4f9a), 0, 0.07, 0.34);
+    },
+  },
+  {
+    name: 'Sam', emote: 'salute', label: 'Salute',
+    skin: 0x6c4bd1, top: 0x3a58d6, bottom: 0x8fb4e8, shoe: 0xf2f2f2, longSleeve: true,
+    dress(h) {
+      face(h, { eyes: false, mouth: 'smile', cheeks: false });
+      const shade = M(0x111111, { r: 0.15, m: 0.6 });
+      for (const s of [1, -1]) put(h, B(0.16, 0.1, 0.03), shade, s * 0.1, 0.05, 0.32, 0, s * 0.3, 0);
+      put(h, B(0.06, 0.02, 0.02), shade, 0, 0.07, 0.34);
+      put(h, Cy(0.25, 0.23, 0.42, 32), M(0xffffff, { map: stripes('#e63946', '#ffffff', 12) }), 0, 0.56, 0);
+      put(h, Cy(0.256, 0.256, 0.11, 32), M(0x2b4cc0), 0, 0.41, 0);
+      for (let i = -3; i <= 3; i++) {
+        const a = i * 0.42;
+        put(h, S(0.018, 8, 6), WHITE, Math.sin(a) * 0.26, 0.41, Math.cos(a) * 0.26);
+      }
+      put(h, Cy(0.4, 0.4, 0.03, 40), WHITE, 0, 0.34, 0);
+      put(h, T(0.4, 0.018), M(0xe63946), 0, 0.34, 0, Math.PI / 2);
+    },
+  },
+  {
+    name: 'Kit', emote: 'jump', label: 'Jump & spin',
+    skin: 0xf2c49b, top: 0xf7f7f7, bottom: 0x2f9e5b, shoe: 0x2f9e5b, shorts: true,
+    dress(h) {
+      face(h);
+      const fur = hood(h, 0xf08a2c);
+      for (const s of [1, -1]) {
+        put(h, Co(0.11, 0.22, 4), fur, s * 0.2, 0.42, 0, 0, 0, -s * 0.35);
+        put(h, Co(0.06, 0.13, 4), WHITE, s * 0.2, 0.41, 0.04, 0, 0, -s * 0.35);
+      }
+      put(h, T(0.055, 0.01), M(0xf2b54a, { r: 0.25, m: 0.8 }), -0.11, 0.03, 0.335);
+    },
+  },
+  {
+    name: 'Bags', emote: 'wave', label: 'Shy wave',
+    skin: 0xe8b48f, top: 0xc99a2e, bottom: 0x3b3a3f, shoe: 0x6b4423, longSleeve: true, headType: 'none',
+    dress(h) {
+      const kraft = M(0xd6b07f, { r: 0.95 });
+      put(h, B(0.58, 0.7, 0.52), kraft, 0, 0.05, 0);
+      put(h, B(0.6, 0.06, 0.54), M(0xc59f6c, { r: 0.95 }), 0, 0.42, 0, 0, 0, 0.06);
+      for (const s of [1, -1]) {
+        put(h, Cy(0.055, 0.055, 0.02, 20), M(0x2a0f0f), s * 0.12, 0.12, 0.262, Math.PI / 2);
+        put(h, Cy(0.03, 0.03, 0.024, 16), M(0xd62828, { em: 0xd62828, ei: 0.5 }), s * 0.12, 0.12, 0.264, Math.PI / 2);
+      }
+    },
+  },
+  {
+    name: 'Reel', emote: 'think', label: 'Thinking',
+    skin: 0xc88b62, top: 0x222428, bottom: 0xffffff, bottomMap: stripes('#ff7aa8', '#ffffff', 8), shoe: 0xf2f2f2, longSleeve: true,
+    dress(h) {
+      face(h, { eyes: false, mouth: 'smile' });
+      const hair = M(0x141414, { r: 0.9 });
+      for (let i = 0; i < 30; i++) {
+        const ph = i * 2.39996, th = Math.acos(1 - (i / 30) * 0.78);
+        put(h, S(0.09, 12, 8), hair, Math.sin(th) * Math.cos(ph) * 0.33, Math.cos(th) * 0.33 + 0.03, Math.sin(th) * Math.sin(ph) * 0.33 - 0.02);
+      }
+      put(h, B(0.44, 0.13, 0.03), WHITE, 0, 0.04, 0.33);
+      put(h, B(0.15, 0.08, 0.02), M(0xe53935, { r: 0.2, em: 0xe53935, ei: 0.25 }), -0.1, 0.04, 0.347);
+      put(h, B(0.15, 0.08, 0.02), M(0x1e88e5, { r: 0.2, em: 0x1e88e5, ei: 0.25 }), 0.1, 0.04, 0.347);
+      for (const s of [1, -1]) put(h, B(0.02, 0.02, 0.26), WHITE, s * 0.22, 0.05, 0.2);
+    },
+  },
+  {
+    name: 'Leo', emote: 'kick', label: 'High kick',
+    skin: 0xe8b48f, top: 0x2e5bd8, bottom: 0x2a3f8f, shoe: 0xffffff, longSleeve: true,
+    dress(h, k) {
+      face(h);
+      put(h, hemi(0.355, 0.42), M(0x3b2416, { r: 0.8 }), 0, 0.03, -0.02, -0.3);
+      put(k.spine, Cy(0.172, 0.172, 0.05, 28), WHITE, 0, 0.19, 0, 0, 0, 0, [1.1, 1, 0.85]);
+    },
+  },
+  {
+    name: 'Tivo', emote: 'spin', label: 'Twirl',
+    skin: 0xc98d64, top: 0x4f7d4a, bottom: 0x2b2b2b, shoe: 0xf2f2f2, longSleeve: true, headType: 'none',
+    dress(h, k) {
+      put(h, B(0.7, 0.54, 0.48), M(0x5b5550, { r: 0.4 }), 0, 0.05, 0);
+      const screen = canvasTex(160, 120, (g) => {
+        g.fillStyle = '#8fc3d6'; g.fillRect(0, 0, 160, 120);
+        g.fillStyle = '#4f7d4a'; g.fillRect(28, 104, 104, 16);
+        g.fillStyle = '#2b1a12'; g.beginPath(); g.ellipse(80, 50, 44, 40, 0, 0, TAU); g.fill();
+        g.fillStyle = '#a8714d'; g.beginPath(); g.ellipse(80, 64, 36, 40, 0, 0, TAU); g.fill();
+        g.fillStyle = '#2b1a12'; g.fillRect(44, 22, 72, 18);
+        g.fillStyle = '#fff'; [66, 94].forEach(x => { g.beginPath(); g.ellipse(x, 60, 7, 8, 0, 0, TAU); g.fill(); });
+        g.fillStyle = '#111'; [66, 94].forEach(x => { g.beginPath(); g.arc(x, 61, 4, 0, TAU); g.fill(); });
+        g.fillStyle = '#5a1a1a'; g.beginPath(); g.ellipse(80, 86, 6, 8, 0, 0, TAU); g.fill();
+      });
+      put(h, new THREE.PlaneGeometry(0.5, 0.38), M(0xffffff, { map: screen, emMap: screen, em: 0xffffff, ei: 0.3 }), -0.04, 0.06, 0.242);
+      const dark = M(0x222222, { r: 0.4 });
+      put(h, Cy(0.03, 0.03, 0.03), dark, 0.27, 0.14, 0.245, Math.PI / 2);
+      put(h, Cy(0.03, 0.03, 0.03), dark, 0.27, 0.02, 0.245, Math.PI / 2);
+      for (const s of [1, -1]) {
+        put(h, Cy(0.008, 0.008, 0.3, 8), dark, s * 0.072, 0.45, 0, 0, 0, -s * 0.5);
+        put(h, S(0.025, 10, 8), dark, s * 0.144, 0.58, 0);
+      }
+      put(k.neck, T(0.1, 0.045), M(0xd9c7a3, { r: 0.9 }), 0, 0.02, 0, Math.PI / 2);
+    },
+  },
+  {
+    name: 'Rocky', emote: 'stance', label: 'Boxing stance',
+    skin: 0xf2c49b, top: 0xe53935, bottom: 0xd9c39a, shoe: 0x3a3a3a, shorts: true, hands: 0xe53935, handR: 0.1,
+    dress(h) {
+      face(h, { mouth: 'open' });
+      hood(h, 0xffc21a);
+      const red = M(0xe53935, { r: 0.5 });
+      [[0.12, 0.38], [0, 0.43], [-0.12, 0.38]].forEach(([z, y]) => put(h, S(0.085), red, 0, y, z));
+      put(h, S(0.055), M(0xff2a2a, { r: 0.25 }), 0, -0.03, 0.34);
+    },
+  },
+  {
+    name: 'Moss', emote: 'bow', label: 'Polite bow',
+    skin: 0x7bc043, top: 0x9ad0f0, bottom: 0x2c5aa0, shoe: 0xf2f2f2, longSleeve: true, puffy: true,
+    dress(h) {
+      face(h, { mouth: 'none', cheeks: false });
+      for (const s of [1, -1]) put(h, Cap(0.025, 0.07), M(0x4a2c17), s * 0.045, -0.08, 0.322, 0, 0, s * 1.2);
+      const blue = M(0x49a8e8, { r: 0.45 });
+      put(h, hemi(0.37, 0.5), blue, 0, 0.08, 0, -0.15);
+      put(h, T(0.37, 0.025), M(0x3a8fd0), 0, 0.08, 0, Math.PI / 2 - 0.15);
+      for (const s of [1, -1]) {
+        put(h, S(0.03), BLACK, s * 0.09, 0.32, 0.27, -0.6, 0, 0, [1, 1.3, 0.6]);
+        put(h, S(0.035, 12, 8), M(0xff8a9a, { o: 0.7 }), s * 0.17, 0.26, 0.26, 0, 0, 0, [1, 0.7, 0.4]);
+      }
+      put(h, T(0.04, 0.01, Math.PI), M(0x1d3b5c), 0, 0.26, 0.31, -0.7, 0, Math.PI);
+    },
+  },
+  {
+    name: 'Jack', emote: 'dance', label: 'Dance',
+    skin: 0xe8b48f, top: 0xc62828, bottom: 0x2a2a2a, shoe: 0xf07f1a, longSleeve: true, headType: 'none',
+    dress(h) {
+      // Pumpkin: a sphere whose radius ripples with angle to make the ridges
+      const g = new THREE.SphereGeometry(0.36, 64, 32);
+      const p = g.attributes.position, v = new THREE.Vector3();
+      for (let i = 0; i < p.count; i++) {
+        v.fromBufferAttribute(p, i);
+        const k = 1 + 0.06 * Math.cos(10 * Math.atan2(v.z, v.x));
+        p.setXYZ(i, v.x * k * 1.08, v.y * 0.85, v.z * k);
+      }
+      g.computeVertexNormals();
+      put(h, g, M(0xf07f1a, { r: 0.6 }), 0, 0.02, 0);
+      put(h, Cy(0.035, 0.05, 0.15, 10), M(0x4b6b2a, { r: 0.8 }), 0.02, 0.36, 0, 0, 0, -0.25);
+      const carve = M(0x2a1205, { em: 0xff9a1a, ei: 0.45 });
+      for (const s of [1, -1]) put(h, Cy(0.075, 0.075, 0.04, 3), carve, s * 0.13, 0.1, 0.315, Math.PI / 2, 0, 0);
+      put(h, Cy(0.035, 0.035, 0.04, 3), carve, 0, 0.0, 0.335, Math.PI / 2, 0, 0);
+      put(h, B(0.3, 0.07, 0.05), carve, 0, -0.12, 0.31, -0.15);
+      for (const x of [-0.07, 0.07]) put(h, B(0.04, 0.035, 0.06), M(0xf07f1a), x, -0.1, 0.315, -0.15);
+    },
+  },
+  {
+    name: 'Blitz', emote: 'flex', label: 'Flex',
+    skin: 0xf2c49b, top: 0x2e7d32, bottom: 0xc62828, shoe: 0xf2f2f2, longSleeve: true,
+    dress(h) {
+      face(h, { eyes: false });
+      put(h, hemi(0.36, 0.45), M(0xb8bcc6, { r: 0.35, m: 0.3 }), 0, 0.03, 0, -0.25);
+      const brown = M(0x8a5a35, { r: 0.8 });
+      for (const s of [1, -1]) {
+        put(h, Cap(0.026, 0.3), brown, s * 0.27, 0.45, -0.02, 0, 0, -s * 0.54);
+        put(h, Cap(0.02, 0.12), brown, s * 0.28, 0.58, -0.02, 0, 0, s * 0.25);
+        put(h, Cap(0.02, 0.12), brown, s * 0.42, 0.6, -0.02, 0, 0, -s * 1.0);
+      }
+      const red = M(0xe53935, { r: 0.35 });
+      for (let i = 0; i < 4; i++) put(h, B(0.42, 0.016, 0.03), red, 0, -0.005 + i * 0.035, 0.335);
+      for (const x of [-0.21, 0, 0.21]) put(h, B(0.018, 0.13, 0.03), red, x, 0.048, 0.33);
+      for (const s of [1, -1]) put(h, B(0.02, 0.02, 0.26), red, s * 0.215, 0.06, 0.2);
+    },
+  },
+];
+
+// ---------- Chibi body ----------
+// Each joint is a THREE.Group; rotating a group bends everything attached below it.
+function buildCharacter(c) {
+  const skin = M(c.skin), top = M(c.top, { r: 0.7 });
+  const bottom = M(c.bottomMap ? 0xffffff : c.bottom, { r: 0.7, map: c.bottomMap });
+  const shoe = M(c.shoe, { r: 0.45 }), hand = M(c.hands ?? c.skin, { r: 0.5 });
+
+  const root = new THREE.Group();
+  const pelvis = new THREE.Group(); pelvis.position.y = 0.56; root.add(pelvis);
+  put(pelvis, Cap(0.13, 0.1), bottom, 0, 0, 0, 0, 0, Math.PI / 2);
+
+  const spine = new THREE.Group(); spine.position.y = 0.02; pelvis.add(spine);
+  put(spine, Cap(0.17, 0.14), top, 0, 0.17, 0, 0, 0, 0, c.puffy ? [1.35, 1.1, 1.1] : [1.1, 1, 0.85]);
+
+  const neck = new THREE.Group(); neck.position.y = 0.36; spine.add(neck);
+  const head = new THREE.Group(); head.position.y = 0.32; neck.add(head);
+  if (c.headType !== 'none') put(head, S(R, 40, 28), skin);
+
+  const arm = side => {
+    const sh = new THREE.Group(); sh.position.set(0.2 * side, 0.3, 0); spine.add(sh);
+    put(sh, Cap(0.05, 0.1), top, 0, -0.08, 0);
+    const el = new THREE.Group(); el.position.y = -0.17; sh.add(el);
+    put(el, Cap(0.045, 0.09), c.longSleeve ? top : skin, 0, -0.07, 0);
+    put(el, S(c.handR ?? 0.065, 16, 12), hand, 0, -0.17, 0);
+    return [sh, el];
+  };
+  const leg = side => {
+    const hp = new THREE.Group(); hp.position.set(0.085 * side, -0.03, 0); pelvis.add(hp);
+    put(hp, Cap(0.065, 0.13), bottom, 0, -0.11, 0);
+    const kn = new THREE.Group(); kn.position.y = -0.24; hp.add(kn);
+    put(kn, Cap(0.06, 0.13), c.shorts ? skin : bottom, 0, -0.1, 0);
+    put(kn, B(0.12, 0.08, 0.2), shoe, 0, -0.25, 0.03);
+    return [hp, kn];
+  };
+  const [shL, elL] = arm(1), [shR, elR] = arm(-1);
+  const [hipL, knL] = leg(1), [hipR, knR] = leg(-1);
+
+  const joints = { spine, neck, shL, elL, shR, elR, hipL, knL, hipR, knR };
+  c.dress(head, joints);
+  return { root, joints };
+}
+
+// ---------- Animation: keyframes of joint angles ----------
+// A pose is {joint: [x, y, z] in radians, rootY: metres, rootR: turn in radians}. Missing joints = 0.
+const JOINTS = ['spine', 'neck', 'shL', 'elL', 'shR', 'elR', 'hipL', 'knL', 'hipR', 'knR'];
+const BASE = { shL: [0, 0, 0.15], shR: [0, 0, -0.15], elL: [-0.15, 0, 0], elR: [-0.15, 0, 0] };
+
+const crouch = { rootY: -0.1, spine: [0.25, 0, 0], hipL: [-0.75, 0, 0], hipR: [-0.75, 0, 0], knL: [1.35, 0, 0], knR: [1.35, 0, 0], shL: [0.5, 0, 0.3], shR: [0.5, 0, -0.3] };
+const armsV = { shL: [-0.3, 0, 2.3], shR: [-0.3, 0, -2.3] };
+const guard = { rootY: -0.05, rootR: 0.4, spine: [0.1, 0, 0], neck: [0, -0.35, 0], hipL: [-0.45, 0, 0.22], knL: [0.6, 0, 0], hipR: [0.3, 0, -0.2], knR: [0.45, 0, 0], shL: [-1.2, 0, 0.25], elL: [-1.5, 0, 0], shR: [-0.8, 0, -0.3], elR: [-2.0, 0, 0] };
+const kickGuard = { shL: [-1.0, 0, 0.3], elL: [-1.7, 0, 0], shR: [-1.0, 0, -0.3], elR: [-1.7, 0, 0] };
+const clapOpen = { shL: [-1.35, 0, 0.6], shR: [-1.35, 0, -0.6], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] };
+const clapShut = { shL: [-1.35, 0, -0.15], shR: [-1.35, 0, 0.15], elL: [-0.3, 0, 0], elR: [-0.3, 0, 0] };
+const flexA = { spine: [-0.1, 0, 0], hipL: [0, 0, 0.15], hipR: [0, 0, -0.15], shL: [0, 0, 1.5], elL: [0, 0, 1.6], shR: [0, 0, -1.5], elR: [0, 0, -1.6] };
+const flexB = { ...flexA, elL: [0, 0, 2.0], elR: [0, 0, -2.0], spine: [-0.15, 0, 0] };
+const armsOut = { rootY: 0.03, shL: [0, 0, 1.4], shR: [0, 0, -1.4], neck: [-0.15, 0, 0] };
+const waveUp = z => ({ spine: [0, 0, 0.06], neck: [0, 0, 0.12], shR: [0, 0, -2.25], elR: [0, 0, z], shL: [0, 0, 0.35], elL: [-1.2, 0, 0] });
+const danceA = { rootY: -0.04, spine: [0, 0, 0.16], neck: [0, 0, -0.18], hipL: [0, 0, 0.12], knR: [0.4, 0, 0], hipR: [-0.2, 0, 0], shL: [0, 0, 2.3], elL: [0, 0, 0.4], shR: [0, 0, -0.5], elR: [-1.3, 0, 0] };
+const danceB = { rootY: -0.04, spine: [0, 0, -0.16], neck: [0, 0, 0.18], hipR: [0, 0, -0.12], knL: [0.4, 0, 0], hipL: [-0.2, 0, 0], shR: [0, 0, -2.3], elR: [0, 0, -0.4], shL: [0, 0, 0.5], elL: [-1.3, 0, 0] };
+const salute = { neck: [-0.05, 0, 0], shR: [-0.4, 0, -2.0], elR: [0, 0, -1.5] };
+const bowDown = { spine: [0.6, 0, 0], neck: [0.25, 0, 0], shR: [-0.9, 0, 0.45], elR: [-1.6, 0, 0], shL: [0.45, 0, 0.3] };
+const thinkA = { spine: [0.05, 0, 0], neck: [0.05, 0, 0.2], shR: [-1.25, 0, 0.35], elR: [-1.9, 0, 0], shL: [-0.5, 0, -0.25], elL: [-1.4, 0, 0] };
+const thinkB = { ...thinkA, neck: [0.05, 0, -0.08], elR: [-1.75, 0, 0] };
+const pointAt = { shR: [-1.55, 0, 0], elR: [0, 0, 0], neck: [-0.1, 0, 0], shL: [0, 0, 0.5], elL: [-1.4, 0, 0] };
+const laughA = { ...pointAt, spine: [0.15, 0, 0], neck: [0.1, 0, 0] };
+const laughB = { ...pointAt, spine: [-0.08, 0, 0], neck: [-0.22, 0, 0] };
+const pointUp = { rootY: 0.03, shR: [-0.3, 0, -2.3], shL: [0, 0, 0.25], neck: [-0.25, 0, 0] };
+
+const EMOTES = {
+  jump: [
+    [0, {}], [0.35, crouch],
+    [0.75, { ...armsV, rootY: 0.45, rootR: TAU * 0.4, hipL: [-0.2, 0, 0], hipR: [-0.2, 0, 0], knL: [0.4, 0, 0], knR: [0.4, 0, 0] }],
+    [1.0, { rootY: 0.42, rootR: TAU * 0.75, hipL: [-1.0, 0, 0], hipR: [-1.0, 0, 0], knL: [1.4, 0, 0], knR: [1.4, 0, 0], shL: [-1.2, 0, 0.5], shR: [-1.2, 0, -0.5] }],
+    [1.3, { ...crouch, rootR: TAU }], [1.85, { rootR: TAU }],
+  ],
+  stance: [
+    [0, {}], [0.5, guard], [0.8, { ...guard, shL: [-1.55, 0, 0], elL: [-0.05, 0, 0], rootR: 0.25 }], [1.05, guard],
+    [1.3, { ...guard, shR: [-1.55, 0, 0.1], elR: [-0.05, 0, 0], rootR: 0.0 }], [1.6, guard], [2.4, guard], [2.9, {}],
+  ],
+  wave: [
+    [0, {}], [0.45, waveUp(-0.1)], [0.65, waveUp(-0.8)], [0.85, waveUp(-0.1)], [1.05, waveUp(-0.8)],
+    [1.25, waveUp(-0.1)], [1.45, waveUp(-0.8)], [1.65, waveUp(-0.2)], [2.2, {}],
+  ],
+  flex: [[0, {}], [0.5, flexA], [0.8, flexB], [1.1, flexA], [1.4, flexB], [1.9, flexB], [2.4, {}]],
+  spin: [[0, {}], [0.3, armsOut], [1.5, { ...armsOut, rootR: TAU * 2 }], [1.9, { rootR: TAU * 2 }]],
+  salute: [[0, {}], [0.2, { hipL: [-1.0, 0, 0], knL: [1.3, 0, 0] }], [0.4, {}], [0.75, salute], [1.9, salute], [2.4, {}]],
+  bow: [[0, {}], [0.6, bowDown], [1.5, bowDown], [2.1, {}]],
+  kick: [
+    [0, {}], [0.35, { ...kickGuard, rootY: -0.03, hipR: [-0.7, 0, 0], knR: [1.7, 0, 0], knL: [0.2, 0, 0] }],
+    [0.6, { ...kickGuard, spine: [-0.3, 0, 0], hipR: [-1.75, 0, 0], knR: [0, 0, 0] }],
+    [0.85, { ...kickGuard, hipR: [-0.7, 0, 0], knR: [1.7, 0, 0] }],
+    [1.2, kickGuard], [1.7, {}],
+  ],
+  dance: [[0, {}], [0.3, danceA], [0.6, danceB], [0.9, danceA], [1.2, danceB], [1.5, danceA], [1.8, danceB], [2.3, {}]],
+  cheer: [
+    [0, {}], [0.3, clapOpen], [0.45, clapShut], [0.6, clapOpen], [0.75, clapShut], [0.9, clapOpen], [1.05, clapShut],
+    [1.3, { ...crouch, shL: [-0.4, 0, 0.3], shR: [-0.4, 0, -0.3] }],
+    [1.6, { ...armsV, rootY: 0.25 }], [1.9, { rootY: 0 }], [2.3, {}],
+  ],
+  think: [[0, {}], [0.5, thinkA], [0.9, thinkB], [1.3, thinkA], [1.7, thinkB], [2.2, thinkA], [2.7, {}]],
+  point: [[0, {}], [0.4, pointAt], [0.6, laughA], [0.8, laughB], [1.0, laughA], [1.2, laughB], [1.6, pointUp], [2.1, pointUp], [2.5, {}]],
+};
+
+const ease = u => u * u * (3 - 2 * u);
+const lerp = (a, b, u) => a + (b - a) * u;
+
+function samplePose(keys, t) {
+  let i = 0;
+  while (i < keys.length - 2 && t >= keys[i + 1][0]) i++;
+  const [t0, a] = keys[i], [t1, b] = keys[i + 1];
+  const u = ease(Math.min(1, Math.max(0, (t - t0) / (t1 - t0))));
+  const out = { rootY: lerp(a.rootY || 0, b.rootY || 0, u), rootR: lerp(a.rootR || 0, b.rootR || 0, u) };
+  for (const j of JOINTS) {
+    const p = a[j] || [0, 0, 0], q = b[j] || [0, 0, 0];
+    out[j] = [lerp(p[0], q[0], u), lerp(p[1], q[1], u), lerp(p[2], q[2], u)];
+  }
+  return out;
+}
+
+// Gentle breathing after the intro emote finishes
+function idlePose(t) {
+  const s = Math.sin(t * 1.7);
+  const o = { rootY: 0, rootR: 0 };
+  for (const j of JOINTS) o[j] = [0, 0, 0];
+  o.spine = [0.025 * s, 0, 0];
+  o.neck = [0, 0.18 * Math.sin(t * 0.45), 0.03 * s];
+  o.shL = [0, 0, 0.03 * s];
+  o.shR = [0, 0, -0.03 * s];
+  return o;
+}
+
+function applyPose(ch, p) {
+  ch.root.position.y = p.rootY;
+  ch.root.rotation.y = p.rootR;
+  for (const j of JOINTS) {
+    const b = BASE[j] || [0, 0, 0];
+    ch.joints[j].rotation.set(b[0] + p[j][0], b[1] + p[j][1], b[2] + p[j][2]);
+  }
+}
+
+// ---------- Main stage ----------
+const canvas = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+
+function addLights(s) {
+  s.add(new THREE.HemisphereLight(0xdde8ff, 0x3a3020, 1.0));
+  const key = new THREE.DirectionalLight(0xffffff, 1.5);
+  key.position.set(3, 6, 4);
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  Object.assign(key.shadow.camera, { left: -2, right: 2, top: 3, bottom: -1, near: 1, far: 15 });
+  s.add(key);
+  const rim = new THREE.DirectionalLight(0xf2b54a, 0.8);
+  rim.position.set(-3, 3, -4);
+  s.add(rim);
+}
+addLights(scene);
+
+// Pedestal with a gold rim
+const pedestal = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.9, 1.0, 0.12, 64),
+  new THREE.MeshStandardMaterial({ color: 0x1c2438, roughness: 0.5, metalness: 0.3 })
+);
+pedestal.position.y = -0.06;
+pedestal.receiveShadow = true;
+scene.add(pedestal);
+const rimRing = new THREE.Mesh(
+  new THREE.TorusGeometry(0.9, 0.012, 8, 96),
+  new THREE.MeshStandardMaterial({ color: 0xf2b54a, emissive: 0xf2b54a, emissiveIntensity: 0.8 })
+);
+rimRing.rotation.x = Math.PI / 2;
+rimRing.position.y = 0.001;
+scene.add(rimRing);
+
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.enablePan = false;
+controls.enableDamping = true;
+controls.minDistance = 1.4;
+controls.maxDistance = 9;
+controls.maxPolarAngle = Math.PI * 0.53;
+
+function homeView() {
+  const portrait = innerWidth / innerHeight < 0.8;
+  controls.target.set(0, portrait ? 0.45 : 0.62, 0);
+  camera.position.set(0, 1.15, portrait ? 6.0 : 4.6);
+  controls.update();
+}
+
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  layoutCards();
+}
+
+// ---------- Thumbnails (rendered once, offscreen) ----------
+function makeThumbnails() {
+  const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  r.setSize(220, 260);
+  r.outputEncoding = THREE.sRGBEncoding;
+  r.toneMapping = THREE.ACESFilmicToneMapping;
+  const s = new THREE.Scene();
+  addLights(s);
+  const cam = new THREE.PerspectiveCamera(30, 220 / 260, 0.1, 20);
+  cam.position.set(0.5, 1.05, 4.2);
+  cam.lookAt(0, 0.95, 0);
+  const urls = CHARS.map(c => {
+    const ch = buildCharacter(c);
+    applyPose(ch, idlePose(0));
+    ch.root.rotation.y = 0.15;
+    s.add(ch.root);
+    r.render(s, cam);
+    const url = r.domElement.toDataURL('image/png');
+    s.remove(ch.root);
+    return url;
+  });
+  r.dispose();
+  r.forceContextLoss();
+  return urls;
+}
+const thumbs = makeThumbnails();
+
+// ---------- Selection state ----------
+// main = character on the pedestal; ring = all the others, shown 3 at a time like a turntable
+let main = 0;
+const ring = CHARS.map((_, i) => i).filter(i => i !== main);
+const N = ring.length;
+let offset = 0;
+let current = null;   // { ch, id, start }
+
+function showMain(id) {
+  if (current) scene.remove(current.ch.root);
+  const ch = buildCharacter(CHARS[id]);
+  scene.add(ch.root);
+  current = { ch, id, start: performance.now() / 1000 };
+  document.getElementById('charName').textContent = CHARS[id].name;
+  document.getElementById('charEmote').textContent = CHARS[id].label;
+  document.getElementById('equipped').textContent = CHARS[id].name;
+}
+
+// ---------- Roster ring (bottom carousel) ----------
+const track = document.getElementById('track');
+const cards = ring.map((_, p) => {
+  const b = document.createElement('button');
+  b.className = 'card';
+  b.innerHTML = '<img alt=""><div class="cap"><b></b><span></span></div>';
+  b.addEventListener('click', () => pick(p));
+  track.appendChild(b);
+  return b;
+});
+
+function fillCard(p) {
+  const c = CHARS[ring[p]], b = cards[p];
+  b.querySelector('img').src = thumbs[ring[p]];
+  b.querySelector('b').textContent = c.name;
+  b.querySelector('span').textContent = c.label;
+  b.setAttribute('aria-label', `Switch to ${c.name}`);
+}
+cards.forEach((_, p) => fillCard(p));
+
+function layoutCards() {
+  const W = track.clientWidth, gap = 10;
+  const cw = (W - gap * 2) / 3;
+  const ch = Math.min(170, cw * 1.32);
+  document.documentElement.style.setProperty('--cw', cw + 'px');
+  document.documentElement.style.setProperty('--ch', ch + 'px');
+  cards.forEach((b, p) => {
+    const rel = ((p - offset) % N + N) % N;   // 0,1,2 visible; 3+ wait on the right; N-1 just left on the left
+    const slot = rel <= 3 ? rel : rel === N - 1 ? -1 : 3;
+    const x = slot * (cw + gap);
+    const look = { '-1': [55, 0.7], 0: [16, 0.92], 1: [0, 1], 2: [-16, 0.92], 3: [-55, 0.7] }[slot];
+    b.style.transform = `translateX(${x}px) rotateY(${look[0]}deg) scale(${look[1]})`;
+    const visible = slot >= 0 && slot <= 2;
+    b.style.opacity = visible ? 1 : 0;
+    b.style.pointerEvents = visible ? 'auto' : 'none';
+    b.tabIndex = visible ? 0 : -1;
+    b.style.zIndex = slot === 1 ? 2 : 1;
+  });
+}
+
+function rotateRing(step) {
+  offset = (offset + step + N) % N;
+  layoutCards();
+}
+
+function pick(p) {
+  const chosen = ring[p];
+  ring[p] = main;                 // the old main character takes the empty seat
+  main = chosen;
+  const img = cards[p].querySelector('img');
+  img.style.opacity = 0;
+  setTimeout(() => { fillCard(p); img.style.opacity = 1; }, 200);
+  showMain(main);
+}
+
+document.getElementById('next').addEventListener('click', () => rotateRing(1));
+document.getElementById('prev').addEventListener('click', () => rotateRing(-1));
+document.getElementById('replay').addEventListener('click', () => { if (current) current.start = performance.now() / 1000; });
+document.getElementById('resetView').addEventListener('click', homeView);
+canvas.addEventListener('dblclick', () => { if (current) current.start = performance.now() / 1000; });
+
+// ---------- Profile drawer ----------
+const drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
+function setDrawer(open) {
+  drawer.classList.toggle('open', open);
+  drawer.setAttribute('aria-hidden', String(!open));
+  scrim.hidden = !open;
+  if (open) document.getElementById('nameInput').focus();
+}
+document.getElementById('profileBtn').addEventListener('click', () => setDrawer(true));
+document.getElementById('closeDrawer').addEventListener('click', () => setDrawer(false));
+scrim.addEventListener('click', () => setDrawer(false));
+
+function setName(n) {
+  const name = n.trim() || 'Player';
+  ['nameSmall', 'nameBig'].forEach(id => document.getElementById(id).textContent = name);
+  ['avatarSmall', 'avatarBig'].forEach(id => document.getElementById(id).textContent = name[0].toUpperCase());
+}
+const nameInput = document.getElementById('nameInput');
+try { const saved = localStorage.getItem('lobby-name'); if (saved) nameInput.value = saved; } catch (e) {}
+setName(nameInput.value);
+nameInput.addEventListener('input', () => {
+  setName(nameInput.value);
+  try { localStorage.setItem('lobby-name', nameInput.value); } catch (e) {}
+});
+
+addEventListener('keydown', e => {
+  if (e.key === 'Escape') setDrawer(false);
+  if (e.target === nameInput) return;
+  if (e.key === 'ArrowRight') rotateRing(1);
+  if (e.key === 'ArrowLeft') rotateRing(-1);
+});
+
+// ---------- Loop ----------
+function frame() {
+  const now = performance.now() / 1000;
+  if (current) {
+    const keys = EMOTES[CHARS[current.id].emote];
+    const t = now - current.start;
+    const end = keys[keys.length - 1][0];
+    applyPose(current.ch, t < end ? samplePose(keys, t) : idlePose(t - end));
+    current.ch.root.scale.setScalar(Math.min(1, 0.6 + t * 2));   // pop-in when a character arrives
+  }
+  rimRing.material.emissiveIntensity = 0.6 + 0.3 * Math.sin(now * 2);
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+addEventListener('resize', resize);
+resize();
+homeView();
+showMain(main);
+requestAnimationFrame(frame);
+</script>
