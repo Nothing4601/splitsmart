@@ -757,11 +757,9 @@ function animate(actor, now) {
 }
 
 // ---------- Selection state ----------
-// main = character on the pedestal; ring = all the others, shown 3 at a time like a turntable
-let main = 0;
-const ring = CHARS.map((_, i) => i).filter(i => i !== main);
-const N = ring.length;
-let offset = 0;
+// All characters sit on one circle. cur = the one on the pedestal; the cards show the next three.
+const N = CHARS.length;
+let cur = 0;
 let current = null;   // { ch, id, start }
 
 function showMain(id) {
@@ -775,26 +773,22 @@ function showMain(id) {
 }
 
 // ---------- Roster ring (bottom carousel) ----------
+// One card per character (index = character id); turning the circle only moves cards around.
 const track = document.getElementById('track');
-const cards = ring.map((_, p) => {
+const cardActors = [];   // per card: { ch, id, start }
+const cardSlots = [];    // per card: which seat it is in (-1..3), null = parked out of sight
+const cards = CHARS.map((c, id) => {
   const b = document.createElement('button');
   b.className = 'card';
   b.innerHTML = '<canvas width="220" height="260"></canvas><div class="cap"><b></b><span></span></div>';
-  b.addEventListener('click', () => pick(p));
-  track.appendChild(b);
-  return b;
-});
-const cardActors = [];   // per card: { ch, id, start }
-const cardSlots = [];    // per card: which seat it is in (-1..3)
-
-function fillCard(p) {
-  const c = CHARS[ring[p]], b = cards[p];
-  cardActors[p] = { ch: buildCharacter(c), id: ring[p], start: -99 };   // start long ago = idle
   b.querySelector('b').textContent = c.name;
   b.querySelector('span').textContent = c.label;
   b.setAttribute('aria-label', `Switch to ${c.name}`);
-}
-cards.forEach((_, p) => fillCard(p));
+  b.addEventListener('click', () => select(id));
+  track.appendChild(b);
+  cardActors[id] = { ch: buildCharacter(c), id, start: -99 };   // start long ago = idle
+  return b;
+});
 
 function layoutCards() {
   const W = track.clientWidth, gap = 10;
@@ -802,10 +796,12 @@ function layoutCards() {
   const ch = Math.min(170, cw * 1.32);
   document.documentElement.style.setProperty('--cw', cw + 'px');
   document.documentElement.style.setProperty('--ch', ch + 'px');
-  cards.forEach((b, p) => {
-    const rel = ((p - offset) % N + N) % N;   // 0,1,2 visible; 3+ wait on the right; N-1 just left on the left
+  cards.forEach((b, id) => {
+    // rel = how many places after the pedestal character this one sits, minus one
+    // 0,1,2 visible; 3+ wait on the right; N-1 is the pedestal character itself (exits left)
+    const rel = ((id - cur - 1) % N + N) % N;
     const slot = rel <= 3 ? rel : rel === N - 1 ? -1 : 3;
-    cardSlots[p] = rel <= 3 || rel === N - 1 ? slot : null;   // null = parked out of sight, not drawn
+    cardSlots[id] = rel <= 3 || rel === N - 1 ? slot : null;
     const x = slot * (cw + gap);
     const look = { '-1': [55, 0.7], 0: [16, 0.92], 1: [0, 1], 2: [-16, 0.92], 3: [-55, 0.7] }[slot];
     b.style.transform = `translateX(${x}px) rotateY(${look[0]}deg) scale(${look[1]})`;
@@ -817,36 +813,27 @@ function layoutCards() {
   });
 }
 
-function rotateRing(step) {
-  offset = (offset + step + N) % N;
+// Put character id on the pedestal and turn the circle to match
+function select(id) {
+  cur = id;
   layoutCards();
-  // every character that is now on show plays its move, staggered left to right
+  showMain(cur);
+  // the characters now on show play their move, staggered left to right
   const now = performance.now() / 1000;
-  if (current) current.start = now;   // the big one on the pedestal moves too
-  cards.forEach((_, p) => {
-    const s = cardSlots[p];
-    if (s >= 0 && s <= 2) cardActors[p].start = now + s * 0.12;
+  cards.forEach((_, i) => {
+    const s = cardSlots[i];
+    if (s >= 0 && s <= 2) cardActors[i].start = now + 0.2 + s * 0.12;
   });
 }
 
-function pick(p) {
-  const chosen = ring[p];
-  ring[p] = main;                 // the old main character takes the empty seat
-  main = chosen;
-  const cv = cards[p].querySelector('canvas');
-  cv.style.opacity = 0;
-  setTimeout(() => {
-    fillCard(p);
-    cardActors[p].start = performance.now() / 1000;
-    cv.style.opacity = 1;
-  }, 200);
-  showMain(main);
+function rotateRing(step) {
+  select((cur + step + N) % N);
 }
 
 function drawCards(now) {
-  cards.forEach((b, p) => {
-    if (cardSlots[p] === null || cardSlots[p] === undefined) return;
-    const a = cardActors[p];
+  cards.forEach((b, id) => {
+    if (cardSlots[id] === null || cardSlots[id] === undefined) return;
+    const a = cardActors[id];
     animate(a, now);
     a.ch.root.rotation.y += 0.15;
     cardScene.add(a.ch.root);
@@ -913,6 +900,6 @@ function frame() {
 addEventListener('resize', resize);
 resize();
 homeView();
-showMain(main);
+showMain(cur);
 requestAnimationFrame(frame);
 </script>
