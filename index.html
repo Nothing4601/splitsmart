@@ -1,511 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
-<title>SplitSmart</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SplitSmart — share the bill, not the headache</title>
+<meta name="theme-color" content="#050c18">
+<meta name="description" content="SplitSmart: track shared expenses, split them smartly and settle up with the fewest payments.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23050c18'/%3E%3Cpath d='M21 7.3A17 17 0 0 0 21 40.7Z' fill='%2319b9f3'/%3E%3Cpath d='M27 7.3A17 17 0 0 1 27 40.7Z' fill='%2319b9f3'/%3E%3Crect x='12' y='22.8' width='24' height='2.4' rx='1.2' fill='%23eaf6ff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
 <style>
-/* Palette follows the hero art: lavender-white paper, indigo ink, violet actions, rose accents.
-   Layout: gallery-style home (header, full-bleed hero, sideways group rail); profile is its own page; the character lobby opens from it as a full-screen salon */
+/* ============================================================
+   SplitSmart — "Smart Split" premium redesign
+   Deep-navy glass over layered cyan/violet auras. The brand mark
+   (a circle split in two, joined by a bar) echoes the intro film.
+   Type: Space Grotesk for display + numerals, Outfit for UI.
+   ============================================================ */
 :root {
-  --paper: #f7f4fb;
-  --header: #eee8f5;
-  --ink: #241c35;
-  --muted: #6b6382;
-  --line: rgba(36, 28, 53, 0.14);
-  --accent: #5b3d8f;
-  --accent-2: #48307a;
-  --rose: #d4869f;
-  --rose-hi: #f0b9cc;
-  --night: #15111f;
-  --panel: rgba(23, 18, 33, 0.88);
-  --night-line: rgba(220, 205, 245, 0.16);
-  --cream: #f3eefa;
-  --cream-muted: #b0a6c6;
-  --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
-  --sans: "Jost", "Futura", "Century Gothic", system-ui, sans-serif;
-  color-scheme: light;
+  --bg: #050c18;
+  --bg2: #0a1730;
+  --panel: rgba(15, 31, 58, 0.62);
+  --panel-hi: rgba(22, 44, 80, 0.78);
+  --line: rgba(148, 190, 255, 0.15);
+  --line-hi: rgba(148, 190, 255, 0.34);
+  --ink: #e9f2fc;
+  --muted: #8fa5c3;
+  --faint: #5f7396;
+  --brand: #19b9f3;
+  --brand-hi: #6fd9ff;
+  --brand-deep: #0a86c8;
+  --brand-ink: #04222f;
+  --violet: #8f7bf5;
+  --teal: #1fd3b4;
+  --rose: #ff7fa3;
+  --ok: #2ed3a5;
+  --warn: #ffb454;
+  --bad: #ff6b81;
+  --disp: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --sans: "Outfit", "Segoe UI", system-ui, sans-serif;
+  --r-lg: 22px;
+  --r-md: 16px;
+  --r-sm: 12px;
+  --shadow: 0 22px 55px -22px rgba(1, 6, 16, 0.95);
+  color-scheme: dark;
 }
 [hidden] { display: none !important; }
+* { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.6 var(--sans); }
+body {
+  margin: 0; min-height: 100vh; overflow-x: hidden;
+  background: var(--bg); color: var(--ink);
+  font: 400 16px/1.55 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
 body.in-lobby { overflow: hidden; }
-button { font: inherit; }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--rose); outline-offset: 2px; }
-.label { font: 500 12px var(--sans); letter-spacing: 0.28em; text-transform: uppercase; }
+body.in-lobby .topbar, body.in-lobby .tabbar, body.in-lobby .aura { display: none; }
+::selection { background: rgba(25, 185, 243, 0.35); }
+button { font: inherit; color: inherit; }
+input, select, textarea { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(148, 190, 255, 0.18); border-radius: 8px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-track { background: transparent; }
 
-/* Header */
-.site-header {
-  position: relative; z-index: 5;
-  display: flex; align-items: center; gap: 28px;
-  background: var(--header);
-  padding-block: 14px;
-  padding-left: max(24px, env(safe-area-inset-left, 0px));
-  padding-right: max(24px, env(safe-area-inset-right, 0px));
-}
-.logo { display: flex; color: var(--ink); text-decoration: none; }
-.logo svg { width: 84px; height: 84px; }
-.nav { margin-left: auto; display: flex; align-items: center; gap: 30px; }
-.nav a { color: var(--ink); text-decoration: none; font: 500 13px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; }
-.nav a:hover { color: var(--accent); }
-.btn-accent {
-  background: var(--accent); color: #fff; border: none; cursor: pointer;
-  padding: 13px 22px; font: 500 13px var(--sans); letter-spacing: 0.24em; text-transform: uppercase;
-}
-.btn-accent:hover { background: var(--accent-2); }
-.profile-chip {
-  display: flex; align-items: center; gap: 10px;
-  padding: 4px 16px 4px 4px; border: 1px solid var(--line); border-radius: 999px;
-  background: transparent; color: inherit; cursor: pointer;
-}
-.profile-chip:hover { border-color: var(--accent); }
-.profile-chip canvas {
-  width: 46px; height: 46px; border-radius: 50%; display: block;
-  background: radial-gradient(circle at 50% 35%, #fbf9ff, #dcd2ec);
-}
-.profile-chip .who { display: grid; text-align: left; line-height: 1.15; }
-.profile-chip b { font: 600 18px var(--serif); }
-.profile-chip .who span { font: 500 10px var(--sans); letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+.ic { width: 18px; height: 18px; flex: none; }
+.num { font-family: var(--disp); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.label { font: 600 11px var(--sans); letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); display: inline-block; }
+.muted { color: var(--muted); }
+.pos { color: var(--ok); }
+.neg { color: var(--bad); }
+.zero { color: var(--muted); }
 
-/* Hero */
-.hero {
-  position: relative; overflow: hidden; color: #fff;
-  height: clamp(560px, calc(100vh - 112px), 880px);
-  background: linear-gradient(100deg, #e98a6e, #d97ba6 35%, #a98fd6 60%, #8396d6 80%, #86bdb8);
-}
-.hero-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.hero::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(20deg, rgba(36, 22, 40, 0.55), rgba(36, 22, 40, 0.15) 45%, transparent 70%);
-}
-.hero-copy { z-index: 1; }
-.hero-copy {
-  position: absolute; bottom: 56px;
-  left: max(40px, env(safe-area-inset-left, 0px));
-  right: max(24px, env(safe-area-inset-right, 0px));
-  max-width: 760px;
-  display: grid; justify-items: start; gap: 18px;
-}
-.hero-copy .label { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4); }
-.hero h1 {
-  margin: 0; font: 500 clamp(46px, 7.6vw, 108px)/0.95 var(--serif);
-  letter-spacing: 0.01em; text-transform: uppercase; text-wrap: balance;
-  text-shadow: 0 3px 18px rgba(0, 0, 0, 0.35);
-}
-.hero-copy p { margin: 0; max-width: 36ch; font-size: 17px; color: rgba(255, 255, 255, 0.88); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35); }
-.btn-outline {
-  display: inline-block; text-decoration: none;
-  background: transparent; color: #fff; border: 1px solid #fff; cursor: pointer;
-  padding: 16px 34px; font: 500 13px var(--sans); letter-spacing: 0.28em; text-transform: uppercase;
-}
-.btn-outline:hover { background: #fff; color: var(--ink); }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-.hero .btn-accent { padding: 17px 30px; }
-
-/* Groups rail */
-.groups { padding-inline: 0; }
-.groups .section-head { padding-inline: max(24px, env(safe-area-inset-left, 0px)); }
-.rail-head { display: flex; justify-content: center; gap: 10px; }
-.rail-btn {
-  width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
-  border: 1px solid var(--line); background: transparent; color: var(--ink);
-  font: 500 22px/1 var(--serif);
-}
-.rail-btn:hover { border-color: var(--accent); color: var(--accent); }
-.rail {
-  display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
-  padding-block: 8px 20px;
-  padding-inline: max(24px, calc((100% - 1200px) / 2));
-  scroll-padding-inline: max(24px, calc((100% - 1200px) / 2));
-  scrollbar-width: thin;
-}
-.group-card, .new-card { flex: 0 0 300px; scroll-snap-align: start; }
-.group-card { background: #fff; border: 1px solid var(--line); display: grid; grid-template-rows: auto 1fr; }
-.group-card .cover { position: relative; height: 140px; }
-.group-card .cover canvas { display: block; width: 100%; height: 100%; }
-.group-card .faces { position: absolute; left: 18px; bottom: -26px; display: flex; }
-.group-card .faces img, .group-card .faces span {
-  width: 52px; height: 52px; border-radius: 50%; margin-right: -12px;
-  border: 3px solid #fff; background: radial-gradient(circle at 50% 35%, #fbf9ff, #dcd2ec);
-}
-.group-card .faces span { display: grid; place-items: center; font: 500 13px var(--sans); color: var(--muted); }
-.group-card .body { padding: 38px 20px 22px; display: grid; gap: 6px; align-content: start; }
-.group-card h3 { margin: 0; font: 500 28px/1.1 var(--serif); }
-.group-card .meta { font-size: 14px; color: var(--muted); }
-.group-card .names { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
-.group-card .tag { top: 10px; left: auto; right: 10px; }
-.new-card {
-  display: grid; place-content: center; justify-items: center; gap: 14px; min-height: 300px;
-  border: 1px dashed rgba(91, 61, 143, 0.5); background: transparent; color: var(--accent); cursor: pointer;
-}
-.new-card:hover { background: rgba(91, 61, 143, 0.05); }
-.new-card .plus-ring {
-  width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--accent); color: #fff; font: 400 34px/1 var(--serif);
-}
-.new-card b { font: 500 26px var(--serif); color: var(--ink); }
-.new-card span { font: 500 11px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; }
-
-/* New group dialog */
-.modal-wrap { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(28, 20, 40, 0.5); }
-.modal {
-  width: min(520px, 100%); max-height: calc(100% - 32px); overflow-y: auto;
-  background: var(--paper); color: var(--ink); padding: 28px; display: grid; gap: 20px;
-}
-.modal header { display: flex; align-items: center; justify-content: space-between; }
-.modal h2 { margin: 0; font: 500 32px var(--serif); letter-spacing: 0.04em; text-transform: uppercase; }
-.modal .label { color: var(--muted); font-size: 11px; }
-.modal input {
-  border: none; border-bottom: 1px solid var(--ink); border-radius: 0; background: transparent;
-  padding: 6px 0; color: var(--ink); font: 500 22px var(--serif); min-width: 0;
-}
-.modal input:focus { outline: none; border-color: var(--accent); }
-.members { display: grid; gap: 10px; }
-.member { display: grid; grid-template-columns: 52px 1fr 36px; gap: 12px; align-items: center; }
-.member .avatar-btn { width: 52px; height: 52px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: radial-gradient(circle at 50% 35%, #fbf9ff, #dcd2ec); cursor: pointer; overflow: hidden; }
-.member .avatar-btn img { width: 100%; height: 100%; display: block; }
-.member input { font-size: 19px; }
-.member .remove { width: 36px; height: 36px; border: 1px solid var(--line); background: transparent; cursor: pointer; color: var(--muted); }
-.member .you { font: 500 10px var(--sans); letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); text-align: center; }
-.add-member { justify-self: start; }
-.form-error { color: #a12a1c; font-size: 14px; min-height: 1.4em; margin: 0; }
-.modal-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
-.btn-plain { background: transparent; border: 1px solid var(--line); padding: 13px 22px; cursor: pointer; font: 500 13px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink); }
-
-/* Sections */
-.section {
-  padding-block: clamp(64px, 10vw, 120px);
-  padding-left: max(24px, env(safe-area-inset-left, 0px));
-  padding-right: max(24px, env(safe-area-inset-right, 0px));
-}
-.section-head { max-width: 1200px; margin: 0 auto 44px; display: grid; justify-items: center; gap: 12px; text-align: center; }
-.section h2 { margin: 0; font: 500 clamp(34px, 4.5vw, 56px)/1.05 var(--serif); letter-spacing: 0.04em; text-transform: uppercase; text-wrap: balance; }
-.section-head p { margin: 0; max-width: 56ch; color: var(--muted); }
-.section .label { color: var(--muted); }
-.tag {
-  position: absolute; top: 8px; left: 8px; padding: 3px 8px;
-  background: var(--rose); color: #2a1426;
-  font: 500 10px var(--sans); letter-spacing: 0.16em; text-transform: uppercase;
-}
-.btn-text {
-  background: none; border: none; border-bottom: 1px solid var(--accent); padding: 6px 0; cursor: pointer;
-  color: var(--accent); font: 500 13px var(--sans); letter-spacing: 0.24em; text-transform: uppercase;
-}
-.site-footer {
-  background: var(--ink); color: #ddd6ea; text-align: center;
-  display: grid; justify-items: center; gap: 16px;
-  padding-block: 56px calc(40px + env(safe-area-inset-bottom, 0px));
-  padding-left: max(24px, env(safe-area-inset-left, 0px));
-  padding-right: max(24px, env(safe-area-inset-right, 0px));
-}
-.site-footer svg { width: 72px; height: 72px; color: #ddd6ea; }
-.site-footer nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
-.site-footer a { color: #ddd6ea; text-decoration: none; font: 500 12px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; }
-.site-footer small { color: #968cab; font-size: 12px; letter-spacing: 0.12em; }
-
-/* Profile page */
-.profile-page {
-  padding-block: clamp(32px, 6vw, 72px) clamp(64px, 8vw, 110px);
-  padding-left: max(24px, env(safe-area-inset-left, 0px));
-  padding-right: max(24px, env(safe-area-inset-right, 0px));
-}
-.pp-inner { max-width: 1100px; margin: 0 auto; display: grid; gap: 14px; }
-.pp-inner > .btn-text { justify-self: start; margin-bottom: 18px; }
-.pp-inner .label { color: var(--muted); }
-.pp-inner h1 { margin: 0 0 24px; font: 500 clamp(44px, 7vw, 92px)/1 var(--serif); text-transform: uppercase; letter-spacing: 0.02em; overflow-wrap: anywhere; }
-.pp-grid { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); align-items: start; }
-.pp-char {
-  display: grid; gap: 6px; justify-items: start; text-align: left; padding: 0 0 20px; cursor: pointer;
-  border: 1px solid var(--line); background: #fff; color: inherit;
-}
-.pp-char canvas {
-  width: 100%; aspect-ratio: 400 / 472; display: block; margin-bottom: 14px;
-  background: radial-gradient(80% 70% at 50% 35%, #3a2d55, #15111f); transition: filter 0.3s;
-}
-.pp-char:hover canvas { filter: brightness(1.08); }
-.pp-char .label, .pp-char b, .pp-char .pp-cta { margin-inline: 22px; }
-.pp-char b { font: 500 36px/1.05 var(--serif); }
-.pp-cta { font: 500 12px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--accent); padding-bottom: 4px; margin-top: 6px; }
-.pp-details { display: grid; gap: 34px; align-content: start; min-width: 0; }
-.field { display: grid; gap: 6px; }
-.pp-details input {
-  border: none; border-bottom: 1px solid var(--ink); border-radius: 0; background: transparent;
-  padding: 6px 0; color: var(--ink); font: 500 30px var(--serif); min-width: 0;
-}
-.pp-details input:focus { outline: none; border-color: var(--accent); }
-.pp-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.pp-stats div { border-top: 1px solid var(--ink); padding-top: 12px; display: grid; }
-.pp-stats b { font: 500 46px/1 var(--serif); font-variant-numeric: tabular-nums; }
-.pp-stats span { font: 500 11px var(--sans); letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
-.pp-details p { margin: 0; color: var(--muted); max-width: 46ch; }
-
-/* Lobby */
-.lobby {
-  position: fixed; inset: 0; z-index: 20; color: var(--cream);
+/* Ambient auras behind everything */
+.aura { position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background:
-    radial-gradient(70% 60% at 50% 35%, #3a2d55, transparent 70%),
-    radial-gradient(120% 70% at 50% 100%, rgba(212, 134, 159, 0.14), transparent 60%),
-    var(--night);
+    radial-gradient(52% 40% at 12% -6%, rgba(25, 185, 243, 0.16), transparent 70%),
+    radial-gradient(46% 38% at 96% 12%, rgba(143, 123, 245, 0.13), transparent 70%),
+    radial-gradient(60% 46% at 50% 112%, rgba(31, 211, 180, 0.08), transparent 70%),
+    linear-gradient(180deg, #071122, var(--bg) 42%);
+}
+.aura::after { content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(148, 190, 255, 0.07) 1px, transparent 1.4px);
+  background-size: 26px 26px; mask-image: radial-gradient(70% 60% at 50% 0%, #000 20%, transparent 80%);
+}
+
+/* ---------- Glass surfaces ---------- */
+.glass {
+  background: linear-gradient(155deg, rgba(28, 54, 96, 0.5), rgba(9, 20, 40, 0.72));
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ---------- Splash intro ---------- */
+#splash { position: fixed; inset: 0; z-index: 100; background: #040a14; display: grid; place-items: center; transition: opacity 0.55s ease, transform 0.55s ease; }
+#splash.out { opacity: 0; transform: scale(1.035); pointer-events: none; }
+#splash video { width: 100%; height: 100%; object-fit: cover; display: block; }
+#splashSkip { position: absolute; right: max(20px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); padding: 10px 18px; border-radius: 999px; border: 1px solid rgba(148, 190, 255, 0.35); background: rgba(5, 12, 24, 0.55); color: #cfe6f7; font: 500 12px var(--sans); letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; opacity: 0.75; backdrop-filter: blur(8px); }
+#splashSkip:hover { opacity: 1; border-color: var(--brand); }
+#splash .fb { display: none; text-align: center; }
+#splash.fallback video { display: none; }
+#splash.fallback .fb { display: grid; justify-items: center; gap: 26px; }
+.fb-disc { position: relative; width: 118px; height: 118px; }
+.fb-disc i { position: absolute; inset: 0; border-radius: 50%; background: var(--brand); box-shadow: 0 0 60px rgba(25, 185, 243, 0.45); }
+.fb-l { clip-path: inset(0 52% 0 0); animation: fbL 2.3s cubic-bezier(.65, 0, .25, 1) both; }
+.fb-r { clip-path: inset(0 0 0 52%); animation: fbR 2.3s cubic-bezier(.65, 0, .25, 1) both; }
+.fb-bar { position: absolute; left: 16%; right: 16%; top: calc(50% - 2px); height: 4px; border-radius: 2px; background: #eaf6ff; animation: fbBar 2.3s ease both; }
+@keyframes fbL { 0%, 18% { transform: none; } 55%, 80% { transform: translateX(-30px); } 100% { transform: none; } }
+@keyframes fbR { 0%, 18% { transform: none; } 55%, 80% { transform: translateX(30px); } 100% { transform: none; } }
+@keyframes fbBar { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 1; } }
+.fb-word { font: 600 30px var(--disp); color: #eaf6ff; letter-spacing: 0.01em; animation: fbWord 0.9s 1.35s both; }
+.fb-word em { font-style: normal; color: var(--brand); }
+@keyframes fbWord { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; align-items: center; gap: 26px;
+  padding: 12px max(22px, env(safe-area-inset-left)) 12px max(22px, env(safe-area-inset-right));
+  background: rgba(5, 12, 24, 0.72);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+.brand .mark { width: 34px; height: 34px; filter: drop-shadow(0 4px 14px rgba(25, 185, 243, 0.4)); }
+.brand .word { font: 600 20px var(--disp); letter-spacing: 0.01em; }
+.brand .word em { font-style: normal; color: var(--brand); }
+.topnav { display: flex; gap: 4px; margin-inline: auto; }
+.topnav a, .tabbar a {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px; border-radius: 999px; text-decoration: none;
+  color: var(--muted); font: 500 14px var(--sans); border: 1px solid transparent;
+  transition: color .2s, background .2s, border-color .2s;
+}
+.topnav a:hover { color: var(--ink); background: rgba(148, 190, 255, 0.07); }
+.topnav a.on, .tabbar a.on { color: var(--brand-hi); background: rgba(25, 185, 243, 0.12); border-color: rgba(25, 185, 243, 0.3); }
+.top-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.topnav + .top-actions { margin-left: 0; }
+
+.chip { display: flex; align-items: center; gap: 10px; padding: 4px 14px 4px 4px; border: 1px solid var(--line); border-radius: 999px; background: rgba(12, 25, 47, 0.5); cursor: pointer; transition: border-color .2s, background .2s; }
+.chip:hover { border-color: var(--line-hi); background: rgba(20, 40, 72, 0.6); }
+.chip-av { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; flex: none; border: 1px solid rgba(25, 185, 243, 0.4); background: radial-gradient(circle at 50% 30%, #123253, #081527); }
+.chip-av canvas { width: 100%; height: 100%; display: block; }
+.chip-who { display: grid; text-align: left; line-height: 1.2; }
+.chip-who b { font: 600 14.5px var(--disp); }
+.chip-who span { font: 500 10px var(--sans); letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+
+/* ---------- Buttons & inputs ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid transparent; border-radius: 14px; cursor: pointer; text-decoration: none;
+  padding: 12px 20px; font: 500 14.5px var(--sans); letter-spacing: 0.01em; color: var(--ink);
+  background: rgba(148, 190, 255, 0.08);
+  transition: transform .15s ease, filter .2s, border-color .2s, background .2s, box-shadow .25s;
+}
+.btn:hover { background: rgba(148, 190, 255, 0.14); }
+.btn:active { transform: scale(0.97); }
+.btn.brand {
+  background: linear-gradient(165deg, var(--brand-hi), var(--brand) 55%, var(--brand-deep));
+  color: var(--brand-ink); font-weight: 600;
+  box-shadow: 0 10px 26px -10px rgba(25, 185, 243, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.btn.brand:hover { filter: brightness(1.07); }
+.btn.line { border-color: var(--line-hi); background: transparent; }
+.btn.line:hover { border-color: var(--brand); color: var(--brand-hi); background: rgba(25, 185, 243, 0.07); }
+.btn.ghost { background: transparent; color: var(--muted); }
+.btn.ghost:hover { color: var(--ink); background: rgba(148, 190, 255, 0.08); }
+.btn.danger { color: var(--bad); border: 1px solid rgba(255, 107, 129, 0.4); background: rgba(255, 107, 129, 0.07); }
+.btn.danger:hover { background: rgba(255, 107, 129, 0.15); }
+.btn.text { background: none; border: none; color: var(--brand); padding: 8px 4px; font-weight: 600; }
+.btn.text:hover { color: var(--brand-hi); }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; filter: saturate(0.4); }
+.btn.busy { pointer-events: none; position: relative; color: transparent !important; }
+.btn.busy::after { content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; animation: spin .7s linear infinite; }
+.btn.brand.busy::after { border-color: rgba(4,34,47,.3); border-top-color: var(--brand-ink); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.field { display: grid; gap: 7px; min-width: 0; }
+.field input, .field select {
+  background: rgba(7, 16, 32, 0.6); border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: 12px 14px; color: var(--ink); min-width: 0;
+  transition: border-color .2s, box-shadow .2s;
+}
+.field input:focus, .field select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(25, 185, 243, 0.15); }
+.field input.big { font: 600 26px var(--disp); padding: 14px 16px; }
+.form-error { color: var(--bad); font-size: 13.5px; min-height: 1.35em; margin: 0; }
+
+/* ---------- View layout ---------- */
+#app { min-height: calc(100vh - 140px); padding: 26px max(22px, env(safe-area-inset-left)) 120px; }
+.wrap { max-width: 1180px; margin: 0 auto; }
+body.ready .view > * { animation: rise 0.6s cubic-bezier(.2, .75, .2, 1) both; }
+body.ready .view > *:nth-child(2) { animation-delay: 0.07s; }
+body.ready .view > *:nth-child(3) { animation-delay: 0.13s; }
+body.ready .view > *:nth-child(4) { animation-delay: 0.19s; }
+body.ready .view > *:nth-child(5) { animation-delay: 0.25s; }
+body.ready .view > *:nth-child(6) { animation-delay: 0.3s; }
+body.ready .view > *:nth-child(7) { animation-delay: 0.35s; }
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+.view-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 6px 0 22px; }
+.view-head h1 { margin: 4px 0 0; font: 600 clamp(30px, 4.4vw, 44px)/1.05 var(--disp); letter-spacing: -0.01em; }
+.crumb { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); text-decoration: none; font: 500 13.5px var(--sans); padding: 6px 0; }
+.crumb:hover { color: var(--brand-hi); }
+
+/* 3D tilt cards */
+[data-tilt] { transform-style: preserve-3d; will-change: transform; transition: transform .18s ease, border-color .2s, box-shadow .25s; }
+
+/* ---------- Dashboard ---------- */
+.dash-hero { position: relative; overflow: hidden; padding: clamp(24px, 4vw, 40px); display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr); gap: 28px; align-items: center; }
+#dashArt { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.42; }
+.dash-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, rgba(4, 10, 22, 0.82) 30%, rgba(4, 10, 22, 0.35) 70%, rgba(4, 10, 22, 0.55)); pointer-events: none; border-radius: inherit; }
+.dh-copy { position: relative; z-index: 1; display: grid; gap: 14px; justify-items: start; }
+.dh-copy .greet { font: 500 15px var(--sans); color: var(--muted); }
+.big-net { font: 600 clamp(42px, 6.4vw, 72px)/1 var(--disp); letter-spacing: -0.025em; }
+.big-net small { font-size: 0.42em; font-weight: 500; color: var(--muted); letter-spacing: 0; display: block; margin-bottom: 6px; }
+.dh-sub { color: var(--muted); max-width: 46ch; }
+.dh-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.gauge-wrap { position: relative; z-index: 1; justify-self: center; text-align: center; display: grid; gap: 10px; justify-items: center; }
+.gauge { position: relative; width: clamp(150px, 17vw, 190px); aspect-ratio: 1; }
+.gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.g-track { fill: none; stroke: rgba(148, 190, 255, 0.13); stroke-width: 9; }
+.g-fill { fill: none; stroke: var(--brand); stroke-width: 9; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 1.2s cubic-bezier(.3, .7, .2, 1), stroke .4s; }
+.gauge.neg .g-fill { stroke: var(--rose); }
+.gauge.zero .g-fill { stroke: var(--teal); }
+.gauge .g-core { position: absolute; inset: 0; display: grid; place-content: center; gap: 6px; justify-items: center; }
+.gauge .g-core .mark { width: 30px; height: 30px; opacity: 0.9; }
+.gauge .g-core b { font: 600 21px var(--disp); }
+.gauge-cap { font-size: 12.5px; color: var(--muted); }
+
+.stat-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+.stat { padding: 20px 22px; display: grid; gap: 8px; cursor: default; position: relative; overflow: hidden; }
+.stat .label { display: flex; align-items: center; gap: 8px; }
+.stat .medal { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; flex: none; }
+.stat .medal.cyan { background: rgba(25, 185, 243, 0.14); color: var(--brand-hi); }
+.stat .medal.rose { background: rgba(255, 127, 163, 0.13); color: var(--rose); }
+.stat .medal.violet { background: rgba(143, 123, 245, 0.15); color: #b6a8ff; }
+.stat b { font: 600 30px var(--disp); letter-spacing: -0.02em; }
+.stat span { font-size: 13px; color: var(--muted); }
+
+.dash-cols { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 16px; margin-top: 18px; align-items: start; }
+.panel { padding: 22px; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.panel-head h2 { margin: 0; font: 600 19px var(--disp); }
+.panel-head .btn { padding: 8px 14px; border-radius: 11px; font-size: 13px; }
+
+.grp-row { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: var(--r-md); border: 1px solid transparent; text-decoration: none; transition: background .2s, border-color .2s, transform .15s; }
+.grp-row:hover { background: rgba(148, 190, 255, 0.06); border-color: var(--line); transform: translateX(3px); }
+.grp-row + .grp-row { margin-top: 4px; }
+.grp-row .thumb { width: 86px; height: 50px; border-radius: 10px; overflow: hidden; flex: none; border: 1px solid var(--line); }
+.grp-row .thumb canvas { width: 100%; height: 100%; display: block; }
+.grp-row .gi { flex: 1; min-width: 0; }
+.grp-row .gi b { display: block; font: 600 15.5px var(--disp); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grp-row .gi span { font-size: 12.5px; color: var(--muted); }
+.facelets { display: flex; }
+.facelets img, .facelets i { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #0a1730; margin-left: -8px; background: #123253; }
+.facelets img:first-child, .facelets i:first-child { margin-left: 0; }
+.facelets i { display: grid; place-items: center; font: 600 10px var(--disp); color: var(--muted); font-style: normal; }
+.netbadge { font: 600 14.5px var(--disp); padding: 7px 12px; border-radius: 999px; flex: none; }
+.netbadge.pos { background: rgba(46, 211, 165, 0.12); color: var(--ok); }
+.netbadge.neg { background: rgba(255, 107, 129, 0.12); color: var(--bad); }
+.netbadge.zero { background: rgba(148, 190, 255, 0.1); color: var(--muted); }
+
+.act-row { display: flex; align-items: center; gap: 13px; padding: 11px 6px; border-bottom: 1px solid rgba(148, 190, 255, 0.08); }
+.act-row:last-child { border-bottom: none; }
+.cat-medal { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; flex: none; background: rgba(148, 190, 255, 0.08); color: var(--brand-hi); border: 1px solid var(--line); }
+.cat-medal.v { background: rgba(143, 123, 245, 0.13); color: #b6a8ff; }
+.cat-medal.t { background: rgba(31, 211, 180, 0.12); color: var(--teal); }
+.act-row .ai { flex: 1; min-width: 0; }
+.act-row .ai b { display: block; font: 500 14.5px var(--sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.act-row .ai span { font-size: 12px; color: var(--muted); }
+.act-amt { font: 600 15px var(--disp); flex: none; }
+
+/* ---------- Groups grid ---------- */
+.g-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.gcard2 { overflow: hidden; padding: 0; cursor: pointer; text-align: left; display: grid; grid-template-rows: 130px auto; color: inherit; position: relative; }
+.gcard2 .cov { position: relative; }
+.gcard2 .cov canvas { width: 100%; height: 100%; display: block; }
+.gcard2 .cov::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(6, 13, 25, 0.75)); }
+.gcard2 .faces { position: absolute; left: 16px; bottom: 12px; z-index: 1; }
+.gcard2 .faces img, .gcard2 .faces i { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid #0a1730; margin-left: -10px; background: #123253; }
+.gcard2 .faces img:first-child, .gcard2 .faces i:first-child { margin-left: 0; }
+.gcard2 .faces i { display: grid; place-items: center; font: 600 12px var(--disp); color: #cfe6f7; font-style: normal; backdrop-filter: blur(4px); }
+.gcard2 .gb { padding: 16px 18px 18px; display: grid; gap: 5px; }
+.gcard2 h3 { margin: 0; font: 600 19px var(--disp); }
+.gcard2 .meta { font-size: 12.5px; color: var(--muted); }
+.gcard2 .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.gcard2 .open { font: 600 13px var(--sans); color: var(--brand); display: inline-flex; align-items: center; gap: 6px; }
+.gcard2:hover { border-color: rgba(25, 185, 243, 0.4); }
+.gcard2:hover .open { color: var(--brand-hi); }
+.tag { position: absolute; top: 10px; right: 10px; z-index: 1; padding: 4px 9px; border-radius: 7px; background: rgba(5, 12, 24, 0.65); border: 1px solid var(--line); color: #cfe6f7; font: 600 9.5px var(--sans); letter-spacing: 0.14em; text-transform: uppercase; backdrop-filter: blur(4px); }
+.newcard { display: grid; place-content: center; justify-items: center; gap: 12px; min-height: 240px; border: 1.5px dashed rgba(25, 185, 243, 0.35); border-radius: var(--r-lg); background: rgba(25, 185, 243, 0.03); color: var(--brand); cursor: pointer; transition: background .2s, border-color .2s; }
+.newcard:hover { background: rgba(25, 185, 243, 0.08); border-color: rgba(25, 185, 243, 0.6); }
+.newcard .plus-ring { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(165deg, var(--brand-hi), var(--brand)); color: var(--brand-ink); box-shadow: 0 10px 26px -10px rgba(25, 185, 243, 0.7); }
+.newcard b { font: 600 17px var(--disp); color: var(--ink); }
+.newcard span { font-size: 12.5px; color: var(--muted); }
+
+/* ---------- Group detail ---------- */
+.gd-hero { position: relative; overflow: hidden; padding: 0; display: grid; grid-template-rows: 170px auto; }
+.gd-hero .cov { position: relative; }
+.gd-hero .cov canvas { width: 100%; height: 100%; display: block; }
+.gd-hero .cov::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6, 13, 25, 0.05), rgba(6, 13, 25, 0.8)); }
+.gd-hero .faces { position: absolute; left: 20px; bottom: 14px; z-index: 1; display: flex; }
+.gd-hero .faces img, .gd-hero .faces i { width: 40px; height: 40px; border-radius: 50%; border: 2.5px solid #0a1730; margin-left: -11px; background: #123253; }
+.gd-hero .faces img:first-child { margin-left: 0; }
+.gd-hero .gb { padding: 20px clamp(20px, 3vw, 30px) 24px; display: grid; gap: 14px; }
+.gd-title { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.gd-title h1 { margin: 2px 0 0; font: 600 clamp(28px, 4vw, 40px)/1.05 var(--disp); letter-spacing: -0.01em; }
+.gd-title .sub { color: var(--muted); font-size: 13.5px; }
+.gd-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.gd-grid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 16px; margin-top: 16px; align-items: start; }
+.gd-col { display: grid; gap: 16px; }
+
+/* Balance flow viz */
+.flow-box { position: relative; width: min(100%, 380px); margin: 6px auto 10px; aspect-ratio: 1; }
+.flow-box svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.flow .arc { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.flow.go .arc { stroke-dashoffset: 0; transition: stroke-dashoffset 1s cubic-bezier(.35, .6, .25, 1); }
+.flow text { font: 600 5.4px var(--disp); fill: var(--muted); opacity: 0; paint-order: stroke; stroke: rgba(5, 12, 24, 0.85); stroke-width: 1.6px; }
+.flow.go text { opacity: 1; transition: opacity .5s ease; }
+.flow-node { position: absolute; width: 17%; max-width: 64px; aspect-ratio: 1; transform: translate(-50%, -50%); display: grid; place-items: center; }
+.flow-node img { width: 78%; height: 78%; border-radius: 50%; border: 2px solid rgba(148, 190, 255, 0.4); background: #123253; box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.8); }
+.flow-node span { position: absolute; top: 100%; margin-top: 2px; font: 500 10.5px var(--sans); color: var(--muted); white-space: nowrap; text-shadow: 0 1px 4px #050c18; }
+.flow-settled { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center; }
+.flow-settled .okring { width: 92px; height: 92px; border-radius: 50%; border: 3px solid var(--teal); display: grid; place-items: center; color: var(--teal); box-shadow: 0 0 40px rgba(31, 211, 180, 0.25), inset 0 0 24px rgba(31, 211, 180, 0.12); }
+.flow-settled .okring svg { width: 38px; height: 38px; }
+
+.netlist { display: grid; gap: 4px; margin-top: 10px; }
+.net-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 6px; border-radius: 12px; }
+.net-row:hover { background: rgba(148, 190, 255, 0.05); }
+.net-row .av { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--line-hi); background: #123253; }
+.net-row .nm { display: grid; gap: 5px; min-width: 0; }
+.net-row .nm b { font: 600 14.5px var(--disp); display: flex; align-items: center; gap: 8px; }
+.net-row .nm .you-tag { font: 600 9px var(--sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--brand-ink); background: var(--brand); padding: 2px 7px; border-radius: 99px; }
+.net-row .nm .bar { height: 5px; border-radius: 3px; background: rgba(148, 190, 255, 0.1); overflow: hidden; }
+.net-row .nm .bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--brand-deep), var(--brand)); width: 0; transition: width 1s cubic-bezier(.3, .7, .2, 1); }
+.net-row.owes .nm .bar i { background: linear-gradient(90deg, #8f2a44, var(--rose)); }
+.net-row .amt { font: 600 15px var(--disp); }
+
+/* Expenses list */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.chips button { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border-radius: 999px; border: 1px solid var(--line); background: rgba(12, 25, 47, 0.5); color: var(--muted); font: 500 13px var(--sans); cursor: pointer; transition: all .2s; }
+.chips button img { width: 20px; height: 20px; border-radius: 50%; }
+.chips button:hover { color: var(--ink); border-color: var(--line-hi); }
+.chips button.on { color: var(--brand-hi); border-color: rgba(25, 185, 243, 0.45); background: rgba(25, 185, 243, 0.1); }
+.month-head { margin: 18px 0 6px; display: flex; align-items: center; gap: 12px; color: var(--faint); font: 600 11px var(--sans); letter-spacing: 0.2em; text-transform: uppercase; }
+.month-head::after { content: ""; flex: 1; height: 1px; background: rgba(148, 190, 255, 0.1); }
+.exp-row { display: flex; align-items: center; gap: 13px; width: 100%; text-align: left; padding: 11px 8px; border: none; background: none; border-radius: 14px; cursor: pointer; transition: background .18s; }
+.exp-row:hover { background: rgba(148, 190, 255, 0.06); }
+.exp-row .ai { flex: 1; min-width: 0; }
+.exp-row .ai b { display: block; font: 500 14.5px var(--sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exp-row .ai span { font-size: 12px; color: var(--muted); }
+.exp-row .sh { text-align: right; flex: none; }
+.exp-row .sh b { display: block; font: 600 15px var(--disp); }
+.exp-row .sh span { font-size: 11px; color: var(--muted); }
+.exp-row.settle-row .cat-medal { background: rgba(31, 211, 180, 0.12); color: var(--teal); }
+.fresh { animation: freshGlow 2.2s ease; border-radius: 14px; }
+@keyframes freshGlow { 0% { background: rgba(25, 185, 243, 0.22); } 100% { background: transparent; } }
+
+/* Settle panel */
+.settle-row { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid rgba(148, 190, 255, 0.08); }
+.settle-row:last-child { border-bottom: none; }
+.settle-row .pair { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.settle-row .pair .av { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--line-hi); background: #123253; }
+.settle-row .pair svg { color: var(--faint); flex: none; }
+.settle-row .pair b { font: 600 14px var(--disp); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.settle-row .amt { font: 600 16px var(--disp); }
+
+/* ---------- Expense sheet ---------- */
+.sheet {
+  background: linear-gradient(170deg, #0d1e3a, #081426 60%);
+  border-left: 1px solid var(--line);
+  box-shadow: -30px 0 80px rgba(0, 0, 0, 0.5);
+  padding: 26px clamp(20px, 3vw, 30px) calc(30px + env(safe-area-inset-bottom));
+  overflow-y: auto; overflow-x: hidden; display: grid; gap: 20px; align-content: start;
+}
+.sheet-head { display: flex; align-items: start; justify-content: space-between; gap: 14px; }
+.sheet-head h2 { margin: 3px 0 0; font: 600 24px var(--disp); }
+.sheet-head .gn { color: var(--muted); font-size: 13px; }
+.close-x { width: 38px; height: 38px; flex: none; border-radius: 12px; border: 1px solid var(--line); background: rgba(12, 25, 47, 0.5); color: var(--muted); cursor: pointer; font-size: 15px; transition: all .2s; }
+.close-x:hover { color: var(--ink); border-color: var(--line-hi); }
+.amt-hero { display: flex; align-items: baseline; gap: 10px; padding: 18px 20px; border-radius: var(--r-md); border: 1px solid var(--line); background: radial-gradient(120% 160% at 10% 0%, rgba(25, 185, 243, 0.1), rgba(7, 16, 32, 0.6)); }
+.amt-hero .cur { font: 600 26px var(--disp); color: var(--brand); }
+.amt-hero input { flex: 1; min-width: 0; border: none; background: none; font: 600 clamp(30px, 5vw, 40px) var(--disp); color: var(--ink); letter-spacing: -0.02em; }
+.amt-hero input:focus { outline: none; }
+.amt-hero input[type=date] { flex: 0 1 auto; min-width: 0; width: 150px; }
+.amt-hero input::-webkit-outer-spin-button, .amt-hero input::-webkit-inner-spin-button, .num-in::-webkit-outer-spin-button, .num-in::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.amt-hero input[type=number], .num-in[type=number] { -moz-appearance: textfield; appearance: textfield; }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: rgba(7, 16, 32, 0.7); border: 1px solid var(--line); }
+.seg button { padding: 10px 6px; border: none; border-radius: 10px; background: none; color: var(--muted); font: 500 13.5px var(--sans); cursor: pointer; transition: all .2s; }
+.seg button.on { background: linear-gradient(165deg, rgba(111, 217, 255, 0.2), rgba(25, 185, 243, 0.14)); color: var(--brand-hi); box-shadow: inset 0 0 0 1px rgba(25, 185, 243, 0.35); }
+.member-edit { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 8px; border-radius: 14px; border: 1px solid transparent; }
+.member-edit:hover { background: rgba(148, 190, 255, 0.04); }
+.member-edit.excluded { opacity: 0.45; }
+.member-edit .av { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--line-hi); background: #123253; }
+.member-edit .me { display: grid; gap: 1px; min-width: 0; }
+.member-edit .me b { font: 600 14.5px var(--disp); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.member-edit .me span { font-size: 11.5px; color: var(--muted); }
+.member-edit .ctrl { display: flex; align-items: center; gap: 6px; }
+.num-in { width: 92px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: rgba(7, 16, 32, 0.7); font: 600 14.5px var(--disp); text-align: right; }
+.num-in:focus { outline: none; border-color: var(--brand); }
+.stepper { display: flex; align-items: center; gap: 4px; }
+.stepper button { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line); background: rgba(12, 25, 47, 0.6); color: var(--ink); cursor: pointer; font-size: 15px; }
+.stepper button:hover { border-color: var(--brand); color: var(--brand-hi); }
+.stepper b { min-width: 26px; text-align: center; font: 600 15px var(--disp); }
+.tgl { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line-hi); background: none; color: var(--muted); font: 500 12.5px var(--sans); cursor: pointer; transition: all .2s; }
+.tgl.on { background: rgba(25, 185, 243, 0.14); border-color: rgba(25, 185, 243, 0.5); color: var(--brand-hi); font-weight: 600; }
+.member-edit .out { font: 600 14.5px var(--disp); min-width: 74px; text-align: right; color: var(--ink); }
+.remain { display: flex; align-items: center; gap: 10px; justify-content: space-between; padding: 12px 16px; border-radius: 13px; font: 500 13.5px var(--sans); border: 1px solid var(--line); background: rgba(7, 16, 32, 0.5); }
+.remain.ok { border-color: rgba(46, 211, 165, 0.45); color: var(--ok); }
+.remain.bad { border-color: rgba(255, 107, 129, 0.45); color: var(--bad); }
+.remain .link { background: none; border: none; color: var(--brand); font: 600 13px var(--sans); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.sheet-foot { display: flex; gap: 10px; justify-content: flex-end; position: sticky; bottom: -26px; padding: 14px 0 calc(20px + env(safe-area-inset-bottom)); background: linear-gradient(180deg, transparent, #081426 30%); }
+
+/* ---------- Modals ---------- */
+.ovl { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 18px; background: rgba(2, 7, 16, 0.62); backdrop-filter: blur(7px); animation: fade .25s ease; }
+@keyframes fade { from { opacity: 0; } }
+#expenseSheet { place-items: stretch end; padding: 0; }
+.modal { width: min(540px, 100%); max-height: calc(100% - 20px); overflow-y: auto; padding: 26px; display: grid; gap: 18px; align-content: start; animation: pop .35s cubic-bezier(.2, .85, .3, 1.12); }
+@keyframes pop { from { opacity: 0; transform: scale(0.94) translateY(10px); } }
+.m-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.m-head h2 { margin: 3px 0 0; font: 600 22px var(--disp); }
+.m-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.members { display: grid; gap: 8px; }
+.member { display: grid; grid-template-columns: 48px minmax(0, 1fr) 44px; gap: 12px; align-items: center; }
+.member .avatar-btn { width: 48px; height: 48px; padding: 0; border-radius: 50%; border: 1.5px solid var(--line-hi); background: #123253; cursor: pointer; overflow: hidden; transition: border-color .2s, transform .15s; }
+.member .avatar-btn:hover { border-color: var(--brand); transform: scale(1.06); }
+.member .avatar-btn img { width: 100%; height: 100%; display: block; }
+.member input { border: none; border-bottom: 1px solid var(--line-hi); border-radius: 0; background: transparent; padding: 7px 2px; font: 500 17px var(--disp); }
+.member input:focus { outline: none; border-color: var(--brand); }
+.member .remove, .member .you-tag { width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--line); background: rgba(12, 25, 47, 0.5); color: var(--muted); cursor: pointer; display: grid; place-items: center; }
+.member .you-tag { border: none; background: none; color: var(--brand); font: 600 10px var(--sans); letter-spacing: 0.14em; text-transform: uppercase; }
+
+/* Settlement modal pair */
+.pair-hero { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 18px; border-radius: var(--r-md); background: rgba(31, 211, 180, 0.06); border: 1px solid rgba(31, 211, 180, 0.25); }
+.pair-hero .who { display: grid; justify-items: center; gap: 6px; text-align: center; }
+.pair-hero .who img { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--line-hi); background: #123253; }
+.pair-hero .who span { font: 600 13.5px var(--disp); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pair-hero .arr { color: var(--teal); }
+.pair-hero .arr svg { width: 26px; height: 26px; }
+.quick-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.quick-chips button { padding: 7px 13px; border-radius: 999px; border: 1px solid var(--line); background: rgba(12, 25, 47, 0.5); color: var(--muted); font: 500 13px var(--sans); cursor: pointer; }
+.quick-chips button:hover { color: var(--brand-hi); border-color: rgba(25, 185, 243, 0.45); }
+
+/* Breakdown rows (expense detail) */
+.split-row { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 12px; }
+.split-row.payer { background: rgba(25, 185, 243, 0.07); }
+.split-row.mine { outline: 1px solid rgba(25, 185, 243, 0.35); }
+.split-row img { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--line-hi); background: #123253; }
+.split-row b { flex: 1; font: 600 14px var(--disp); }
+.split-row .paid-tag { font: 600 9.5px var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--brand-hi); background: rgba(25, 185, 243, 0.13); border: 1px solid rgba(25, 185, 243, 0.3); padding: 3px 8px; border-radius: 99px; }
+.split-row .amt { font: 600 14.5px var(--disp); }
+
+/* ---------- Toasts & burst ---------- */
+#toasts { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 80; display: grid; gap: 8px; justify-items: center; pointer-events: none; }
+.toast { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 999px; background: rgba(10, 22, 42, 0.92); border: 1px solid var(--line-hi); box-shadow: var(--shadow); font: 500 14px var(--sans); opacity: 0; transform: translateY(14px); transition: opacity .3s, transform .35s cubic-bezier(.2, .8, .3, 1.2); backdrop-filter: blur(10px); max-width: min(90vw, 420px); }
+.toast.in { opacity: 1; transform: none; }
+.toast.out { opacity: 0; transform: translateY(-8px); }
+.toast .ic { color: var(--ok); }
+.toast.err .ic { color: var(--bad); }
+.toast.info .ic { color: var(--brand); }
+#burst { z-index: 90; }
+.burst { width: min(380px, 92vw); padding: 38px 28px; text-align: center; display: grid; justify-items: center; gap: 8px; }
+.burst h3 { margin: 6px 0 0; font: 600 22px var(--disp); }
+.burst p { margin: 0; color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+.bcheck { width: 86px; height: 86px; }
+.bcheck circle { fill: none; stroke: var(--ok); stroke-width: 3; stroke-dasharray: 100; stroke-dashoffset: 100; }
+.bcheck path { fill: none; stroke: var(--ok); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 100; stroke-dashoffset: 100; }
+#burst.go .bcheck circle { animation: draw .7s 0.05s cubic-bezier(.4, 0, .3, 1) forwards; }
+#burst.go .bcheck path { animation: draw .5s 0.6s cubic-bezier(.4, 0, .3, 1) forwards; }
+#burst.go .burst { animation: pop2 .55s cubic-bezier(.2, .9, .3, 1.25); }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes pop2 { from { opacity: 0; transform: scale(0.86); } }
+
+/* ---------- Empty & error states ---------- */
+.empty { display: grid; justify-items: center; gap: 14px; text-align: center; padding: 44px 24px; border: 1.5px dashed var(--line); border-radius: var(--r-lg); background: rgba(12, 25, 47, 0.3); }
+.empty .emark { width: 64px; height: 64px; opacity: 0.5; animation: floaty 3.4s ease-in-out infinite; }
+@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.empty h3 { margin: 0; font: 600 19px var(--disp); }
+.empty p { margin: 0; color: var(--muted); max-width: 40ch; font-size: 14px; }
+.error-panel { display: grid; justify-items: center; gap: 12px; text-align: center; padding: 60px 24px; }
+.error-panel .emark { width: 70px; height: 70px; opacity: 0.6; }
+
+/* ---------- Skeletons ---------- */
+.skel { display: grid; gap: 16px; }
+.skel i { display: block; border-radius: var(--r-md); background: linear-gradient(100deg, rgba(148, 190, 255, 0.06) 40%, rgba(148, 190, 255, 0.13) 50%, rgba(148, 190, 255, 0.06) 60%); background-size: 300% 100%; animation: shimmer 1.3s linear infinite; }
+@keyframes shimmer { to { background-position: -300% 0; } }
+.sk-hero { height: 210px; }
+.sk-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.sk-row i { height: 108px; }
+.sk-list { display: grid; gap: 10px; }
+.sk-list i { height: 58px; }
+
+/* ---------- Bottom tab bar (mobile) ---------- */
+.tabbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 40; display: none; align-items: center; gap: 2px; padding: 6px; border-radius: 999px; background: rgba(8, 18, 36, 0.88); border: 1px solid var(--line); box-shadow: var(--shadow); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.tabbar a { flex-direction: column; gap: 3px; padding: 8px 14px; font-size: 10.5px; letter-spacing: 0.06em; }
+.tabbar .ic { width: 20px; height: 20px; }
+.fab { position: absolute; left: 50%; top: -26px; transform: translateX(-50%); width: 54px; height: 54px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; background: linear-gradient(165deg, var(--brand-hi), var(--brand)); color: var(--brand-ink); box-shadow: 0 12px 30px -8px rgba(25, 185, 243, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.4); transition: transform .2s; }
+.fab:hover { transform: translateX(-50%) scale(1.07); }
+.fab:active { transform: translateX(-50%) scale(0.94); }
+.fab .ic { width: 24px; height: 24px; }
+
+/* ---------- Profile page ---------- */
+#profilePage { min-height: calc(100vh - 140px); padding: 26px max(22px, env(safe-area-inset-left)) 130px; }
+.pp { max-width: 1080px; margin: 0 auto; display: grid; gap: 14px; }
+.pp h1 { margin: 2px 0 22px; font: 600 clamp(36px, 6vw, 62px)/1.02 var(--disp); letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.pp-grid { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: clamp(22px, 4vw, 48px); align-items: start; }
+.pp-char { display: grid; gap: 5px; justify-items: start; text-align: left; padding: 0 0 22px; cursor: pointer; overflow: hidden; color: inherit; width: 100%; }
+.pp-char canvas { width: 100%; aspect-ratio: 400 / 472; display: block; margin-bottom: 14px; background: radial-gradient(85% 70% at 50% 30%, #10315a, #060e1d); transition: filter .3s; }
+.pp-char:hover canvas { filter: brightness(1.12); }
+.pp-char .label, .pp-char b, .pp-char .pp-cta { margin-inline: 22px; }
+.pp-char b { font: 600 30px var(--disp); }
+.pp-cta { font: 600 12.5px var(--sans); color: var(--brand); margin-top: 8px; border-bottom: 1px solid rgba(25, 185, 243, 0.5); padding-bottom: 4px; }
+.pp-side { display: grid; gap: 26px; align-content: start; min-width: 0; }
+.pp-side input { font: 500 26px var(--disp); }
+.pp-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.pp-stats > div { border-top: 1px solid var(--line-hi); padding-top: 12px; display: grid; gap: 4px; }
+.pp-stats b { font: 600 30px var(--disp); letter-spacing: -0.02em; }
+.pp-stats span { font: 600 10px var(--sans); letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+.pp-side p { margin: 0; color: var(--muted); max-width: 48ch; }
+
+/* ---------- Character lobby (three.js — chrome restyled, engine untouched) ---------- */
+.lobby { position: fixed; inset: 0; z-index: 35; color: var(--ink);
+  background:
+    radial-gradient(70% 60% at 50% 30%, rgba(16, 49, 90, 0.75), transparent 72%),
+    radial-gradient(120% 70% at 50% 100%, rgba(25, 185, 243, 0.1), transparent 60%),
+    var(--bg);
 }
 #lobbyStage { position: absolute; inset: 0; }
 #lobbyStage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
 #lobbyStage canvas:active { cursor: grabbing; }
-.lobby-top-left {
-  position: fixed; z-index: 5;
-  top: calc(16px + env(safe-area-inset-top, 0px));
-  left: max(16px, env(safe-area-inset-left, 0px));
-  display: flex; align-items: center; gap: 10px;
-}
-.ghost {
-  background: var(--panel); color: var(--cream); border: 1px solid var(--night-line); cursor: pointer;
-  padding: 11px 14px; font: 500 12px var(--sans); letter-spacing: 0.2em; text-transform: uppercase;
-}
-.ghost:hover { border-color: var(--rose); color: var(--rose-hi); }
-.lobby .profile-chip { background: var(--panel); border-color: var(--night-line); color: var(--cream); }
-.lobby .profile-chip .who span { color: var(--cream-muted); }
-.nameplate {
-  position: fixed; z-index: 4; pointer-events: none; text-align: right;
-  top: calc(16px + env(safe-area-inset-top, 0px));
-  right: max(16px, env(safe-area-inset-right, 0px));
-}
-.nameplate h1 { margin: 0; font: 500 clamp(30px, 5vw, 56px)/1 var(--serif); letter-spacing: 0.06em; text-transform: uppercase; }
-.nameplate .emote {
-  display: inline-block; margin-top: 8px; padding: 4px 10px;
-  border: 1px solid var(--rose); background: rgba(212, 134, 159, 0.12); color: var(--rose-hi);
-  font: 500 11px var(--sans); letter-spacing: 0.24em; text-transform: uppercase;
-}
-.stage-tools {
-  position: fixed; z-index: 4; display: grid; gap: 8px;
-  top: calc(124px + env(safe-area-inset-top, 0px));
-  right: max(16px, env(safe-area-inset-right, 0px));
-}
-.tool {
-  padding: 10px 14px; cursor: pointer;
-  background: var(--panel); color: var(--cream); border: 1px solid var(--night-line);
-  font: 500 12px var(--sans); letter-spacing: 0.16em; text-transform: uppercase;
-}
-.tool:hover { border-color: var(--rose); color: var(--rose-hi); }
-.tool.primary { background: var(--rose); color: #2a1426; border-color: var(--rose); }
-.tool.primary:hover { background: var(--rose-hi); color: #2a1426; }
-.tool.equip { background: var(--cream); color: #2a1426; border-color: var(--cream); }
-.tool.equip:disabled { background: transparent; color: var(--rose-hi); border-color: var(--rose); cursor: default; }
-.dock {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; pointer-events: none;
-  display: grid; justify-items: center; gap: 8px;
-  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
-.hint { font-size: 12px; letter-spacing: 0.06em; color: var(--cream-muted); text-align: center; }
+.lobby-top-left { position: fixed; z-index: 5; top: calc(16px + env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left)); display: flex; align-items: center; gap: 10px; }
+.ghost { background: rgba(10, 22, 42, 0.8); color: var(--ink); border: 1px solid var(--line-hi); cursor: pointer; padding: 11px 15px; border-radius: 12px; font: 500 12.5px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; backdrop-filter: blur(10px); }
+.ghost:hover { border-color: var(--brand); color: var(--brand-hi); }
+.nameplate { position: fixed; z-index: 4; pointer-events: none; text-align: right; top: calc(16px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); }
+.nameplate h1 { margin: 0; font: 600 clamp(28px, 5vw, 52px)/1 var(--disp); letter-spacing: 0.01em; }
+.nameplate .emote { display: inline-block; margin-top: 8px; padding: 5px 11px; border-radius: 8px; border: 1px solid rgba(25, 185, 243, 0.45); background: rgba(25, 185, 243, 0.1); color: var(--brand-hi); font: 600 10.5px var(--sans); letter-spacing: 0.18em; text-transform: uppercase; }
+.stage-tools { position: fixed; z-index: 4; display: grid; gap: 8px; top: calc(118px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); }
+.tool { padding: 10px 14px; cursor: pointer; border-radius: 12px; background: rgba(10, 22, 42, 0.82); color: var(--ink); border: 1px solid var(--line-hi); font: 500 12px var(--sans); letter-spacing: 0.1em; text-transform: uppercase; backdrop-filter: blur(10px); transition: all .2s; }
+.tool:hover { border-color: var(--brand); color: var(--brand-hi); }
+.tool.primary { background: linear-gradient(165deg, var(--brand-hi), var(--brand)); color: var(--brand-ink); border-color: transparent; font-weight: 600; }
+.tool.primary:hover { filter: brightness(1.07); color: var(--brand-ink); }
+.tool.equip { background: rgba(237, 246, 255, 0.92); color: var(--brand-ink); border-color: transparent; font-weight: 600; }
+.tool.equip:disabled { background: transparent; color: var(--brand-hi); border-color: rgba(25, 185, 243, 0.45); cursor: default; }
+.dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; pointer-events: none; display: grid; justify-items: center; gap: 8px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+.hint { font-size: 12px; letter-spacing: 0.05em; color: var(--muted); text-align: center; }
 .roster { pointer-events: auto; display: flex; align-items: center; gap: 8px; width: min(100%, 480px); }
-.arrow {
-  flex: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
-  display: grid; place-items: center;
-  background: var(--panel); color: var(--cream); border: 1px solid var(--night-line);
-  font: 500 22px/1 var(--serif);
-}
-.arrow:hover { border-color: var(--rose); color: var(--rose-hi); }
+.arrow { flex: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; background: rgba(10, 22, 42, 0.82); color: var(--ink); border: 1px solid var(--line-hi); font: 500 20px/1 var(--disp); backdrop-filter: blur(10px); }
+.arrow:hover { border-color: var(--brand); color: var(--brand-hi); }
 .track { position: relative; flex: 1; min-width: 0; height: var(--ch, 150px); perspective: 700px; }
-.card {
-  position: absolute; left: 0; top: 0; padding: 0; overflow: hidden; cursor: pointer;
-  width: var(--cw, 110px); height: var(--ch, 150px);
-  background: linear-gradient(180deg, #3a2d55, #17121f);
-  border: 1px solid var(--night-line); color: var(--cream);
-  transition: transform 0.45s cubic-bezier(.3,.7,.2,1), opacity 0.45s ease;
-  transform-origin: 50% 100%;
-}
-.card:hover { border-color: var(--rose); }
+.card { position: absolute; left: 0; top: 0; padding: 0; overflow: hidden; cursor: pointer; width: var(--cw, 110px); height: var(--ch, 150px); background: linear-gradient(180deg, #14304f, #0a1526); border: 1px solid var(--line); border-radius: 14px; color: var(--ink); transition: transform 0.45s cubic-bezier(.3, .7, .2, 1), opacity 0.45s ease, border-color .2s; transform-origin: 50% 100%; box-shadow: 0 14px 30px -14px rgba(0, 0, 0, 0.8); }
+.card:hover { border-color: var(--brand); }
 .card canvas { width: 100%; height: calc(100% - 36px); object-fit: cover; display: block; }
-.cap {
-  height: 36px; display: grid; place-content: center; text-align: center; line-height: 1.05;
-  background: rgba(14, 10, 22, 0.85); border-top: 1px solid var(--night-line);
-}
-.cap b { font: 600 16px var(--serif); letter-spacing: 0.04em; }
-.cap span { font: 500 9.5px var(--sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream-muted); }
-
-/* Lobby: all-characters page */
-.overlay {
-  position: fixed; inset: 0; z-index: 8;
-  display: flex; flex-direction: column;
-  background: rgba(16, 12, 24, 0.96);
-  padding-top: calc(16px + env(safe-area-inset-top, 0px));
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
-.overlay header, .overlay .hint { width: 100%; max-width: 1100px; margin-inline: auto; }
-.overlay header { display: flex; align-items: center; gap: 12px; }
-.overlay h2, .creator h2 { margin: 0; font: 500 30px var(--serif); letter-spacing: 0.06em; text-transform: uppercase; }
-.overlay h2 span { color: var(--rose-hi); }
-.overlay .hint { text-align: left; margin-top: 4px; }
-.overlay .close-x, .creator .close-x { margin-left: auto; border-color: var(--night-line); }
-.grid {
-  flex: 1; min-height: 0; overflow-y: auto; align-content: start;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;
-  width: 100%; max-width: 1100px; margin: 14px auto 0; padding: 4px 2px 16px;
-}
-.gcard {
-  position: relative; padding: 0; overflow: hidden; cursor: pointer; color: var(--cream);
-  border: 1px solid var(--night-line); background: linear-gradient(180deg, #3a2d55, #17121f);
-  transition: transform 0.2s, border-color 0.2s;
-}
+.cap { height: 36px; display: grid; place-content: center; text-align: center; line-height: 1.1; background: rgba(6, 13, 25, 0.85); border-top: 1px solid var(--line); }
+.cap b { font: 600 14px var(--disp); }
+.cap span { font: 600 8.5px var(--sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.overlay { position: fixed; inset: 0; z-index: 8; display: flex; flex-direction: column; background: rgba(4, 9, 18, 0.96); backdrop-filter: blur(8px); padding: calc(16px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left)); }
+.overlay header { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 1100px; margin-inline: auto; }
+.overlay h2 { margin: 0; font: 600 26px var(--disp); }
+.overlay h2 span { color: var(--brand-hi); }
+.overlay .hint { text-align: left; width: 100%; max-width: 1100px; margin: 4px auto 0; }
+.overlay .close-x, .creator .close-x { margin-left: auto; }
+.grid { flex: 1; min-height: 0; overflow-y: auto; align-content: start; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; width: 100%; max-width: 1100px; margin: 14px auto 0; padding: 4px 2px 16px; }
+.gcard { position: relative; padding: 0; overflow: hidden; cursor: pointer; color: var(--ink); border: 1px solid var(--line); border-radius: 14px; background: linear-gradient(180deg, #14304f, #0a1526); transition: transform 0.2s, border-color 0.2s; }
 .gcard canvas { width: 100%; aspect-ratio: 400 / 472; display: block; }
-.gcard:hover, .gcard:focus-visible { border-color: var(--rose); transform: translateY(-3px); }
-.gcard.current { box-shadow: 0 0 0 2px var(--rose); }
-.addbar {
-  display: flex; justify-content: center; align-items: center; gap: 12px;
-  padding-top: 12px; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--night-line);
-}
-.addbar span { color: var(--cream-muted); font-size: 14px; letter-spacing: 0.06em; }
-.plus {
-  width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
-  background: var(--rose); color: #2a1426; font: 500 32px/1 var(--serif);
-  box-shadow: 0 6px 20px rgba(212, 134, 159, 0.35);
-}
-
-/* Lobby: creator */
-.creator {
-  position: fixed; top: 0; right: 0; bottom: 0; z-index: 7;
-  width: min(360px, 92vw);
-  display: flex; flex-direction: column; gap: 16px; overflow-y: auto;
-  background: var(--panel); border-left: 1px solid var(--night-line);
-  backdrop-filter: blur(14px);
-  padding-top: calc(20px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-  padding-left: 20px;
-  padding-right: max(20px, env(safe-area-inset-right, 0px));
-}
+.gcard:hover, .gcard:focus-visible { border-color: var(--brand); transform: translateY(-3px); }
+.gcard.current { box-shadow: 0 0 0 2px var(--brand); }
+.addbar { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 0 calc(14px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
+.addbar span { color: var(--muted); font-size: 14px; }
+.plus { width: 54px; height: 54px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; background: linear-gradient(165deg, var(--brand-hi), var(--brand)); color: var(--brand-ink); box-shadow: 0 10px 26px -8px rgba(25, 185, 243, 0.7); }
+.creator { position: fixed; top: 0; right: 0; bottom: 0; z-index: 7; width: min(360px, 92vw); display: flex; flex-direction: column; gap: 16px; overflow-y: auto; background: rgba(8, 17, 33, 0.92); border-left: 1px solid var(--line); backdrop-filter: blur(16px); padding: calc(20px + env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) 20px; }
 .creator header { display: flex; align-items: center; gap: 12px; }
-.creator .cfield, .part > span { display: grid; gap: 6px; font-size: 11px; color: var(--cream-muted); text-transform: uppercase; letter-spacing: 0.2em; }
+.creator h2 { margin: 0; font: 600 24px var(--disp); }
+.cfield, .part > span { display: grid; gap: 6px; font: 600 10.5px var(--sans); color: var(--muted); text-transform: uppercase; letter-spacing: 0.18em; }
 .part { display: grid; gap: 6px; }
-.creator input, .creator select {
-  padding: 9px 10px; border-radius: 0; color: var(--cream);
-  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--night-line);
-  font: 500 15px var(--sans); letter-spacing: 0.02em; text-transform: none;
-}
-.creator select option { background: var(--night); }
+.creator input, .creator select { padding: 10px 12px; border-radius: 12px; color: var(--ink); background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); font: 500 15px var(--sans); }
+.creator select option { background: var(--bg2); }
 .picker { display: flex; align-items: center; gap: 8px; }
-.picker output {
-  flex: 1; min-width: 0; text-align: center; padding: 8px;
-  border: 1px solid var(--night-line); font: 600 17px var(--serif); text-transform: none; letter-spacing: 0.02em; color: var(--cream);
-}
-.arrow.sm { width: 34px; height: 34px; font-size: 18px; }
+.picker output { flex: 1; min-width: 0; text-align: center; padding: 9px; border: 1px solid var(--line); border-radius: 10px; font: 600 15px var(--disp); color: var(--ink); }
+.arrow.sm { width: 34px; height: 34px; font-size: 17px; }
 .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
-.swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--night-line); cursor: pointer; padding: 0; }
-.swatch.on { border-color: var(--rose-hi); box-shadow: 0 0 0 2px var(--night) inset; }
-.combo { font-size: 13px; color: var(--cream-muted); font-variant-numeric: tabular-nums; }
+.swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; padding: 0; }
+.swatch.on { border-color: var(--brand-hi); box-shadow: 0 0 0 2px var(--bg) inset; }
+.combo { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .row { display: flex; gap: 8px; }
 .row .tool { flex: 1; padding: 12px; }
 body.creating .dock, body.creating .stage-tools { display: none; }
 
-@media (max-width: 860px) {
-  .nav a { display: none; }
-  .logo svg { width: 60px; height: 60px; }
-  .pp-grid { grid-template-columns: 1fr; }
+/* ---------- Responsive ---------- */
+@media (max-width: 980px) {
+  .dash-cols { grid-template-columns: 1fr; }
+  .gd-grid { grid-template-columns: 1fr; }
+  .dash-hero { grid-template-columns: 1fr; text-align: left; }
+  .gauge-wrap { justify-self: start; }
 }
-@media (max-width: 520px) { .group-card, .new-card { flex-basis: 82%; } .rail-head { display: none; } }
+@media (max-width: 860px) {
+  .pp-grid { grid-template-columns: 1fr; }
+  .topnav { display: none; }
+}
+@media (max-width: 760px) {
+  #app { padding-bottom: 150px; }
+  .tabbar { display: flex; }
+  .top-actions .btn { display: none; }
+  .chip-who span { display: none; }
+  .stat-row { grid-template-columns: 1fr; }
+  .topbar { gap: 14px; }
+  #toasts { bottom: calc(96px + env(safe-area-inset-bottom)); width: 92vw; }
+}
+@media (max-width: 640px) {
+  #expenseSheet { place-items: end stretch; }
+  .sheet { width: 100%; height: calc(100% - 54px); max-height: none; border-radius: 22px 22px 0 0; border: 1px solid var(--line); border-bottom: none; animation: sheetUp .4s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes sheetUp { from { transform: translateY(60px); opacity: 0; } }
+  .seg button { font-size: 12px; padding: 10px 4px; }
+  .member-edit { grid-template-columns: 38px minmax(0, 1fr) auto; }
+  .member-edit .out { grid-column: 1 / -1; text-align: left; padding-left: 50px; min-width: 0; }
+  .dash-hero { padding: 22px; }
+}
 @media (max-width: 520px) {
-  .nav .btn-accent { display: none; }
-  .profile-chip .who span { display: none; }
-  .hero-copy { left: max(20px, env(safe-area-inset-left, 0px)); bottom: 32px; }
-  .stage-tools { top: auto; bottom: calc(var(--ch, 150px) + 70px + env(safe-area-inset-bottom, 0px)); }
-  .creator {
-    top: auto; left: 0; width: auto; max-height: 55%;
-    border-left: none; border-top: 1px solid var(--night-line);
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-  }
+  .stage-tools { top: auto; bottom: calc(var(--ch, 150px) + 70px + env(safe-area-inset-bottom)); }
+  .creator { top: auto; left: 0; width: auto; max-height: 55%; border-left: none; border-top: 1px solid var(--line); border-radius: 18px 18px 0 0; padding-left: max(16px, env(safe-area-inset-left)); }
+  .g-grid { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .card { transition: none; }
+  *, *::before, *::after { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+  body.ready .view > * { animation: none; }
 }
 </style>
+</head>
+<body>
 
-<header class="site-header">
-  <a class="logo" href="#top" data-home aria-label="SplitSmart, home">
-    <svg viewBox="0 0 100 100" aria-hidden="true">
-      <defs><path id="ringA" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs>
-      <circle cx="50" cy="50" r="47.5" fill="none" stroke="currentColor" stroke-width="1"/>
-      <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="0.4"/>
-      <circle cx="50" cy="50" r="29" fill="none" stroke="currentColor" stroke-width="0.6"/>
-      <text font-family="Jost, sans-serif" font-size="6.4" fill="currentColor"><textPath href="#ringA" textLength="226" lengthAdjust="spacing">SPLITSMART · SHARE THE BILL ·</textPath></text>
-      <text x="50" y="58.5" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="25" font-weight="600" fill="currentColor">SS</text>
-    </svg>
+<svg style="display:none" aria-hidden="true">
+  <symbol id="markSym" viewBox="0 0 48 48">
+    <path d="M21 5.24 A19 19 0 0 0 21 42.76 Z" fill="#19b9f3"/>
+    <path d="M27 5.24 A19 19 0 0 1 27 42.76 Z" fill="#19b9f3"/>
+    <rect x="10" y="22.7" width="28" height="2.6" rx="1.3" fill="#eaf6ff"/>
+  </symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4.2 4.2L19 7.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M17 3.5l3 3-3 3M20 6.5H6.5M7 20.5l-3-3 3-3M4 17.5h13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-dash" viewBox="0 0 24 24"><path d="M4.5 18.5a8.5 8.5 0 1 1 15 0M12 14l3.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.2" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.8 19.5a6.4 6.4 0 0 1 12.4 0M15.8 5.4a3.2 3.2 0 0 1 0 5.7M21.2 19.5a6.4 6.4 0 0 0-4.3-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.2v5l3.2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.4" r="3.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.2 20a6.8 6.8 0 0 1 13.6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-food" viewBox="0 0 24 24"><path d="M7 3v18M4.6 3v4.2a2.4 2.4 0 0 0 4.8 0V3M16.5 3c-1.8 2.6-1.8 6.4 0 8.6V21M16.5 3c1.9 2.6 1.9 6.2 0 8.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-groceries" viewBox="0 0 24 24"><path d="M4 9h16M6.2 9l1.7 10a1.6 1.6 0 0 0 1.6 1.3h5a1.6 1.6 0 0 0 1.6-1.3L17.8 9M9 9l3-5.6L15 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-travel" viewBox="0 0 24 24"><path d="M21 3.5L10.4 14.1M21 3.5l-6.8 17-3.8-6.4-6.4-3.8 17-6.8z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-stay" viewBox="0 0 24 24"><path d="M4 11.2L12 4l8 7.2M6.2 9.8V20h11.6V9.8M10 20v-5.4h4V20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-utilities" viewBox="0 0 24 24"><path d="M13 2.5L4.5 13.5h5.8L9 21.5l8.6-11h-5.8l1.2-8z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-fun" viewBox="0 0 24 24"><path d="M4 6.5h16V20H4zM4 10.5h16M8.5 6.5V10.5M15.5 6.5V10.5M4 6.5L7 3l3 3.5M10 6.5l3-3.5 3 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-shopping" viewBox="0 0 24 24"><path d="M6.2 8h11.6l1 12.5H5.2L6.2 8zM9 8V6.5a3 3 0 0 1 6 0V8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-other" viewBox="0 0 24 24"><path d="M6.5 3h11v18l-1.8-1.4L13.9 21l-1.9-1.4L10.1 21l-1.8-1.4L6.5 21V3zM9.5 8h5M9.5 12h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.6L22 20.2H2L12 3.6zM12 10v4.6M12 17.6v.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v5.4M12 7.4v.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+
+<!-- Brand intro (≤3s, skippable) -->
+<div id="splash" role="status" aria-label="Loading SplitSmart">
+  <video id="splashVid" src="assets/brand/smart-split-intro.mp4" muted autoplay playsinline preload="auto"></video>
+  <div class="fb" aria-hidden="true">
+    <div class="fb-disc"><i class="fb-l"></i><i class="fb-r"></i><span class="fb-bar"></span></div>
+    <div class="fb-word">Smart <em>Split</em></div>
+  </div>
+  <button id="splashSkip" type="button">Skip intro</button>
+</div>
+
+<div class="aura" aria-hidden="true"></div>
+
+<header class="topbar">
+  <a class="brand" href="#/" aria-label="SplitSmart, home">
+    <svg class="mark" aria-hidden="true"><use href="#markSym"/></svg>
+    <span class="word">Split<em>Smart</em></span>
   </a>
-  <nav class="nav" aria-label="Main">
-    <a href="#groups" data-home>Groups</a>
-    <button class="btn-accent" data-new-group>+ New group</button>
+  <nav class="topnav" aria-label="Primary">
+    <a href="#/" data-nav="home">Dashboard</a>
+    <a href="#/groups" data-nav="groups">Groups</a>
+    <a href="#/activity" data-nav="activity">Activity</a>
   </nav>
-  <button class="profile-chip" data-profile aria-label="Your profile">
-    <canvas width="96" height="96"></canvas>
-    <span class="who"><b data-pname>Srikrishna</b><span data-pchar>Echo</span></span>
-  </button>
+  <div class="top-actions">
+    <button class="btn ghost" data-new-group type="button"><svg class="ic"><use href="#i-plus"/></svg>New group</button>
+    <button class="chip" data-goto="#/profile" type="button" aria-label="Your profile">
+      <span class="chip-av" data-profile><canvas width="96" height="96"></canvas></span>
+      <span class="chip-who"><b data-pname>Srikrishna</b><span data-pchar>Echo</span></span>
+    </button>
+  </div>
 </header>
 
-<main id="home">
-  <section class="hero" id="top">
-    <canvas class="hero-art" id="heroArt" aria-hidden="true"></canvas>
-    <div class="hero-copy">
-      <span class="label">Welcome to</span>
-      <h1>SplitSmart</h1>
-      <p>Scan a receipt, give each item to the people who shared it, and settle up with the fewest payments.</p>
-      <div class="hero-actions">
-        <a class="btn-outline" href="#groups">See your groups</a>
-        <button class="btn-accent" data-new-group>+ New group</button>
-      </div>
-    </div>
-  </section>
+<main id="app" class="wrap" aria-live="polite"></main>
 
-  <section class="section groups" id="groups">
-    <div class="section-head">
-      <span class="label">Your groups</span>
-      <h2>Who are you splitting with?</h2>
-      <p>Every room, wing trip and canteen run gets its own group. Scroll sideways to see them all.</p>
-      <div class="rail-head">
-        <button class="rail-btn" id="railPrev" aria-label="Scroll groups left">‹</button>
-        <button class="rail-btn" id="railNext" aria-label="Scroll groups right">›</button>
-      </div>
-    </div>
-    <div class="rail" id="rail" tabindex="0" aria-label="Groups"></div>
-  </section>
-
-  <footer class="site-footer">
-    <svg viewBox="0 0 100 100" aria-hidden="true">
-      <defs><path id="ringB" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs>
-      <circle cx="50" cy="50" r="47.5" fill="none" stroke="currentColor" stroke-width="1"/>
-      <circle cx="50" cy="50" r="29" fill="none" stroke="currentColor" stroke-width="0.6"/>
-      <text font-family="Jost, sans-serif" font-size="6.4" fill="currentColor"><textPath href="#ringB" textLength="226" lengthAdjust="spacing">SPLITSMART · SHARE THE BILL ·</textPath></text>
-      <text x="50" y="58.5" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="25" font-weight="600" fill="currentColor">SS</text>
-    </svg>
-    <nav aria-label="Footer">
-      <a href="#top">Home</a>
-      <a href="#groups">Groups</a>
-    </nav>
-    <small>© 2026 SplitSmart</small>
-  </footer>
-</main>
-
-<section class="profile-page" id="profilePage" hidden aria-label="Your profile">
-  <div class="pp-inner">
-    <button class="btn-text" id="ppBack">← Back to groups</button>
+<section id="profilePage" hidden aria-label="Your profile">
+  <div class="pp">
+    <a class="crumb" href="#/">← Back to dashboard</a>
     <span class="label">Your profile</span>
     <h1 data-pname>Srikrishna</h1>
     <div class="pp-grid">
-      <button class="pp-char" id="ppChar">
+      <button class="pp-char glass" id="ppChar" type="button" aria-label="Open the character lobby">
         <canvas width="400" height="472"></canvas>
         <span class="label">Your character</span>
         <b data-pchar>Echo</b>
         <span class="pp-cta">Open the character lobby →</span>
       </button>
-      <div class="pp-details">
+      <div class="pp-side">
         <label class="field" for="nameInput"><span class="label">Your name</span>
           <input id="nameInput" maxlength="18" autocomplete="nickname">
         </label>
         <div class="pp-stats">
-          <div><b id="ppGroups">0</b><span>Groups</span></div>
-          <div><b id="ppChars">12</b><span>Characters</span></div>
+          <div><b class="num" id="ppGroups">0</b><span>Groups</span></div>
+          <div><b class="num" id="ppChars">12</b><span>Characters</span></div>
+          <div><b class="num" id="ppNet">₹0</b><span>Your net</span></div>
         </div>
-        <p>Your character stands for you in every group. Open the character lobby to browse all of them, watch their moves, or make your own in the atelier.</p>
+        <p>Your character stands for you in every group. Open the character lobby to browse all of them, watch their moves, or make your own in the atelier. Balances and groups stay on this device.</p>
       </div>
     </div>
   </div>
@@ -515,7 +725,7 @@ body.creating .dock, body.creating .stage-tools { display: none; }
   <div id="lobbyStage"></div>
 
   <div class="lobby-top-left">
-    <button class="ghost" id="backHome">← Profile</button>
+    <button class="ghost" id="backHome" type="button">← Profile</button>
   </div>
 
   <div class="nameplate">
@@ -524,31 +734,31 @@ body.creating .dock, body.creating .stage-tools { display: none; }
   </div>
 
   <div class="stage-tools">
-    <button class="tool equip" id="equip">Use this character</button>
-    <button class="tool primary" id="openGallery">All characters</button>
-    <button class="tool primary" id="openCreator">+ Create</button>
-    <button class="tool" id="replay">↻ Replay</button>
-    <button class="tool" id="resetView">⌖ Reset view</button>
+    <button class="tool equip" id="equip" type="button">Use this character</button>
+    <button class="tool primary" id="openGallery" type="button">All characters</button>
+    <button class="tool primary" id="openCreator" type="button">+ Create</button>
+    <button class="tool" id="replay" type="button">↻ Replay</button>
+    <button class="tool" id="resetView" type="button">⌖ Reset view</button>
   </div>
 
   <div class="dock">
     <div class="hint">Drag to rotate · Scroll or pinch to zoom · Select a card to switch</div>
     <div class="roster">
-      <button class="arrow" id="prev" aria-label="Previous characters">‹</button>
+      <button class="arrow" id="prev" type="button" aria-label="Previous characters">‹</button>
       <div class="track" id="track"></div>
-      <button class="arrow" id="next" aria-label="Next characters">›</button>
+      <button class="arrow" id="next" type="button" aria-label="Next characters">›</button>
     </div>
   </div>
 
   <section class="overlay" id="gallery" hidden aria-label="All characters">
     <header>
       <h2>All characters <span id="galleryCount">12</span></h2>
-      <button class="close-x" id="closeGallery" aria-label="Close">✕</button>
+      <button class="close-x" id="closeGallery" type="button" aria-label="Close">✕</button>
     </header>
     <div class="hint">Hover a character to see its move · select one to put it on the plinth</div>
     <div class="grid" id="galleryGrid"></div>
     <div class="addbar">
-      <button class="plus" id="galleryPlus" aria-label="Create a new character">+</button>
+      <button class="plus" id="galleryPlus" type="button" aria-label="Create a new character">+</button>
       <span>Create your own</span>
     </div>
   </section>
@@ -556,30 +766,30 @@ body.creating .dock, body.creating .stage-tools { display: none; }
   <aside class="creator" id="creator" hidden aria-label="Create character">
     <header>
       <h2>Atelier</h2>
-      <button class="close-x" id="closeCreator" aria-label="Cancel">✕</button>
+      <button class="close-x" id="closeCreator" type="button" aria-label="Cancel">✕</button>
     </header>
     <label class="cfield" for="cName">Name
       <input id="cName" maxlength="14">
     </label>
     <div class="part"><span>Head piece</span>
       <div class="picker">
-        <button class="arrow sm" data-part="h" data-step="-1" aria-label="Previous head piece">‹</button>
+        <button class="arrow sm" data-part="h" data-step="-1" type="button" aria-label="Previous head piece">‹</button>
         <output id="hName"></output>
-        <button class="arrow sm" data-part="h" data-step="1" aria-label="Next head piece">›</button>
+        <button class="arrow sm" data-part="h" data-step="1" type="button" aria-label="Next head piece">›</button>
       </div>
     </div>
     <div class="part"><span>Top</span>
       <div class="picker">
-        <button class="arrow sm" data-part="t" data-step="-1" aria-label="Previous top">‹</button>
+        <button class="arrow sm" data-part="t" data-step="-1" type="button" aria-label="Previous top">‹</button>
         <output id="tName"></output>
-        <button class="arrow sm" data-part="t" data-step="1" aria-label="Next top">›</button>
+        <button class="arrow sm" data-part="t" data-step="1" type="button" aria-label="Next top">›</button>
       </div>
     </div>
     <div class="part"><span>Bottom</span>
       <div class="picker">
-        <button class="arrow sm" data-part="b" data-step="-1" aria-label="Previous bottom">‹</button>
+        <button class="arrow sm" data-part="b" data-step="-1" type="button" aria-label="Previous bottom">‹</button>
         <output id="bName"></output>
-        <button class="arrow sm" data-part="b" data-step="1" aria-label="Next bottom">›</button>
+        <button class="arrow sm" data-part="b" data-step="1" type="button" aria-label="Next bottom">›</button>
       </div>
     </div>
     <div class="part"><span>Skin</span><div class="swatches" id="skins"></div></div>
@@ -588,38 +798,1105 @@ body.creating .dock, body.creating .stage-tools { display: none; }
     </label>
     <div class="combo" id="combo"></div>
     <div class="row">
-      <button class="tool" id="cRandom">Randomize</button>
-      <button class="tool primary" id="cSave">Save to lobby</button>
+      <button class="tool" id="cRandom" type="button">Randomize</button>
+      <button class="tool primary" id="cSave" type="button">Save to lobby</button>
     </div>
   </aside>
 </section>
 
-<div class="modal-wrap" id="groupModal" hidden>
-  <form class="modal" id="groupForm" role="dialog" aria-modal="true" aria-labelledby="groupTitle" novalidate>
-    <header>
-      <h2 id="groupTitle">New group</h2>
+<nav class="tabbar" aria-label="Mobile navigation">
+  <a href="#/" data-nav="home"><svg class="ic"><use href="#i-dash"/></svg><span>Home</span></a>
+  <a href="#/groups" data-nav="groups"><svg class="ic"><use href="#i-users"/></svg><span>Groups</span></a>
+  <button class="fab" id="fabAdd" type="button" aria-label="Add expense"><svg class="ic"><use href="#i-plus"/></svg></button>
+  <a href="#/activity" data-nav="activity"><svg class="ic"><use href="#i-clock"/></svg><span>Activity</span></a>
+  <a href="#/profile" data-nav="profile"><svg class="ic"><use href="#i-user"/></svg><span>Profile</span></a>
+</nav>
+
+<div class="ovl" id="groupModal" hidden>
+  <form class="modal glass" id="groupForm" role="dialog" aria-modal="true" aria-labelledby="groupTitle" novalidate>
+    <header class="m-head">
+      <div><span class="label">New group</span><h2 id="groupTitle">Start splitting</h2></div>
       <button type="button" class="close-x" id="closeGroup" aria-label="Close">✕</button>
     </header>
     <label class="field" for="groupName"><span class="label">Group name</span>
-      <input id="groupName" maxlength="40" placeholder="Night Canteen Gang" autocomplete="off">
+      <input id="groupName" maxlength="40" placeholder="Night canteen gang" autocomplete="off">
     </label>
     <div class="field">
       <span class="label">Members · tap a face to change the character</span>
       <div class="members" id="members"></div>
-      <button type="button" class="btn-text add-member" id="addMember">+ Add member</button>
+      <button type="button" class="btn text" id="addMember" style="justify-self:start">+ Add member</button>
     </div>
     <p class="form-error" id="groupError" role="alert"></p>
-    <div class="modal-actions">
-      <button type="button" class="btn-plain" id="cancelGroup">Cancel</button>
-      <button type="submit" class="btn-accent">Create group</button>
+    <div class="m-actions">
+      <button type="button" class="btn line" id="cancelGroup">Cancel</button>
+      <button type="submit" class="btn brand">Create group</button>
     </div>
   </form>
 </div>
+
+<div class="ovl" id="expenseSheet" hidden><div class="sheet" id="sheetCard" role="dialog" aria-modal="true" aria-label="Add expense"></div></div>
+<div class="ovl" id="settleModal" hidden><div class="modal glass" id="settleCard" role="dialog" aria-modal="true" aria-label="Record a payment"></div></div>
+<div class="ovl" id="detailModal" hidden><div class="modal glass" id="detailCard" role="dialog" aria-modal="true" aria-label="Expense details"></div></div>
+<div class="ovl" id="pickModal" hidden><div class="modal glass" id="pickCard" role="dialog" aria-modal="true" aria-label="Pick a group"></div></div>
+<div class="ovl" id="burst" hidden><div class="burst glass" id="burstCard"></div></div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<noscript><p style="padding:40px;text-align:center">SplitSmart needs JavaScript to run.</p></noscript>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
 <script>
+// ============================================================
+// SplitSmart app — data layer, balances, router and views.
+// Sits after the (untouched) three.js character engine in this
+// file; reuses $, CHARS, buildCharacter, drawActor, drawStill,
+// faceCam, drawArt, TAU, enterLobby, leaveLobby, view, frame.
+// ============================================================
+
+// ---------- Small helpers ----------
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const toPaise = v => Math.round(Number(v) * 100);
+const money = p => { p = Math.round(p); const v = Math.abs(p) / 100; const d = Number.isInteger(v) ? 0 : 2; return '₹' + v.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: d }); };
+const signedMoney = p => (p < 0 ? '−' : '+') + money(Math.abs(p));
+const moneyShort = p => { const a = Math.abs(p); if (a >= 1e9) return '₹' + (p / 1e9).toFixed(1).replace(/\.0$/, '') + 'Cr'; if (a >= 1e7) return '₹' + (p / 1e7).toFixed(1).replace(/\.0$/, '') + 'L'; if (a >= 1e5) return '₹' + (p / 1e5).toFixed(1).replace(/\.0$/, '') + 'k'; return money(p); };
+const DF = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' });
+const MF = new Intl.DateTimeFormat('en-IN', { month: 'long', year: 'numeric' });
+
+const CATS = [
+  ['food', 'Food & drinks', 'i-food'],
+  ['groceries', 'Groceries', 'i-groceries'],
+  ['travel', 'Travel', 'i-travel'],
+  ['stay', 'Stay & rent', 'i-stay'],
+  ['utilities', 'Utilities', 'i-utilities'],
+  ['fun', 'Fun', 'i-fun'],
+  ['shopping', 'Shopping', 'i-shopping'],
+  ['other', 'Other', 'i-other'],
+];
+const catOf = k => CATS.find(c => c[0] === k) || CATS[7];
+const splitLabel = sp => sp.type === 'amounts' ? 'custom amounts' : sp.type === 'percent' ? 'percentages' : sp.type === 'shares' ? 'by shares' : 'equal amounts';
+
+// ---------- Toasts & success burst ----------
+function toast(msg, type = 'ok') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = `<svg class="ic"><use href="#i-${type === 'ok' ? 'check' : type === 'err' ? 'warn' : 'info'}"/></svg><span>${esc(msg)}</span>`;
+  $('toasts').appendChild(t);
+  requestAnimationFrame(() => t.classList.add('in'));
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 400); }, 3400);
+}
+function burst(title, sub) {
+  const b = $('burst');
+  $('burstCard').innerHTML = `<svg class="bcheck" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" pathLength="100"/><path d="M20 33l8 8 16-17" pathLength="100"/></svg><h3>${esc(title)}</h3><p>${esc(sub || '')}</p>`;
+  b.hidden = false;
+  b.classList.remove('go'); void b.offsetWidth; b.classList.add('go');
+  clearTimeout(burst._t);
+  burst._t = setTimeout(() => { b.hidden = true; }, 1500);
+}
+
+// ---------- Profile (same localStorage keys as before) ----------
+const profile = { name: 'Srikrishna', charId: 0 };
+try {
+  const n = localStorage.getItem('lobby-name');
+  if (n) profile.name = n;
+  const id = Number(localStorage.getItem('lobby-char'));
+  if (Number.isInteger(id) && id >= 0 && id < CHARS.length) profile.charId = id;
+} catch (e) {}
+function saveProfile() {
+  try { localStorage.setItem('lobby-name', profile.name); localStorage.setItem('lobby-char', String(profile.charId)); } catch (e) {}
+}
+function updateProfileUI() {
+  const c = CHARS[profile.charId] || CHARS[0];
+  document.querySelectorAll('[data-pname]').forEach(el => el.textContent = profile.name || 'Guest');
+  document.querySelectorAll('[data-pchar]').forEach(el => el.textContent = c.name);
+  const actor = { ch: buildCharacter(c), c, start: -99 };
+  applyPose(actor.ch, idlePose(0));
+  document.querySelectorAll('[data-profile] canvas').forEach(cv => drawActor(actor, cv, faceCam));
+  const pp = $('ppChar');
+  if (pp) drawActor(actor, pp.querySelector('canvas'));
+}
+
+// ---------- Groups & expenses data ----------
+// Group = { id, name, created, meMid, members: [{ name, charId, mid }], expenses, settlements }
+// Expense = { id, desc, amount(rupees), cat, payer(mid), date, split: { type, parts: [{ mid, value }] } }
+// Settlement = { id, from, to, amount(rupees), date, note }
+const portraitCache = {};
+function portraitURL(id) {
+  if (!portraitCache[id]) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 160;
+    drawStill(CHARS[id] ?? CHARS[0], cv, faceCam);
+    portraitCache[id] = cv.toDataURL();
+  }
+  return portraitCache[id];
+}
+const hashSeed = str => [...String(str)].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) | 0, 17);
+
+const EXAMPLE_GROUPS = [
+  {
+    id: 'ex1', name: 'Night Canteen Gang', created: '2026-10-18', example: true, meMid: 'ex1-m0',
+    members: [
+      { name: 'Srikrishna', charId: 0, mid: 'ex1-m0' },
+      { name: 'Riya', charId: 8, mid: 'ex1-m1' },
+      { name: 'Meera', charId: 3, mid: 'ex1-m2' },
+      { name: 'Kabir', charId: 10, mid: 'ex1-m3' },
+    ],
+    expenses: [
+      { id: 'ex1e1', desc: 'Maggi at 2 AM', amount: 160, cat: 'food', payer: 'ex1-m0', date: '2026-10-21', split: { type: 'equal', parts: [{ mid: 'ex1-m0', value: 0 }, { mid: 'ex1-m1', value: 0 }, { mid: 'ex1-m2', value: 0 }, { mid: 'ex1-m3', value: 0 }] } },
+      { id: 'ex1e2', desc: 'Pav bhaji night', amount: 480, cat: 'food', payer: 'ex1-m1', date: '2026-10-19', split: { type: 'equal', parts: [{ mid: 'ex1-m0', value: 0 }, { mid: 'ex1-m1', value: 0 }, { mid: 'ex1-m2', value: 0 }, { mid: 'ex1-m3', value: 0 }] } },
+      { id: 'ex1e3', desc: 'Birthday cake for Kabir', amount: 850, cat: 'fun', payer: 'ex1-m2', date: '2026-10-17', split: { type: 'amounts', parts: [{ mid: 'ex1-m0', value: 250 }, { mid: 'ex1-m1', value: 200 }, { mid: 'ex1-m2', value: 400 }] } },
+      { id: 'ex1e4', desc: 'Auto to Sector 35', amount: 240, cat: 'travel', payer: 'ex1-m3', date: '2026-10-22', split: { type: 'shares', parts: [{ mid: 'ex1-m0', value: 2 }, { mid: 'ex1-m1', value: 1 }, { mid: 'ex1-m3', value: 1 }] } },
+      { id: 'ex1e5', desc: 'Cold drinks run', amount: 220, cat: 'groceries', payer: 'ex1-m0', date: '2026-10-23', split: { type: 'equal', parts: [{ mid: 'ex1-m0', value: 0 }, { mid: 'ex1-m2', value: 0 }, { mid: 'ex1-m3', value: 0 }] } },
+    ],
+    settlements: [
+      { id: 'ex1s1', from: 'ex1-m1', to: 'ex1-m0', amount: 250, date: '2026-10-23', note: 'UPI' },
+    ],
+  },
+  {
+    id: 'ex2', name: 'Wing B Goa Trip', created: '2026-10-09', example: true, meMid: 'ex2-m0',
+    members: [
+      { name: 'Srikrishna', charId: 6, mid: 'ex2-m0' },
+      { name: 'Dev', charId: 2, mid: 'ex2-m1' },
+      { name: 'Sana', charId: 5, mid: 'ex2-m2' },
+      { name: 'Ishaan', charId: 11, mid: 'ex2-m3' },
+      { name: 'Tara', charId: 1, mid: 'ex2-m4' },
+      { name: 'Neel', charId: 7, mid: 'ex2-m5' },
+    ],
+    expenses: [
+      { id: 'ex2e1', desc: 'Villa for 3 nights', amount: 9000, cat: 'stay', payer: 'ex2-m1', date: '2026-10-09', split: { type: 'percent', parts: [{ mid: 'ex2-m1', value: 40 }, { mid: 'ex2-m0', value: 20 }, { mid: 'ex2-m2', value: 10 }, { mid: 'ex2-m3', value: 10 }, { mid: 'ex2-m4', value: 10 }, { mid: 'ex2-m5', value: 10 }] } },
+      { id: 'ex2e2', desc: 'Scooter rentals', amount: 1600, cat: 'travel', payer: 'ex2-m2', date: '2026-10-10', split: { type: 'equal', parts: [{ mid: 'ex2-m1', value: 0 }, { mid: 'ex2-m2', value: 0 }, { mid: 'ex2-m4', value: 0 }, { mid: 'ex2-m5', value: 0 }] } },
+      { id: 'ex2e3', desc: 'Beach shack dinner', amount: 2400, cat: 'food', payer: 'ex2-m0', date: '2026-10-10', split: { type: 'shares', parts: [{ mid: 'ex2-m0', value: 1 }, { mid: 'ex2-m1', value: 1 }, { mid: 'ex2-m2', value: 1 }, { mid: 'ex2-m3', value: 1 }, { mid: 'ex2-m4', value: 2 }, { mid: 'ex2-m5', value: 1 }] } },
+      { id: 'ex2e4', desc: 'Water sports', amount: 3200, cat: 'fun', payer: 'ex2-m3', date: '2026-10-11', split: { type: 'amounts', parts: [{ mid: 'ex2-m3', value: 1200 }, { mid: 'ex2-m1', value: 800 }, { mid: 'ex2-m0', value: 600 }, { mid: 'ex2-m4', value: 600 }] } },
+      { id: 'ex2e5', desc: 'Airport cabs', amount: 900, cat: 'travel', payer: 'ex2-m5', date: '2026-10-12', split: { type: 'equal', parts: [{ mid: 'ex2-m0', value: 0 }, { mid: 'ex2-m1', value: 0 }, { mid: 'ex2-m2', value: 0 }, { mid: 'ex2-m3', value: 0 }, { mid: 'ex2-m4', value: 0 }, { mid: 'ex2-m5', value: 0 }] } },
+    ],
+    settlements: [
+      { id: 'ex2s1', from: 'ex2-m4', to: 'ex2-m0', amount: 1000, date: '2026-10-13', note: 'UPI' },
+      { id: 'ex2s2', from: 'ex2-m2', to: 'ex2-m1', amount: 800, date: '2026-10-14', note: 'cash' },
+    ],
+  },
+  {
+    id: 'ex3', name: 'Room 214', created: '2026-09-01', example: true, meMid: 'ex3-m0',
+    members: [
+      { name: 'Srikrishna', charId: 2, mid: 'ex3-m0' },
+      { name: 'Rohan', charId: 9, mid: 'ex3-m1' },
+      { name: 'Vikram', charId: 4, mid: 'ex3-m2' },
+    ],
+    expenses: [
+      { id: 'ex3e0', desc: 'Rent — September', amount: 12000, cat: 'stay', payer: 'ex3-m0', date: '2026-09-01', split: { type: 'equal', parts: [{ mid: 'ex3-m0', value: 0 }, { mid: 'ex3-m1', value: 0 }, { mid: 'ex3-m2', value: 0 }] } },
+      { id: 'ex3e1', desc: 'Rent — October', amount: 12000, cat: 'stay', payer: 'ex3-m0', date: '2026-10-01', split: { type: 'equal', parts: [{ mid: 'ex3-m0', value: 0 }, { mid: 'ex3-m1', value: 0 }, { mid: 'ex3-m2', value: 0 }] } },
+      { id: 'ex3e2', desc: 'Fiber internet', amount: 599, cat: 'utilities', payer: 'ex3-m1', date: '2026-10-05', split: { type: 'equal', parts: [{ mid: 'ex3-m0', value: 0 }, { mid: 'ex3-m1', value: 0 }, { mid: 'ex3-m2', value: 0 }] } },
+      { id: 'ex3e3', desc: 'Monthly groceries', amount: 740, cat: 'groceries', payer: 'ex3-m2', date: '2026-10-18', split: { type: 'equal', parts: [{ mid: 'ex3-m0', value: 0 }, { mid: 'ex3-m1', value: 0 }, { mid: 'ex3-m2', value: 0 }] } },
+      { id: 'ex3e4', desc: 'Maid advance', amount: 500, cat: 'other', payer: 'ex3-m0', date: '2026-10-20', split: { type: 'equal', parts: [{ mid: 'ex3-m0', value: 0 }, { mid: 'ex3-m1', value: 0 }] } },
+    ],
+    settlements: [
+      { id: 'ex3s0', from: 'ex3-m1', to: 'ex3-m0', amount: 4000, date: '2026-09-02', note: 'September rent' },
+      { id: 'ex3s1', from: 'ex3-m2', to: 'ex3-m0', amount: 4000, date: '2026-09-03', note: 'September rent' },
+      { id: 'ex3s2', from: 'ex3-m1', to: 'ex3-m0', amount: 3750, date: '2026-10-22', note: 'UPI' },
+    ],
+  },
+];
+
+function loadGroups() {
+  let raw = null;
+  try { raw = localStorage.getItem('splitsmart-groups'); } catch (e) {}
+  let list = null;
+  if (raw) { try { list = JSON.parse(raw); } catch (e) {} }
+  if (!Array.isArray(list) || !list.length) list = JSON.parse(JSON.stringify(EXAMPLE_GROUPS));
+  list.forEach(g => {
+    g.expenses = Array.isArray(g.expenses) ? g.expenses : [];
+    g.settlements = Array.isArray(g.settlements) ? g.settlements : [];
+    g.members.forEach((m, i) => { if (!m.mid) m.mid = g.id + '-m' + i; });
+    if (!g.meMid || !g.members.some(m => m.mid === g.meMid)) g.meMid = g.members[0].mid;
+  });
+  return list;
+}
+let storeWarned = false;
+function saveGroups() {
+  try { localStorage.setItem('splitsmart-groups', JSON.stringify(groups)); }
+  catch (e) { if (!storeWarned) { storeWarned = true; toast('Storage is full or blocked — changes won\u2019t persist.', 'err'); } }
+}
+let groups = loadGroups();
+
+const nameOf = (g, mid) => (g.members.find(m => m.mid === mid) || g.members[0] || { name: 'Someone' }).name;
+const charOf = (g, mid) => g.members.find(m => m.mid === mid) || g.members[0];
+
+// ---------- Balance engine (all math in integer paise) ----------
+function computeShares(amountP, split) {
+  const out = {};
+  if (!split || !Array.isArray(split.parts)) return out;
+  if (split.type === 'equal') {
+    const n = split.parts.length; if (!n) return out;
+    const base = Math.floor(amountP / n), rem = amountP - base * n;
+    split.parts.forEach((p, i) => out[p.mid] = base + (i < rem ? 1 : 0));
+  } else if (split.type === 'amounts') {
+    split.parts.forEach(p => out[p.mid] = Math.round(p.value * 100));
+  } else if (split.type === 'percent') {
+    let acc = 0, big = null;
+    split.parts.forEach(p => {
+      const v = Math.round(amountP * p.value / 100);
+      out[p.mid] = v; acc += v;
+      if (!big || p.value > big.value) big = p;
+    });
+    if (big) out[big.mid] += amountP - acc;
+  } else if (split.type === 'shares') {
+    const total = split.parts.reduce((a, p) => a + p.value, 0);
+    if (total <= 0) return out;
+    let acc = 0;
+    const raw = split.parts.map(p => { const v = Math.floor(amountP * p.value / total); acc += v; return v; });
+    split.parts.forEach((p, i) => out[p.mid] = raw[i] + (i === 0 ? amountP - acc : 0));
+  }
+  return out;
+}
+function groupBalances(g) {
+  const net = {};
+  g.members.forEach(m => net[m.mid] = 0);
+  g.expenses.forEach(e => {
+    if (net[e.payer] !== undefined) net[e.payer] += toPaise(e.amount);
+    const shares = computeShares(toPaise(e.amount), e.split);
+    for (const k in shares) if (net[k] !== undefined) net[k] -= shares[k];
+  });
+  g.settlements.forEach(s => {
+    if (net[s.from] !== undefined) net[s.from] -= toPaise(s.amount);
+    if (net[s.to] !== undefined) net[s.to] += toPaise(s.amount);
+  });
+  return net;
+}
+// Greedy debt simplification — the fewest-payments suggestion
+function simplify(net) {
+  const debt = Object.keys(net).filter(k => net[k] < -1).map(k => ({ mid: k, v: -net[k] })).sort((a, b) => b.v - a.v);
+  const cred = Object.keys(net).filter(k => net[k] > 1).map(k => ({ mid: k, v: net[k] })).sort((a, b) => b.v - a.v);
+  const out = []; let i = 0, j = 0;
+  while (i < debt.length && j < cred.length) {
+    const pay = Math.min(debt[i].v, cred[j].v);
+    if (pay > 1) out.push({ from: debt[i].mid, to: cred[j].mid, amount: pay });
+    debt[i].v -= pay; cred[j].v -= pay;
+    if (debt[i].v <= 1) i++;
+    if (cred[j].v <= 1) j++;
+  }
+  return out;
+}
+
+// ---------- Router ----------
+let viewToken = 0;
+function withSkeleton(renderFn) {
+  const tk = ++viewToken;
+  const app = $('app');
+  app.hidden = false;
+  $('profilePage').hidden = true;
+  app.innerHTML = `<div class="view skel"><i class="sk-hero"></i><div class="sk-row"><i></i><i></i><i></i></div><div class="sk-list"><i></i><i></i><i></i></div></div>`;
+  setTimeout(() => { if (tk !== viewToken) return; scrollTo(0, 0); renderFn(); mountExtras(); }, 170);
+}
+function mountExtras() {
+  attachTilt($('app'));
+  const f = $('app').querySelector('.flow');
+  if (f) requestAnimationFrame(() => requestAnimationFrame(() => f.classList.add('go')));
+  const gf = $('app').querySelector('.g-fill');
+  if (gf) requestAnimationFrame(() => requestAnimationFrame(() => { gf.style.strokeDashoffset = gf.dataset.off; }));
+  $$('.bar i[data-w]').forEach(b => requestAnimationFrame(() => requestAnimationFrame(() => { b.style.width = b.dataset.w + '%'; })));
+  $$('[data-cover]').forEach(cv => drawArt(cv, hashSeed(cv.dataset.cover), Number(cv.dataset.den || 0.8)));
+}
+function go(h) { if (location.hash === h) route(); else location.hash = h; }
+function closeOverlays() {
+  ['expenseSheet', 'settleModal', 'detailModal', 'pickModal', 'groupModal'].forEach(id => { $(id).hidden = true; });
+  sheet = null;
+}
+function navKey(seg) {
+  const p0 = seg[0] || '';
+  if (p0 === 'group') return 'groups';
+  if (p0 === '' || p0 === 'groups' || p0 === 'activity' || p0 === 'profile') return p0 || 'home';
+  return 'home';
+}
+function route() {
+  if (view === 'lobby') leaveLobby();
+  closeOverlays();
+  const seg = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  const key = navKey(seg);
+  $$('.topnav a, .tabbar a').forEach(a => a.classList.toggle('on', a.dataset.nav === key));
+  const [p0, p1] = seg;
+  if (!p0) return withSkeleton(renderDashboard);
+  if (p0 === 'groups') return withSkeleton(renderGroupsView);
+  if (p0 === 'group') {
+    const g = groups.find(x => x.id === p1);
+    if (!g) return withSkeleton(renderNotFound);
+    return withSkeleton(() => renderGroupDetail(g));
+  }
+  if (p0 === 'activity') return withSkeleton(renderActivity);
+  if (p0 === 'profile') return showProfile();
+  return withSkeleton(renderDashboard);
+}
+
+// ---------- Dashboard ----------
+function drawDashArt() {
+  const cv = $('dashArt'); if (!cv) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  cv.width = Math.round(cv.clientWidth * dpr) || 900;
+  cv.height = Math.round(cv.clientHeight * dpr) || 320;
+  drawArt(cv, 20261024, 1.1);
+}
+function countUp(el, targetP) {
+  const t0 = performance.now(), dur = 950;
+  function tick(t) {
+    const u = Math.min(1, (t - t0) / dur);
+    const k = 1 - Math.pow(1 - u, 3);
+    el.textContent = money(Math.round(targetP * k));
+    if (u < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+function grRowHTML(x) {
+  const g = x.g, net = x.net;
+  const cls = net > 1 ? 'pos' : net < -1 ? 'neg' : 'zero';
+  return `<a class="grp-row" href="#/group/${g.id}">
+    <span class="thumb"><canvas width="172" height="100" data-cover="${g.id}" data-den="0.6"></canvas></span>
+    <span class="gi"><b>${esc(g.name)}</b><span>${g.members.length} members</span></span>
+    <span class="facelets">${g.members.slice(0, 3).map(m => `<img src="${portraitURL(m.charId)}" alt="">`).join('')}${g.members.length > 3 ? `<i>+${g.members.length - 3}</i>` : ''}</span>
+    <span class="netbadge num ${cls}">${Math.abs(net) < 2 ? 'settled' : (net > 0 ? '+' : '−') + money(Math.abs(net))}</span></a>`;
+}
+function emptyGroupsPanel() {
+  return `<div class="empty"><svg class="emark"><use href="#markSym"/></svg><h3>No groups yet</h3><p>Create a group, add the people you split with, and track every shared expense in one place.</p><button class="btn brand" data-new-group type="button"><svg class="ic"><use href="#i-plus"/></svg>Create your first group</button></div>`;
+}
+function emptyActsPanel() {
+  return `<div class="empty" style="padding:30px 20px"><svg class="emark" style="width:46px;height:46px"><use href="#markSym"/></svg><h3>Quiet for now</h3><p>Expenses and payments will show up here as your groups do things.</p></div>`;
+}
+function renderDashboard() {
+  const perGroup = groups.map(g => ({ g, net: groupBalances(g)[g.meMid] || 0 }));
+  const owedToMe = perGroup.reduce((a, x) => a + Math.max(0, x.net), 0);
+  const youOwe = perGroup.reduce((a, x) => a + Math.max(0, -x.net), 0);
+  const net = owedToMe - youOwe;
+  const tracked = groups.reduce((a, g) => a + g.expenses.reduce((b, e) => b + toPaise(e.amount), 0), 0);
+  const friends = new Set();
+  groups.forEach(g => g.members.forEach(m => { if (m.mid !== g.meMid) friends.add(m.name); }));
+  const hour = new Date().getHours();
+  const greet = hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const settledAll = owedToMe + youOwe < 2;
+  const frac = settledAll || !(owedToMe + youOwe) ? 1 : owedToMe / (owedToMe + youOwe);
+  const gaugeCls = settledAll ? 'zero' : net >= 0 ? 'pos' : 'neg';
+  const bigSmall = settledAll ? 'All settled up' : net >= 0 ? 'You&rsquo;re owed' : 'You owe';
+  const bigNum = settledAll ? '₹0' : (net >= 0 ? '+' : '−') + money(Math.abs(net));
+  const acts = [];
+  groups.forEach(g => {
+    g.expenses.forEach(e => acts.push({ t: 'e', date: e.date, g, e }));
+    g.settlements.forEach(s => acts.push({ t: 's', date: s.date, g, s }));
+  });
+  acts.sort((a, b) => b.date.localeCompare(a.date));
+  const topActs = acts.slice(0, 7);
+  $('app').innerHTML = `<div class="view">
+    <section class="dash-hero glass">
+      <canvas id="dashArt" aria-hidden="true"></canvas>
+      <div class="dh-copy">
+        <span class="greet">${greet}, ${esc(profile.name || 'friend')}</span>
+        <div class="big-net ${settledAll ? 'zero' : net >= 0 ? 'pos' : 'neg'}"><small>${bigSmall}</small>${bigNum}</div>
+        <p class="dh-sub">Across ${groups.length} group${groups.length === 1 ? '' : 's'} · balances update instantly and stay on this device.</p>
+        <div class="dh-actions">
+          <button class="btn brand" id="dhAdd" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add expense</button>
+          <button class="btn line" id="dhSettle" type="button"><svg class="ic"><use href="#i-swap"/></svg>Settle up</button>
+          <button class="btn ghost" data-new-group type="button"><svg class="ic"><use href="#i-users"/></svg>New group</button>
+        </div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge ${gaugeCls}">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="g-track" cx="60" cy="60" r="52"/>
+            <circle class="g-fill" cx="60" cy="60" r="52" pathLength="100" data-off="${(100 - frac * 100).toFixed(1)}"/>
+          </svg>
+          <div class="g-core"><svg class="mark"><use href="#markSym"/></svg><b class="num">${settledAll ? '100' : Math.round(frac * 100)}%</b></div>
+        </div>
+        <span class="gauge-cap">${settledAll ? 'nothing outstanding' : `your share of ${money(owedToMe + youOwe)} outstanding`}</span>
+      </div>
+    </section>
+    <div class="stat-row">
+      <div class="stat glass" data-tilt><span class="label"><span class="medal cyan"><svg class="ic"><use href="#i-arrow"/></svg></span>You&rsquo;re owed</span><b class="num pos" id="stOwe">₹0</b><span>${perGroup.filter(x => x.net > 1).length} group${perGroup.filter(x => x.net > 1).length === 1 ? '' : 's'} in your favour</span></div>
+      <div class="stat glass" data-tilt><span class="label"><span class="medal rose"><svg class="ic"><use href="#i-arrow"/></svg></span>You owe</span><b class="num ${youOwe > 0 ? 'neg' : 'zero'}" id="stDebt">₹0</b><span>${perGroup.filter(x => x.net < -1).length} group${perGroup.filter(x => x.net < -1).length === 1 ? '' : 's'} to clear</span></div>
+      <div class="stat glass" data-tilt><span class="label"><span class="medal violet"><svg class="ic"><use href="#i-users"/></svg></span>Tracked</span><b class="num" id="stTrack">₹0</b><span>${groups.length} group${groups.length === 1 ? '' : 's'} · ${friends.size} friend${friends.size === 1 ? '' : 's'}</span></div>
+    </div>
+    <div class="dash-cols">
+      <section class="panel glass">
+        <div class="panel-head"><h2>Balances by group</h2><a class="btn ghost" href="#/groups">All groups</a></div>
+        ${perGroup.length ? perGroup.map(grRowHTML).join('') : emptyGroupsPanel()}
+      </section>
+      <section class="panel glass">
+        <div class="panel-head"><h2>Recent activity</h2><a class="btn ghost" href="#/activity">See all</a></div>
+        ${topActs.length ? topActs.map(actRowHTML).join('') : emptyActsPanel()}
+      </section>
+    </div>
+  </div>`;
+  countUp($('stOwe'), owedToMe);
+  countUp($('stDebt'), youOwe);
+  countUp($('stTrack'), tracked);
+  $('dhAdd').addEventListener('click', quickAddExpense);
+  $('dhSettle').addEventListener('click', quickSettle);
+}
+function quickAddExpense() {
+  if (!groups.length) { openGroupForm(); return; }
+  if (groups.length === 1) return openExpenseSheet(groups[0].id);
+  pickOpen('expense');
+}
+function quickSettle() {
+  if (!groups.length) { toast('Create a group with shared expenses first.', 'info'); return; }
+  if (groups.length === 1) {
+    go('#/group/' + groups[0].id);
+    setTimeout(() => { const p = $('settlePanel'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 850);
+    return;
+  }
+  pickOpen('settle');
+}
+
+// ---------- Groups view ----------
+function renderGroupsView() {
+  const cardList = groups.map(g => {
+    const net = groupBalances(g)[g.meMid] || 0;
+    const cls = net > 1 ? 'pos' : net < -1 ? 'neg' : 'zero';
+    return `<a class="gcard2 glass" data-tilt href="#/group/${g.id}">
+      <span class="cov"><canvas width="600" height="280" data-cover="${g.id}"></canvas>
+        ${g.example ? '<span class="tag">Example</span>' : ''}
+        <span class="faces">${g.members.slice(0, 4).map(m => `<img src="${portraitURL(m.charId)}" alt="${esc(m.name)}">`).join('')}${g.members.length > 4 ? `<i>+${g.members.length - 4}</i>` : ''}</span></span>
+      <span class="gb"><h3>${esc(g.name)}</h3><span class="meta">${g.members.length} members · since ${DF.format(new Date(g.created))} · ${g.expenses.length} expense${g.expenses.length === 1 ? '' : 's'}</span>
+        <span class="foot"><span class="netbadge num ${cls}">${Math.abs(net) < 2 ? 'settled' : (net > 0 ? '+' : '−') + money(Math.abs(net))}</span><span class="open">Open <svg class="ic" style="width:15px;height:15px"><use href="#i-arrow"/></svg></span></span></span></a>`;
+  }).join('');
+  $('app').innerHTML = `<div class="view">
+    <div class="view-head"><div><span class="label">Your groups</span><h1>Who are you splitting with?</h1></div>
+      <button class="btn brand" data-new-group type="button"><svg class="ic"><use href="#i-plus"/></svg>New group</button></div>
+    ${groups.length ? `<div class="g-grid">${cardList}<button type="button" class="newcard" data-new-group><span class="plus-ring"><svg class="ic" style="width:24px;height:24px"><use href="#i-plus"/></svg></span><b>New group</b><span>Add the people you split with</span></button></div>` : emptyGroupsPanel()}
+  </div>`;
+}
+function renderNotFound() {
+  $('app').innerHTML = `<div class="view"><div class="error-panel glass"><svg class="emark"><use href="#markSym"/></svg><h2 style="margin:0;font:600 26px var(--disp)">Group not found</h2><p class="muted" style="margin:0">It may have been cleared from this browser.</p><a class="btn brand" href="#/groups">Back to groups</a></div></div>`;
+}
+
+// ---------- Group detail ----------
+function netlistHTML(g, net) {
+  const max = Math.max(1, ...g.members.map(m => Math.abs(net[m.mid] || 0)));
+  return g.members.map(m => {
+    const v = net[m.mid] || 0;
+    const w = Math.round(Math.abs(v) / max * 100);
+    const cls = v > 1 ? 'pos' : v < -1 ? 'neg' : 'zero';
+    const rowCls = v < -1 ? 'owes' : '';
+    return `<div class="net-row ${rowCls}"><img class="av" src="${portraitURL(m.charId)}" alt="">
+      <span class="nm"><b>${esc(m.name)}${m.mid === g.meMid ? '<span class="you-tag">You</span>' : ''}</b><span class="bar"><i data-w="${w}"></i></span></span>
+      <span class="amt num ${cls}">${Math.abs(v) < 2 ? '₹0' : (v > 0 ? '+' : '−') + money(Math.abs(v))}</span></div>`;
+  }).join('');
+}
+function flowBlock(g, net, pays) {
+  const real = pays.filter(p => p.amount > 1);
+  if (!real.length || g.members.length < 2) {
+    return `<div class="flow-box flow"><div class="flow-settled"><div class="okring"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></div><div><b style="font:600 17px var(--disp)">All settled</b><br><span class="muted" style="font-size:13px">Nobody owes anybody here.</span></div></div></div>`;
+  }
+  const n = g.members.length, cx = 50, cy = 50, R = 37;
+  const pos = g.members.map((m, i) => { const a = -Math.PI / 2 + i * TAU / n; return { m, x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), a }; });
+  const at = mid => pos.find(o => o.m.mid === mid);
+  const max = Math.max(...real.map(p => p.amount));
+  const cols = ['#19b9f3', '#8f7bf5', '#1fd3b4', '#ff7fa3'];
+  let arcs = '', labels = '';
+  real.forEach((p, i) => {
+    const A = at(p.from), B = at(p.to);
+    let d = B.a - A.a; while (d > Math.PI) d -= TAU; while (d < -Math.PI) d += TAU;
+    const mid = A.a + d / 2, large = Math.abs(d) > Math.PI ? 1 : 0, sweep = d > 0 ? 1 : 0;
+    const col = cols[i % 4], w = (1.5 + 3.6 * (p.amount / max)).toFixed(2);
+    arcs += `<path class="arc" d="M ${A.x.toFixed(2)} ${A.y.toFixed(2)} A ${R} ${R} 0 ${large} ${sweep} ${B.x.toFixed(2)} ${B.y.toFixed(2)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" opacity="0.9" pathLength="1" style="transition-delay:${i * 130}ms"><title>${esc(nameOf(g, p.from))} pays ${esc(nameOf(g, p.to))} ${money(p.amount)}</title></path>`;
+    const lx = cx + (R + 8.5) * Math.cos(mid), ly = cy + (R + 8.5) * Math.sin(mid);
+    labels += `<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" style="transition-delay:${i * 130 + 260}ms">${moneyShort(p.amount)}</text>`;
+  });
+  const nodes = pos.map(o => `<div class="flow-node" style="left:${o.x}%;top:${o.y}%"><img src="${portraitURL(o.m.charId)}" alt="${esc(o.m.name)}"><span>${esc(o.m.name)}</span></div>`).join('');
+  return `<div class="flow-box flow"><svg viewBox="0 0 100 100" aria-hidden="true">${arcs}${labels}</svg>${nodes}</div>`;
+}
+function settleRowHTML(g, p) {
+  return `<div class="settle-row"><span class="pair"><img class="av" src="${portraitURL(charOf(g, p.from).charId)}" alt=""><b>${esc(nameOf(g, p.from))}</b><svg class="ic"><use href="#i-arrow"/></svg><img class="av" src="${portraitURL(charOf(g, p.to).charId)}" alt=""><b>${esc(nameOf(g, p.to))}</b></span><span class="amt num">${money(p.amount)}</span><button class="btn line" type="button" data-rec data-from="${p.from}" data-to="${p.to}" data-amt="${p.amount}">Record</button></div>`;
+}
+function settledHTML() {
+  return `<div class="flow-settled" style="position:static;padding:16px 0"><div class="okring" style="width:60px;height:60px"><svg style="width:26px;height:26px"><use href="#i-check"/></svg></div><b style="font:600 16px var(--disp)">Everyone&rsquo;s even</b><span class="muted" style="font-size:13px">No payments needed right now.</span></div>`;
+}
+function chipsHTML(g, active) {
+  return `<button type="button" class="${active === 'all' ? 'on' : ''}" data-mid="all">All</button>` +
+    g.members.map(m => `<button type="button" class="${active === m.mid ? 'on' : ''}" data-mid="${m.mid}"><img src="${portraitURL(m.charId)}" alt="">${esc(m.name)}</button>`).join('');
+}
+function expRowHTML(g, e) {
+  const cat = catOf(e.cat);
+  const shares = computeShares(toPaise(e.amount), e.split);
+  const mine = shares[g.meMid] || 0;
+  return `<button type="button" class="exp-row" data-exp="${e.id}">
+    <span class="cat-medal"><svg class="ic"><use href="#${cat[2]}"/></svg></span>
+    <span class="ai"><b>${esc(e.desc)}</b><span>${esc(nameOf(g, e.payer))} paid · ${DF.format(new Date(e.date + 'T12:00:00'))}${e.split.type !== 'equal' ? ' · ' + splitLabel(e.split) : ''}</span></span>
+    <span class="sh"><b class="num">${money(toPaise(e.amount))}</b><span>${mine > 0 ? 'your share ' + money(mine) : '&nbsp;'}</span></span></button>`;
+}
+function settleHistHTML(g, s) {
+  return `<div class="exp-row settle-row" style="cursor:default">
+    <span class="cat-medal"><svg class="ic"><use href="#i-swap"/></svg></span>
+    <span class="ai"><b>${esc(nameOf(g, s.from))} → ${esc(nameOf(g, s.to))}</b><span>Settlement · ${DF.format(new Date(s.date + 'T12:00:00'))}${s.note ? ' · ' + esc(s.note) : ''}</span></span>
+    <span class="sh"><b class="num pos">${money(toPaise(s.amount))}</b><span>paid</span></span></div>`;
+}
+function expListHTML(g, filter) {
+  const items = [];
+  g.expenses.forEach(e => { if (filter === 'all' || e.payer === filter || (e.split.parts || []).some(p => p.mid === filter)) items.push({ t: 'e', date: e.date, e }); });
+  g.settlements.forEach(s => { if (filter === 'all' || s.from === filter || s.to === filter) items.push({ t: 's', date: s.date, s }); });
+  if (!items.length) {
+    return `<div class="empty" style="padding:34px 20px"><svg class="emark" style="width:46px;height:46px"><use href="#markSym"/></svg><h3>Nothing here yet</h3><p>${filter === 'all' ? 'Add the first expense and SplitSmart will keep everyone\u2019s balances straight.' : 'No entries involve this member yet.'}</p><button class="btn brand" id="expEmptyAdd" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add expense</button></div>`;
+  }
+  items.sort((a, b) => b.date.localeCompare(a.date));
+  let out = '', month = '';
+  items.forEach(it => {
+    const m = MF.format(new Date(it.date + 'T12:00:00'));
+    if (m !== month) { month = m; out += `<div class="month-head">${m}</div>`; }
+    out += it.t === 'e' ? expRowHTML(g, it.e) : settleHistHTML(g, it.s);
+  });
+  return out;
+}
+function renderGroupDetail(g) {
+  const net = groupBalances(g);
+  const pays = simplify(net);
+  const spent = g.expenses.reduce((a, e) => a + toPaise(e.amount), 0);
+  $('app').innerHTML = `<div class="view">
+    <a class="crumb" href="#/groups">← All groups</a>
+    <header class="gd-hero glass" data-tilt>
+      <div class="cov"><canvas width="900" height="300" data-cover="${g.id}" data-den="0.9"></canvas>
+        ${g.example ? '<span class="tag">Example</span>' : ''}
+        <div class="faces">${g.members.map(m => `<img src="${portraitURL(m.charId)}" alt="${esc(m.name)}" title="${esc(m.name)}">`).join('')}</div>
+      </div>
+      <div class="gb">
+        <div class="gd-title">
+          <div><span class="label">${g.members.length} members · since ${DF.format(new Date(g.created))}</span><h1>${esc(g.name)}</h1><span class="sub">${money(spent)} tracked · ${pays.length ? pays.length + ' payment' + (pays.length > 1 ? 's' : '') + ' to settle' : 'all settled up'}</span></div>
+          <div class="gd-actions">
+            <button class="btn brand" id="gdAdd" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add expense</button>
+            <button class="btn line" id="gdSettle" type="button"><svg class="ic"><use href="#i-swap"/></svg>Settle up</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="gd-grid">
+      <div class="gd-col">
+        <section class="panel glass">
+          <div class="panel-head"><h2>Balances</h2><span class="label">${money(spent)} total</span></div>
+          ${flowBlock(g, net, pays)}
+          <div class="netlist">${netlistHTML(g, net)}</div>
+        </section>
+        <section class="panel glass" id="settlePanel">
+          <div class="panel-head"><h2>Settle up</h2><span class="label">Fewest payments</span></div>
+          ${pays.length ? pays.map(p => settleRowHTML(g, p)).join('') : settledHTML()}
+        </section>
+      </div>
+      <section class="panel glass">
+        <div class="panel-head"><h2>Expenses</h2><button class="btn brand" id="gdAdd2" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add</button></div>
+        <div class="chips" id="expChips">${chipsHTML(g, 'all')}</div>
+        <div id="expList">${expListHTML(g, 'all')}</div>
+      </section>
+    </div>
+  </div>`;
+  $('gdAdd').addEventListener('click', () => openExpenseSheet(g.id));
+  $('gdAdd2').addEventListener('click', () => openExpenseSheet(g.id));
+  $('gdSettle').addEventListener('click', () => {
+    if (!pays.length) { toast('Everyone is even already — nothing to settle.', 'info'); return; }
+    $('settlePanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  $$('#settlePanel [data-rec]').forEach(b => b.addEventListener('click', () => openSettle(g.id, b.dataset.from, b.dataset.to, Number(b.dataset.amt))));
+  $$('#expChips button').forEach(b => b.addEventListener('click', () => {
+    $$('#expChips button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    $('expList').innerHTML = expListHTML(g, b.dataset.mid || 'all');
+  }));
+  $('expList').addEventListener('click', e => {
+    const add = e.target.closest('#expEmptyAdd');
+    if (add) return openExpenseSheet(g.id);
+    const row = e.target.closest('[data-exp]');
+    if (row) openDetail(g.id, row.dataset.exp);
+  });
+}
+
+// ---------- Activity ----------
+let actFilter = 'all';
+function actRowHTML(it) {
+  if (it.t === 'e') {
+    const cat = catOf(it.e.cat);
+    return `<div class="act-row"><span class="cat-medal"><svg class="ic"><use href="#${cat[2]}"/></svg></span><span class="ai"><b>${esc(it.e.desc)}</b><span>${esc(it.g.name)} · ${esc(nameOf(it.g, it.e.payer))} paid · ${DF.format(new Date(it.e.date + 'T12:00:00'))}</span></span><span class="act-amt num">${money(toPaise(it.e.amount))}</span></div>`;
+  }
+  return `<div class="act-row"><span class="cat-medal t"><svg class="ic"><use href="#i-swap"/></svg></span><span class="ai"><b>${esc(nameOf(it.g, it.s.from))} → ${esc(nameOf(it.g, it.s.to))}</b><span>${esc(it.g.name)} · settlement${it.s.note ? ' · ' + esc(it.s.note) : ''}</span></span><span class="act-amt num pos">${money(toPaise(it.s.amount))}</span></div>`;
+}
+function renderActList() {
+  const items = [];
+  groups.forEach(g => {
+    g.expenses.forEach(e => items.push({ t: 'e', date: e.date, g, e }));
+    g.settlements.forEach(s => items.push({ t: 's', date: s.date, g, s }));
+  });
+  items.sort((a, b) => b.date.localeCompare(a.date));
+  const f = items.filter(it => actFilter === 'all' || (actFilter === 'exp' ? it.t === 'e' : it.t === 's'));
+  const box = $('actList');
+  if (!f.length) {
+    box.innerHTML = `<div class="empty" style="padding:34px 20px"><svg class="emark" style="width:46px;height:46px"><use href="#markSym"/></svg><h3>Nothing here yet</h3><p>Expenses and payments from all your groups will appear here.</p></div>`;
+    return;
+  }
+  let out = '', month = '';
+  f.forEach(it => {
+    const m = MF.format(new Date(it.date + 'T12:00:00'));
+    if (m !== month) { month = m; out += `<div class="month-head">${m}</div>`; }
+    out += actRowHTML(it);
+  });
+  box.innerHTML = out;
+}
+function renderActivity() {
+  $('app').innerHTML = `<div class="view">
+    <div class="view-head"><div><span class="label">History</span><h1>Activity</h1></div></div>
+    <section class="panel glass">
+      <div class="chips" id="actChips">
+        <button type="button" class="${actFilter === 'all' ? 'on' : ''}" data-af="all">All</button>
+        <button type="button" class="${actFilter === 'exp' ? 'on' : ''}" data-af="exp">Expenses</button>
+        <button type="button" class="${actFilter === 'set' ? 'on' : ''}" data-af="set">Settlements</button>
+      </div>
+      <div id="actList"></div>
+    </section>
+  </div>`;
+  renderActList();
+  $$('#actChips button').forEach(b => b.addEventListener('click', () => { actFilter = b.dataset.af; renderActivity(); }));
+}
+
+// ---------- Profile view ----------
+function showProfile() {
+  closeOverlays();
+  $('app').hidden = true;
+  $('profilePage').hidden = false;
+  $$('.topnav a, .tabbar a').forEach(a => a.classList.toggle('on', a.dataset.nav === 'profile'));
+  $('nameInput').value = profile.name;
+  $('ppGroups').textContent = groups.length;
+  $('ppChars').textContent = CHARS.length;
+  const net = groups.reduce((a, g) => a + (groupBalances(g)[g.meMid] || 0), 0);
+  const el = $('ppNet');
+  el.textContent = signedMoney(net);
+  el.className = 'num ' + (net > 2 ? 'pos' : net < -2 ? 'neg' : 'zero');
+  updateProfileUI();
+  scrollTo(0, 0);
+}
+function bindProfileView() {
+  $('nameInput').addEventListener('input', e => {
+    profile.name = e.target.value.trim();
+    saveProfile();
+    document.querySelectorAll('[data-pname]').forEach(el => el.textContent = profile.name || 'Guest');
+  });
+  $('ppChar').addEventListener('click', () => enterLobby());
+}
+
+// ---------- New group form ----------
+let formMembers = [];
+function renderMembers() {
+  const box = $('members');
+  box.innerHTML = '';
+  formMembers.forEach((m, i) => {
+    const row = document.createElement('div');
+    row.className = 'member';
+    row.innerHTML = '<button type="button" class="avatar-btn"><img alt=""></button><input maxlength="24" autocomplete="off">' +
+      (i === 0 ? '<span class="you-tag">You</span>' : '<button type="button" class="remove" aria-label="Remove member">✕</button>');
+    const avatar = row.querySelector('.avatar-btn');
+    const setAv = () => {
+      avatar.querySelector('img').src = portraitURL(m.charId);
+      avatar.title = `${CHARS[m.charId].name} · tap to change`;
+    };
+    setAv();
+    avatar.addEventListener('click', () => { m.charId = (m.charId + 1) % CHARS.length; setAv(); });
+    const input = row.querySelector('input');
+    input.value = m.name;
+    input.placeholder = i === 0 ? 'Your name' : `Member ${i + 1}`;
+    input.addEventListener('input', () => { m.name = input.value; });
+    if (i > 0) row.querySelector('.remove').addEventListener('click', () => { formMembers.splice(i, 1); renderMembers(); });
+    box.appendChild(row);
+  });
+}
+function openGroupForm() {
+  $('groupName').value = '';
+  $('groupError').textContent = '';
+  formMembers = [{ name: profile.name, charId: profile.charId }, { name: '', charId: (profile.charId + 3) % BASE_COUNT }];
+  renderMembers();
+  $('groupModal').hidden = false;
+  $('groupName').focus();
+}
+function closeGroupForm() { $('groupModal').hidden = true; }
+function bindGroupForm() {
+  $('addMember').addEventListener('click', () => {
+    formMembers.push({ name: '', charId: (formMembers.at(-1).charId + 5) % BASE_COUNT });
+    renderMembers();
+    $('members').lastElementChild.querySelector('input').focus();
+  });
+  $('closeGroup').addEventListener('click', closeGroupForm);
+  $('cancelGroup').addEventListener('click', closeGroupForm);
+  $('groupModal').addEventListener('click', e => { if (e.target === $('groupModal')) closeGroupForm(); });
+  $('groupForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('groupName').value.trim();
+    const members = formMembers.map(m => ({ name: m.name.trim(), charId: m.charId }));
+    const err = !name ? 'Give the group a name.'
+      : members.some(m => !m.name) ? 'Every member needs a name, or remove the empty row.'
+      : members.length < 2 ? 'A group needs at least two people.'
+      : new Set(members.map(m => m.name.toLowerCase())).size < members.length ? 'Two members have the same name. Add an initial to tell them apart.'
+      : '';
+    $('groupError').textContent = err;
+    if (err) return;
+    const id = 'g' + Date.now();
+    groups.unshift({
+      id, name, created: new Date().toISOString().slice(0, 10), meMid: id + '-m0',
+      members: members.map((m, i) => ({ name: m.name, charId: m.charId, mid: id + '-m' + i })),
+      expenses: [], settlements: [],
+    });
+    saveGroups();
+    closeGroupForm();
+    burst('Group created', name);
+    go('#/group/' + id);
+  });
+}
+
+// ---------- Add expense sheet ----------
+let sheet = null;
+function openExpenseSheet(gid) {
+  const g = groups.find(x => x.id === gid);
+  if (!g) return;
+  sheet = {
+    gid, desc: '', amount: '', cat: 'food', payer: g.meMid,
+    date: new Date().toISOString().slice(0, 10), type: 'equal',
+    parts: g.members.map(m => ({ mid: m.mid, inc: true, value: 0 })),
+  };
+  renderSheet();
+  $('expenseSheet').hidden = false;
+  setTimeout(() => {
+    const a = $('shAmount');
+    if (a) { a.focus({ preventScroll: true }); }
+    $('sheetCard').scrollLeft = 0;
+  }, 60);
+}
+function closeSheet() { $('expenseSheet').hidden = true; sheet = null; }
+function sheetShares(amtP) {
+  if (!(amtP > 0)) return null;
+  if (sheet.type === 'equal') {
+    const inc = sheet.parts.filter(p => p.inc).map(p => ({ mid: p.mid, value: 0 }));
+    return inc.length ? computeShares(amtP, { type: 'equal', parts: inc }) : null;
+  }
+  const pos = sheet.parts.filter(p => p.value > 0).map(p => ({ mid: p.mid, value: p.value }));
+  if (!pos.length) return null;
+  return computeShares(amtP, { type: sheet.type, parts: pos });
+}
+function sheetValidate() {
+  const amtP = toPaise(parseFloat(sheet.amount) || 0);
+  if (!sheet.desc.trim()) return { ok: false, msg: 'Give the expense a short description.' };
+  if (!(amtP > 0)) return { ok: false, msg: 'Enter an amount greater than zero.' };
+  if (sheet.type === 'equal') {
+    if (sheet.parts.filter(p => p.inc).length < 2) return { ok: false, msg: 'Split between at least two people.' };
+  } else if (sheet.type === 'amounts') {
+    const pos = sheet.parts.filter(p => p.value > 0);
+    if (pos.length < 2) return { ok: false, msg: 'Assign amounts to at least two people.' };
+    const sum = Math.round(pos.reduce((a, p) => a + p.value, 0) * 100);
+    if (sum !== amtP) return { ok: false, msg: `Assigned ${money(sum)} of ${money(amtP)} — amounts must add up exactly.` };
+  } else if (sheet.type === 'percent') {
+    const pos = sheet.parts.filter(p => p.value > 0);
+    if (pos.length < 2) return { ok: false, msg: 'Assign percentages to at least two people.' };
+    const sum = pos.reduce((a, p) => a + p.value, 0);
+    if (Math.abs(sum - 100) > 0.05) return { ok: false, msg: `Percentages add up to ${sum.toFixed(1)}% — they must total 100%.` };
+  } else {
+    if (sheet.parts.filter(p => p.value > 0).length < 2) return { ok: false, msg: 'Give shares to at least two people.' };
+  }
+  return { ok: true };
+}
+function renderSheet() {
+  const g = groups.find(x => x.id === sheet.gid);
+  const cats = CATS.map(c => `<button type="button" class="${sheet.cat === c[0] ? 'on' : ''}" data-cat="${c[0]}">${c[1]}</button>`).join('');
+  const payers = g.members.map(m => `<button type="button" class="${sheet.payer === m.mid ? 'on' : ''}" data-payer="${m.mid}"><img src="${portraitURL(m.charId)}" alt="">${esc(m.name)}${m.mid === g.meMid ? ' (you)' : ''}</button>`).join('');
+  const segs = [['equal', 'Equal'], ['amounts', 'Amounts'], ['percent', 'Percent'], ['shares', 'Shares']]
+    .map(s => `<button type="button" class="${sheet.type === s[0] ? 'on' : ''}" data-stype="${s[0]}">${s[1]}</button>`).join('');
+  const rows = g.members.map(m => {
+    const p = sheet.parts.find(x => x.mid === m.mid);
+    let ctrl = '';
+    if (sheet.type === 'equal') ctrl = `<button type="button" class="tgl ${p.inc ? 'on' : ''}" data-inc="${m.mid}">${p.inc ? 'Splitting' : 'Excluded'}</button>`;
+    else if (sheet.type === 'amounts') ctrl = `<span class="ctrl">₹&nbsp;<input class="num-in" type="number" min="0" step="0.01" inputmode="decimal" data-amt="${m.mid}" value="${p.value || ''}" aria-label="Amount for ${esc(m.name)}"></span>`;
+    else if (sheet.type === 'percent') ctrl = `<span class="ctrl"><input class="num-in" type="number" min="0" max="100" step="0.5" inputmode="decimal" data-pct="${m.mid}" value="${p.value || ''}" aria-label="Percent for ${esc(m.name)}">%</span>`;
+    else ctrl = `<span class="ctrl stepper"><button type="button" data-st="-1" data-mid="${m.mid}" aria-label="Fewer shares">−</button><b>${p.value || 0}</b><button type="button" data-st="1" data-mid="${m.mid}" aria-label="More shares">+</button></span>`;
+    return `<div class="member-edit ${sheet.type === 'equal' && !p.inc ? 'excluded' : ''}" data-row="${m.mid}">
+      <img class="av" src="${portraitURL(m.charId)}" alt="">
+      <span class="me"><b>${esc(m.name)}</b><span>${m.mid === g.meMid ? 'you' : esc(CHARS[m.charId] ? CHARS[m.charId].name : 'member')}</span></span>
+      ${ctrl}<span class="out num" id="out-${m.mid}">—</span></div>`;
+  }).join('');
+  $('sheetCard').innerHTML = `
+    <div class="sheet-head"><div><span class="label">New expense</span><h2>Add expense</h2><span class="gn">in ${esc(g.name)}</span></div><button type="button" class="close-x" id="shClose" aria-label="Close">✕</button></div>
+    <div class="amt-hero"><span class="cur">₹</span><input id="shAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${sheet.amount || ''}" aria-label="Amount"><input id="shDate" type="date" value="${sheet.date}" aria-label="Date" style="max-width:150px;font:500 13px var(--sans);color:var(--muted);border:none;background:none"></div>
+    <label class="field"><span class="label">Description</span><input id="shDesc" maxlength="60" placeholder="Dinner at the beach shack" value="${esc(sheet.desc)}"></label>
+    <div class="field"><span class="label">Category</span><div class="chips" style="margin:0" id="shCats">${cats}</div></div>
+    <div class="field"><span class="label">Paid by</span><div class="chips" style="margin:0" id="shPayers">${payers}</div></div>
+    <div class="field"><span class="label">Split method</span><div class="seg" id="shSeg">${segs}</div></div>
+    <div class="field"><span class="label">${sheet.type === 'equal' ? 'Who\u2019s in' : sheet.type === 'amounts' ? 'Amount per person' : sheet.type === 'percent' ? 'Percent per person' : 'Shares per person'}</span><div id="shRows">${rows}</div></div>
+    <div class="remain" id="shRem"></div>
+    <p class="form-error" id="shErr"></p>
+    <div class="sheet-foot"><button type="button" class="btn line" id="shCancel">Cancel</button><button type="button" class="btn brand" id="shSave"><svg class="ic"><use href="#i-check"/></svg>Save expense</button></div>`;
+  bindSheet();
+  recalcSheet();
+}
+function bindSheet() {
+  $('shClose').addEventListener('click', closeSheet);
+  $('shCancel').addEventListener('click', closeSheet);
+  $('shDesc').addEventListener('input', e => { sheet.desc = e.target.value; recalcSheet(); });
+  $('shAmount').addEventListener('input', e => { sheet.amount = e.target.value; recalcSheet(); });
+  $('shDate').addEventListener('input', e => { sheet.date = e.target.value; });
+  $$('#sheetCard [data-cat]').forEach(b => b.addEventListener('click', () => {
+    sheet.cat = b.dataset.cat;
+    $$('#sheetCard [data-cat]').forEach(x => x.classList.toggle('on', x === b));
+  }));
+  $$('#sheetCard [data-payer]').forEach(b => b.addEventListener('click', () => {
+    sheet.payer = b.dataset.payer;
+    $$('#sheetCard [data-payer]').forEach(x => x.classList.toggle('on', x === b));
+  }));
+  $$('#sheetCard [data-stype]').forEach(b => b.addEventListener('click', () => {
+    if (sheet.type === b.dataset.stype) return;
+    sheet.type = b.dataset.stype;
+    const sc = $('sheetCard').scrollTop;
+    renderSheet();
+    $('sheetCard').scrollTop = sc;
+  }));
+  $$('#sheetCard [data-inc]').forEach(b => b.addEventListener('click', () => {
+    const p = sheet.parts.find(x => x.mid === b.dataset.inc);
+    p.inc = !p.inc;
+    b.classList.toggle('on', p.inc);
+    b.textContent = p.inc ? 'Splitting' : 'Excluded';
+    b.closest('.member-edit').classList.toggle('excluded', !p.inc);
+    recalcSheet();
+  }));
+  $$('#sheetCard [data-amt]').forEach(b => b.addEventListener('input', () => {
+    const p = sheet.parts.find(x => x.mid === b.dataset.amt);
+    p.value = Math.max(0, parseFloat(b.value) || 0);
+    recalcSheet();
+  }));
+  $$('#sheetCard [data-pct]').forEach(b => b.addEventListener('input', () => {
+    const p = sheet.parts.find(x => x.mid === b.dataset.pct);
+    p.value = Math.min(100, Math.max(0, parseFloat(b.value) || 0));
+    recalcSheet();
+  }));
+  $$('#sheetCard [data-st]').forEach(b => b.addEventListener('click', () => {
+    const p = sheet.parts.find(x => x.mid === b.dataset.mid);
+    p.value = Math.max(0, (p.value || 0) + Number(b.dataset.st));
+    b.parentElement.querySelector('b').textContent = p.value;
+    recalcSheet();
+  }));
+  $('shSave').addEventListener('click', sheetSave);
+}
+function recalcSheet() {
+  const g = groups.find(x => x.id === sheet.gid);
+  const amtP = toPaise(parseFloat(sheet.amount) || 0);
+  const shares = sheetShares(amtP);
+  g.members.forEach(m => {
+    const el = $('out-' + m.mid);
+    if (!el) return;
+    const v = shares ? shares[m.mid] : null;
+    el.textContent = v == null ? '—' : money(v);
+  });
+  const rem = $('shRem');
+  let html = '', cls = 'ok';
+  if (!(amtP > 0)) { html = 'Enter an amount to split.'; cls = 'bad'; }
+  else if (sheet.type === 'equal') {
+    const inc = sheet.parts.filter(p => p.inc).length;
+    if (inc < 2) { html = 'Pick at least two people to split between.'; cls = 'bad'; }
+    else { html = `Splitting ${money(amtP)} between ${inc} — <b>${money(Math.floor(amtP / inc))} each</b>`; }
+  } else if (sheet.type === 'amounts') {
+    const sum = Math.round(sheet.parts.reduce((a, p) => a + (p.value > 0 ? p.value : 0), 0) * 100);
+    const left = amtP - sum;
+    if (left === 0) { html = 'Fully assigned — every rupee accounted for ✓'; }
+    else {
+      html = `${money(Math.abs(left))} ${left > 0 ? 'left to assign' : 'over-assigned'}`; cls = 'bad';
+      if (left > 0) html += ` <button type="button" class="link" id="shAuto">Split it evenly</button>`;
+    }
+  } else if (sheet.type === 'percent') {
+    const sum = sheet.parts.reduce((a, p) => a + (p.value > 0 ? p.value : 0), 0);
+    const left = 100 - sum;
+    if (Math.abs(left) < 0.05) { html = 'Percentages total 100% ✓'; }
+    else {
+      html = left > 0 ? left.toFixed(1) + '% unassigned' : Math.abs(left).toFixed(1) + '% over-assigned'; cls = 'bad';
+      if (left > 0) html += ` <button type="button" class="link" id="shAuto">Even them out</button>`;
+    }
+  } else {
+    const tw = sheet.parts.reduce((a, p) => a + (p.value > 0 ? p.value : 0), 0);
+    if (tw > 0) html = `Total ${tw} share${tw === 1 ? '' : 's'} — <b>${money(Math.floor(amtP / tw))} a share</b>`;
+    else { html = 'Give at least one share.'; cls = 'bad'; }
+  }
+  rem.className = 'remain ' + cls;
+  rem.innerHTML = html;
+  const auto = $('shAuto');
+  if (auto) auto.addEventListener('click', autoDistribute);
+  $('shSave').disabled = !sheetValidate().ok;
+}
+function autoDistribute() {
+  const amtP = toPaise(parseFloat(sheet.amount) || 0);
+  if (sheet.type === 'amounts') {
+    let pool = sheet.parts.filter(p => p.value > 0);
+    if (!pool.length) pool = sheet.parts.slice();
+    const base = Math.floor(amtP / pool.length), remP = amtP - base * pool.length;
+    pool.forEach((p, i) => { p.value = (base + (i < remP ? 1 : 0)) / 100; });
+  } else if (sheet.type === 'percent') {
+    const pool = sheet.parts.filter(p => p.value > 0);
+    if (!pool.length) sheet.parts.forEach(p => { p.value = Math.round(100 / sheet.parts.length * 100) / 100; });
+    else {
+      const sum = pool.reduce((a, p) => a + p.value, 0);
+      pool.forEach(p => { p.value = Math.round(p.value * 100 / sum * 100) / 100; });
+    }
+  }
+  const sc = $('sheetCard').scrollTop;
+  renderSheet();
+  $('sheetCard').scrollTop = sc;
+}
+function sheetSave() {
+  if ($('expenseSheet').hidden || !sheet) return;
+  const v = sheetValidate();
+  if (!v.ok) { $('shErr').textContent = v.msg; return; }
+  $('shErr').textContent = '';
+  const btn = $('shSave');
+  btn.classList.add('busy');
+  setTimeout(() => {
+    const g = groups.find(x => x.id === sheet.gid);
+    const parts = sheet.type === 'equal'
+      ? sheet.parts.filter(p => p.inc).map(p => ({ mid: p.mid, value: 0 }))
+      : sheet.parts.filter(p => p.value > 0).map(p => ({ mid: p.mid, value: p.value }));
+    const exp = { id: 'e' + Date.now(), desc: sheet.desc.trim(), amount: parseFloat(sheet.amount), cat: sheet.cat, payer: sheet.payer, date: sheet.date, split: { type: sheet.type, parts } };
+    g.expenses.unshift(exp);
+    saveGroups();
+    const gid = g.id, eid = exp.id;
+    closeSheet();
+    burst('Expense added', `${money(toPaise(exp.amount))} · ${exp.desc}`);
+    go('#/group/' + gid);
+    setTimeout(() => flashRow(eid), 900);
+  }, 420);
+}
+function flashRow(id) {
+  const el = document.querySelector(`[data-exp="${id}"]`);
+  if (el) { el.classList.add('fresh'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+}
+
+// ---------- Settlement flow ----------
+function openSettle(gid, from, to, maxP) {
+  const g = groups.find(x => x.id === gid);
+  if (!g || !(maxP > 0)) return;
+  const fm = charOf(g, from), tm = charOf(g, to);
+  $('settleCard').innerHTML = `
+    <header class="m-head"><div><span class="label">Settlement</span><h2>Record a payment</h2></div><button type="button" class="close-x" id="stClose" aria-label="Close">✕</button></header>
+    <div class="pair-hero">
+      <span class="who"><img src="${portraitURL(fm.charId)}" alt=""><span>${esc(fm.name)}</span></span>
+      <span class="arr"><svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg></span>
+      <span class="who"><img src="${portraitURL(tm.charId)}" alt=""><span>${esc(tm.name)}</span></span>
+    </div>
+    <label class="field"><span class="label">Amount — up to ${money(maxP)}</span><input id="stAmt" type="number" min="0" step="0.01" inputmode="decimal" value="${(maxP / 100).toFixed(2)}"></label>
+    <div class="quick-chips"><button type="button" data-q="full">Full · ${money(maxP)}</button><button type="button" data-q="half">Half · ${money(Math.round(maxP / 2))}</button></div>
+    <label class="field"><span class="label">Date</span><input id="stDate" type="date" value="${new Date().toISOString().slice(0, 10)}"></label>
+    <label class="field"><span class="label">Note (optional)</span><input id="stNote" maxlength="40" placeholder="UPI, cash…"></label>
+    <p class="form-error" id="stErr"></p>
+    <div class="m-actions"><button type="button" class="btn line" id="stCancel">Cancel</button><button type="button" class="btn brand" id="stSave"><svg class="ic"><use href="#i-check"/></svg>Record payment</button></div>`;
+  $('settleModal').hidden = false;
+  $('stClose').addEventListener('click', () => { $('settleModal').hidden = true; });
+  $('stCancel').addEventListener('click', () => { $('settleModal').hidden = true; });
+  $$('#settleCard [data-q]').forEach(b => b.addEventListener('click', () => { $('stAmt').value = (b.dataset.q === 'full' ? maxP : Math.round(maxP / 2)) / 100; }));
+  $('stSave').addEventListener('click', () => {
+    if ($('settleModal').hidden) return;
+    const p = Math.round(parseFloat($('stAmt').value) * 100);
+    if (!(p > 0)) { $('stErr').textContent = 'Enter an amount greater than zero.'; return; }
+    if (p > maxP) { $('stErr').textContent = `That\u2019s more than the ${money(maxP)} owed.`; return; }
+    const btn = $('stSave');
+    btn.classList.add('busy');
+    setTimeout(() => {
+      g.settlements.unshift({ id: 's' + Date.now(), from, to, amount: p / 100, date: $('stDate').value || new Date().toISOString().slice(0, 10), note: $('stNote').value.trim() });
+      saveGroups();
+      $('settleModal').hidden = true;
+      burst('Payment recorded', `${fm.name} → ${tm.name} · ${money(p)}`);
+      route();
+    }, 420);
+  });
+  setTimeout(() => { const a = $('stAmt'); if (a) { a.focus({ preventScroll: true }); a.select(); } }, 60);
+}
+
+// ---------- Expense detail ----------
+function openDetail(gid, expId) {
+  const g = groups.find(x => x.id === gid);
+  const e = g && g.expenses.find(x => x.id === expId);
+  if (!e) return;
+  const cat = catOf(e.cat);
+  const shares = computeShares(toPaise(e.amount), e.split);
+  const rows = Object.keys(shares).map(mid => {
+    const m = charOf(g, mid);
+    if (!m) return '';
+    return `<div class="split-row ${mid === e.payer ? 'payer' : ''} ${mid === g.meMid ? 'mine' : ''}"><img src="${portraitURL(m.charId)}" alt=""><b>${esc(m.name)}</b>${mid === e.payer ? '<span class="paid-tag">paid</span>' : ''}<span class="amt num">${money(shares[mid])}</span></div>`;
+  }).join('');
+  $('detailCard').innerHTML = `
+    <header class="m-head"><div><span class="label">${cat[1]} · ${DF.format(new Date(e.date + 'T12:00:00'))}</span><h2>${esc(e.desc)}</h2></div><button type="button" class="close-x" id="dtClose" aria-label="Close">✕</button></header>
+    <div class="remain ok" style="justify-content:center;text-align:center"><span>${money(toPaise(e.amount))} · paid by <b>&nbsp;${esc(nameOf(g, e.payer))}</b>&nbsp; · ${splitLabel(e.split)}</span></div>
+    <div>${rows}</div>
+    <div class="m-actions"><button type="button" class="btn danger" id="dtDelete">Delete expense</button></div>`;
+  $('detailModal').hidden = false;
+  $('dtClose').addEventListener('click', () => { $('detailModal').hidden = true; });
+  const del = $('dtDelete');
+  del.addEventListener('click', () => {
+    if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Tap again to confirm'; return; }
+    g.expenses = g.expenses.filter(x => x.id !== e.id);
+    saveGroups();
+    $('detailModal').hidden = true;
+    toast('Expense deleted', 'info');
+    route();
+  });
+}
+
+// ---------- Group picker (dashboard quick actions & FAB) ----------
+function pickOpen(action) {
+  const card = $('pickCard');
+  card.innerHTML = `<header class="m-head"><div><span class="label">${action === 'settle' ? 'Settle up' : 'Add expense'}</span><h2>Pick a group</h2></div><button type="button" class="close-x" id="pickClose" aria-label="Close">✕</button></header>` +
+    groups.map(g => {
+      const net = groupBalances(g)[g.meMid] || 0;
+      return `<button type="button" class="grp-row" style="width:100%" data-pick="${g.id}" data-action="${action}">
+        <span class="thumb"><canvas width="172" height="100" data-cover="${g.id}" data-den="0.6"></canvas></span>
+        <span class="gi"><b>${esc(g.name)}</b><span>${g.members.length} members · your net ${(net > 0 ? '+' : net < 0 ? '−' : '') + money(Math.abs(net))}</span></span>
+        <svg class="ic" style="color:var(--muted)"><use href="#i-arrow"/></svg></button>`;
+    }).join('');
+  $('pickModal').hidden = false;
+  $('pickClose').addEventListener('click', () => { $('pickModal').hidden = true; });
+  $$('[data-pick]').forEach(b => b.addEventListener('click', () => {
+    $('pickModal').hidden = true;
+    if (b.dataset.action === 'expense') openExpenseSheet(b.dataset.pick);
+    else {
+      go('#/group/' + b.dataset.pick);
+      setTimeout(() => { const p = $('settlePanel'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 850);
+    }
+  }));
+  mountExtras();
+}
+
+// ---------- 3D tilt ----------
+function attachTilt(root) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  root.querySelectorAll('[data-tilt]').forEach(el => {
+    if (el._tiltBound) return;
+    el._tiltBound = true;
+    el.addEventListener('pointermove', e => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      el.style.transform = `perspective(900px) rotateX(${(-y * 4.5).toFixed(2)}deg) rotateY(${(x * 6).toFixed(2)}deg) translateY(-2px)`;
+    });
+    el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+  });
+}
+
+// ---------- Splash intro (the Smart Split film, ≤3s, skippable) ----------
+function bootSplash() {
+  const splash = $('splash'), vid = $('splashVid');
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    splash.classList.add('out');
+    document.body.classList.add('ready');
+    setTimeout(() => splash.remove(), 650);
+    try { sessionStorage.setItem('ss-intro', '1'); } catch (e) {}
+  };
+  let seen = false;
+  try { seen = !!sessionStorage.getItem('ss-intro'); } catch (e) {}
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (seen || reduced) { splash.remove(); document.body.classList.add('ready'); return; }
+  vid.addEventListener('ended', finish);
+  vid.addEventListener('error', () => { splash.classList.add('fallback'); setTimeout(finish, 2400); });
+  // Autoplay can be interrupted while the file loads — retry briefly; the 3s cap still bounds the intro
+  const tryPlay = () => { if (!done && vid.paused) vid.play().catch(() => {}); };
+  tryPlay();
+  const retry1 = setTimeout(tryPlay, 350);
+  const retry2 = setTimeout(tryPlay, 900);
+  setTimeout(finish, 3050);
+  $('splashSkip').addEventListener('click', () => { clearTimeout(retry1); clearTimeout(retry2); finish(); });
+  splash.addEventListener('pointerdown', tryPlay);
+}
+
 const TAU = Math.PI * 2;
 const $ = id => document.getElementById(id);
 
@@ -1243,52 +2520,6 @@ function drawStill(c, cv, cam) {
   return actor;
 }
 
-// ---------- Profile ----------
-const profile = { name: 'Srikrishna', charId: 0 };
-try {
-  const n = localStorage.getItem('lobby-name');
-  if (n) profile.name = n;
-  const id = Number(localStorage.getItem('lobby-char'));
-  if (Number.isInteger(id) && id >= 0 && id < CHARS.length) profile.charId = id;
-} catch (e) {}
-function saveProfile() {
-  try { localStorage.setItem('lobby-name', profile.name); localStorage.setItem('lobby-char', String(profile.charId)); } catch (e) {}
-}
-
-function updateProfileUI() {
-  const c = CHARS[profile.charId];
-  document.querySelectorAll('[data-pname]').forEach(el => el.textContent = profile.name || 'Guest');
-  document.querySelectorAll('[data-pchar]').forEach(el => el.textContent = c.name);
-  const actor = { ch: buildCharacter(c), c, start: -99 };
-  applyPose(actor.ch, idlePose(0));
-  document.querySelectorAll('[data-profile] canvas').forEach(cv => drawActor(actor, cv, faceCam));
-  drawActor(actor, $('ppChar').querySelector('canvas'));
-}
-
-// Profile page replaces the home content; the character lobby is only reachable from here
-function openProfile() {
-  if (view === 'lobby') leaveLobby();
-  $('home').hidden = true;
-  $('profilePage').hidden = false;
-  $('nameInput').value = profile.name;
-  $('ppGroups').textContent = groups.length;
-  $('ppChars').textContent = CHARS.length;
-  updateProfileUI();
-  scrollTo(0, 0);
-}
-function closeProfile() {
-  $('profilePage').hidden = true;
-  $('home').hidden = false;
-}
-document.querySelectorAll('[data-profile]').forEach(b => b.addEventListener('click', openProfile));
-document.querySelectorAll('[data-home]').forEach(a => a.addEventListener('click', closeProfile));
-$('ppBack').addEventListener('click', () => { closeProfile(); $('groups').scrollIntoView(); });
-$('ppChar').addEventListener('click', () => enterLobby(profile.charId));
-$('nameInput').addEventListener('input', e => {
-  profile.name = e.target.value.trim();
-  saveProfile();
-  document.querySelectorAll('[data-pname]').forEach(el => el.textContent = profile.name || 'Guest');
-});
 
 // ---------- Plinth character ----------
 let view = 'home';
@@ -1551,9 +2782,7 @@ addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') rotateRing(-1);
 });
 
-// ---------- Hero art ----------
-// Coral-to-teal ground with translucent polygons, a white node network and concrete speckle.
-// Seeded so a group's cover looks the same on every visit.
+
 function rng(seed) {
   return () => {
     seed = (seed + 0x6D2B79F5) | 0;
@@ -1562,7 +2791,7 @@ function rng(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-const ART_STOPS = ['#e98a6e', '#d97ba6', '#a98fd6', '#8396d6', '#86bdb8'];
+const ART_STOPS = ['#18b1f0', '#5a7bf0', '#8f6cf5', '#e06fae', '#1fd3b4'];
 function drawArt(cv, seed, density = 1) {
   const g = cv.getContext('2d'), w = cv.width, h = cv.height, r = rng(seed);
   const grad = g.createLinearGradient(0, h * 0.2, w, h * 0.8);
@@ -1599,153 +2828,7 @@ function drawArt(cv, seed, density = 1) {
     g.fillRect(r() * w, r() * h, 1.4, 1.4);
   }
 }
-function drawHeroArt() {
-  const cv = $('heroArt'), dpr = Math.min(devicePixelRatio, 2);
-  cv.width = Math.round(cv.clientWidth * dpr);
-  cv.height = Math.round(cv.clientHeight * dpr);
-  drawArt(cv, 7, 1.3);
-}
 
-// ---------- Groups ----------
-// A group = { id, name, members: [{ name, charId }], created, example? }. Stored in this browser only.
-const portraitCache = {};
-function portraitURL(id) {
-  if (!portraitCache[id]) {
-    const cv = document.createElement('canvas');
-    cv.width = cv.height = 160;
-    drawStill(CHARS[id] ?? CHARS[0], cv, faceCam);
-    portraitCache[id] = cv.toDataURL();
-  }
-  return portraitCache[id];
-}
-
-const EXAMPLE_GROUPS = [
-  { id: 'ex1', name: 'Night Canteen Gang', created: '2026-10-18', example: true,
-    members: [{ name: 'Riya', charId: 0 }, { name: 'Arjun', charId: 8 }, { name: 'Meera', charId: 3 }, { name: 'Kabir', charId: 10 }] },
-  { id: 'ex2', name: 'Wing B Goa Trip', created: '2026-10-09', example: true,
-    members: [{ name: 'Dev', charId: 2 }, { name: 'Sana', charId: 5 }, { name: 'Ishaan', charId: 11 }, { name: 'Tara', charId: 1 }, { name: 'Neel', charId: 7 }] },
-  { id: 'ex3', name: 'Room 214', created: '2026-09-30', example: true,
-    members: [{ name: 'Aditya', charId: 6 }, { name: 'Rohan', charId: 9 }, { name: 'Vikram', charId: 4 }] },
-];
-function loadGroups() {
-  try {
-    const raw = localStorage.getItem('splitsmart-groups');
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
-  return EXAMPLE_GROUPS.map(g => ({ ...g, members: g.members.map(m => ({ ...m })) }));
-}
-function saveGroups() {
-  try { localStorage.setItem('splitsmart-groups', JSON.stringify(groups)); } catch (e) {}
-}
-let groups = loadGroups();
-
-const hashSeed = str => [...str].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) | 0, 17);
-const dateFmt = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' });
-
-function renderGroups() {
-  const rail = $('rail');
-  rail.innerHTML = '';
-  groups.forEach(gr => {
-    const card = document.createElement('article');
-    card.className = 'group-card';
-    card.innerHTML = '<div class="cover"><canvas width="600" height="280"></canvas><div class="faces"></div></div><div class="body"><h3></h3><div class="meta"></div><div class="names"></div></div>';
-    drawArt(card.querySelector('canvas'), hashSeed(gr.id), 0.8);
-    const faces = card.querySelector('.faces');
-    gr.members.slice(0, 5).forEach(m => {
-      const img = new Image();
-      img.src = portraitURL(m.charId);
-      img.alt = '';
-      faces.appendChild(img);
-    });
-    if (gr.members.length > 5) faces.insertAdjacentHTML('beforeend', `<span>+${gr.members.length - 5}</span>`);
-    card.querySelector('h3').textContent = gr.name;
-    card.querySelector('.meta').textContent = `${gr.members.length} members · since ${dateFmt.format(new Date(gr.created))}`;
-    card.querySelector('.names').textContent = gr.members.map(m => m.name).join(', ');
-    if (gr.example) card.querySelector('.cover').insertAdjacentHTML('beforeend', '<span class="tag">Example</span>');
-    rail.appendChild(card);
-  });
-  const add = document.createElement('button');
-  add.className = 'new-card';
-  add.dataset.newGroup = '';
-  add.innerHTML = '<span class="plus-ring">+</span><b>New group</b><span>Add the people you split with</span>';
-  add.addEventListener('click', openGroupForm);
-  rail.appendChild(add);
-}
-const railStep = () => $('rail').clientWidth * 0.8;
-$('railPrev').addEventListener('click', () => $('rail').scrollBy({ left: -railStep() }));
-$('railNext').addEventListener('click', () => $('rail').scrollBy({ left: railStep() }));
-
-// New group form: you are always the first member
-let formMembers = [];
-function renderMembers() {
-  const box = $('members');
-  box.innerHTML = '';
-  formMembers.forEach((m, i) => {
-    const row = document.createElement('div');
-    row.className = 'member';
-    row.innerHTML = '<button type="button" class="avatar-btn"><img alt=""></button><input maxlength="24" autocomplete="off">' +
-      (i === 0 ? '<span class="you">You</span>' : '<button type="button" class="remove">✕</button>');
-    const avatar = row.querySelector('.avatar-btn');
-    avatar.querySelector('img').src = portraitURL(m.charId);
-    avatar.setAttribute('aria-label', `${CHARS[m.charId].name}; change character`);
-    avatar.title = `${CHARS[m.charId].name} · tap to change`;
-    avatar.addEventListener('click', () => {
-      m.charId = (m.charId + 1) % CHARS.length;
-      avatar.querySelector('img').src = portraitURL(m.charId);
-      avatar.setAttribute('aria-label', `${CHARS[m.charId].name}; change character`);
-      avatar.title = `${CHARS[m.charId].name} · tap to change`;
-    });
-    const input = row.querySelector('input');
-    input.value = m.name;
-    input.placeholder = i === 0 ? 'Your name' : `Member ${i + 1}`;
-    input.setAttribute('aria-label', i === 0 ? 'Your name' : `Member ${i + 1} name`);
-    input.addEventListener('input', () => { m.name = input.value; });
-    if (i > 0) {
-      const rm = row.querySelector('.remove');
-      rm.setAttribute('aria-label', `Remove member ${i + 1}`);
-      rm.addEventListener('click', () => { formMembers.splice(i, 1); renderMembers(); });
-    }
-    box.appendChild(row);
-  });
-}
-function openGroupForm() {
-  $('groupName').value = '';
-  $('groupError').textContent = '';
-  formMembers = [{ name: profile.name, charId: profile.charId }, { name: '', charId: (profile.charId + 3) % BASE_COUNT }];
-  renderMembers();
-  $('groupModal').hidden = false;
-  $('groupName').focus();
-}
-function closeGroupForm() { $('groupModal').hidden = true; }
-$('addMember').addEventListener('click', () => {
-  formMembers.push({ name: '', charId: (formMembers.at(-1).charId + 5) % BASE_COUNT });
-  renderMembers();
-  $('members').lastElementChild.querySelector('input').focus();
-});
-$('closeGroup').addEventListener('click', closeGroupForm);
-$('cancelGroup').addEventListener('click', closeGroupForm);
-$('groupModal').addEventListener('click', e => { if (e.target === $('groupModal')) closeGroupForm(); });
-$('groupForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const name = $('groupName').value.trim();
-  const members = formMembers.map(m => ({ name: m.name.trim(), charId: m.charId }));
-  const err = !name ? 'Give the group a name.'
-    : members.some(m => !m.name) ? 'Every member needs a name, or remove the empty row.'
-    : members.length < 2 ? 'A group needs at least two people.'
-    : new Set(members.map(m => m.name.toLowerCase())).size < members.length ? 'Two members have the same name. Add an initial to tell them apart.'
-    : '';
-  $('groupError').textContent = err;
-  if (err) return;
-  groups.unshift({ id: 'g' + Date.now(), name, members, created: new Date().toISOString().slice(0, 10) });
-  saveGroups();
-  renderGroups();
-  closeGroupForm();
-  $('groups').scrollIntoView({ behavior: 'smooth' });
-  $('rail').scrollTo({ left: 0 });
-});
-document.querySelectorAll('[data-new-group]').forEach(b => b.addEventListener('click', openGroupForm));
-
-// ---------- Loop ----------
 function frame() {
   const now = performance.now() / 1000;
   if (view === 'lobby') {
@@ -1764,15 +2847,44 @@ function frame() {
   requestAnimationFrame(frame);
 }
 
-let resizeTimer;
+
+
+// ---------- Boot ----------
+bindGroupForm();
+bindProfileView();
+document.addEventListener('click', e => {
+  const ng = e.target.closest('[data-new-group]');
+  if (ng) { e.preventDefault(); openGroupForm(); return; }
+  const gt = e.target.closest('[data-goto]');
+  if (gt) { e.preventDefault(); go(gt.dataset.goto); }
+});
+$('fabAdd').addEventListener('click', quickAddExpense);
+['expenseSheet', 'settleModal', 'detailModal', 'pickModal'].forEach(id => {
+  $(id).addEventListener('click', e => {
+    if (e.target !== $(id)) return;
+    $(id).hidden = true;
+    if (id === 'expenseSheet') sheet = null;
+  });
+});
+addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!$('expenseSheet').hidden) return closeSheet();
+  if (!$('settleModal').hidden) { $('settleModal').hidden = true; return; }
+  if (!$('detailModal').hidden) { $('detailModal').hidden = true; return; }
+  if (!$('pickModal').hidden) { $('pickModal').hidden = true; return; }
+});
+addEventListener('hashchange', route);
 addEventListener('resize', () => {
   if (view === 'lobby') { sizeStage(); layoutCards(); }
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(drawHeroArt, 150);
+  clearTimeout(drawDashArt._t);
+  drawDashArt._t = setTimeout(drawDashArt, 150);
 });
-
-drawHeroArt();
 updateProfileUI();
-renderGroups();
+try { saveGroups(); } catch (e) {}
+bootSplash();
+route();
 requestAnimationFrame(frame);
+
 </script>
+</body>
+</html>
