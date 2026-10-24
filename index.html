@@ -854,6 +854,35 @@ details.receipt-photo img { width: 100%; margin-top: 8px; border-radius: 10px; b
 .ov-tiles .tile { display: grid; gap: 4px; padding: 14px 16px; border-radius: var(--r-md); border: 1px solid var(--line); background: rgba(7, 16, 32, 0.4); }
 .ov-tiles .tile span { font: 600 10px var(--sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
 .ov-tiles .tile b { font: 600 19px var(--disp); }
+/* Scanner: review + assign steps */
+.review { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.imgpane { display: grid; gap: 8px; justify-items: center; }
+.imgpane .scroller { max-height: 320px; overflow: auto; border-radius: var(--r-md); border: 1px solid var(--line); }
+.imgpane img { max-width: 100%; display: block; }
+.imgpane .raw { max-height: 200px; overflow: auto; white-space: pre-wrap; font: 12px/1.5 ui-monospace, monospace; color: var(--muted); background: rgba(7, 16, 32, 0.5); padding: 10px; border-radius: 10px; }
+.imgpane details { width: 100%; }
+.imgpane summary { cursor: pointer; color: var(--brand); font: 600 13px var(--sans); }
+mark.low-word { background: rgba(255, 180, 84, 0.3); color: var(--warn); border-radius: 3px; padding: 0 2px; }
+.items-table { width: 100%; border-collapse: collapse; }
+.items-table th { text-align: left; font: 600 10px var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 6px 6px; }
+.items-table td { padding: 4px 4px; vertical-align: middle; }
+.items-table .del { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line); background: rgba(12, 25, 47, 0.5); color: var(--muted); cursor: pointer; }
+.items-table .del:hover { color: var(--bad); border-color: rgba(255, 107, 129, 0.4); }
+.totals { display: grid; gap: 6px; padding: 12px 14px; border-radius: 12px; background: rgba(7, 16, 32, 0.45); border: 1px solid var(--line); }
+.totals > div { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; color: var(--muted); }
+.totals .grand { font-size: 15px; color: var(--ink); font-weight: 600; }
+.totals label { display: flex; justify-content: space-between; gap: 10px; align-items: center; text-transform: none; letter-spacing: 0; color: var(--muted); font: 400 13.5px var(--sans); }
+.totals .inp { max-width: 140px; }
+.msg.ok { background: rgba(46, 211, 165, 0.08); border-color: rgba(46, 211, 165, 0.35); color: var(--ok); }
+.msg.warn { background: rgba(255, 180, 84, 0.08); border-color: rgba(255, 180, 84, 0.35); color: var(--warn); }
+.ai-status { font: 500 12px var(--sans); color: var(--muted); }
+.assign-item { display: grid; gap: 8px; padding: 12px; border-radius: 13px; background: rgba(7, 16, 32, 0.45); border: 1px solid var(--line); }
+.assign-item.unassigned { border-color: rgba(255, 180, 84, 0.4); }
+.assign-item .top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.assign-item .top b { font: 600 14.5px var(--disp); }
+.assign-item .toggles { display: flex; gap: 6px; flex-wrap: wrap; }
+.assign-item .tog.all { border-style: dashed; }
+
 @media (max-width: 640px) { .ov-tiles { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; } .sheet .seg { grid-template-columns: repeat(2, 1fr); } .split-row { grid-template-columns: 22px 34px minmax(0, 1fr); } .split-row .inp { grid-column: 2 / -1; justify-self: start; max-width: none; width: 100%; } }
 
 </style>
@@ -1113,8 +1142,6 @@ details.receipt-photo img { width: 100%; margin-top: 8px; border-radius: 10px; b
     <div class="panel" role="tabpanel" id="p-activity" aria-labelledby="t-activity" hidden></div>
   </div>
 </section>
-
-<section class="lobby" id="lobby" hidden aria-label="Lobby">
 
 <!-- Manual expense (add / edit) -->
 <div class="sheet-wrap" id="expenseSheet" hidden>
@@ -3172,6 +3199,8 @@ function renderBalancesTab(g, st) {
     <p class="form-error" id="payErr" role="alert" style="flex-basis:100%"></p></form></div>`;
   p.innerHTML = html;
   bindBoardHL(p);
+  const bf = p.querySelector('.flow');
+  if (bf) requestAnimationFrame(() => requestAnimationFrame(() => bf.classList.add('go')));
   $('payForm').addEventListener('submit', e => {
     e.preventDefault();
     const from = $('payFrom').value, to = $('payTo').value, amount = L.toPaise($('payAmt').value);
