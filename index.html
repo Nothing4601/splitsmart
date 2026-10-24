@@ -316,16 +316,22 @@ body.ready .view > *:nth-child(7) { animation-delay: 0.35s; }
 .gd-grid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 16px; margin-top: 16px; align-items: start; }
 .gd-col { display: grid; gap: 16px; }
 
-/* Balance flow viz */
-.flow-box { position: relative; width: min(100%, 380px); margin: 6px auto 10px; aspect-ratio: 1; }
+/* Balance flow: two-column settlement board (owes → gets) */
+.flow-box { position: relative; width: min(100%, 400px); margin: 6px auto 10px; aspect-ratio: 1; }
+.flow-box.board { aspect-ratio: 1.25; max-height: 330px; }
 .flow-box svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .flow .arc { stroke-dasharray: 1; stroke-dashoffset: 1; }
 .flow.go .arc { stroke-dashoffset: 0; transition: stroke-dashoffset 1s cubic-bezier(.35, .6, .25, 1); }
-.flow text { font: 600 5.4px var(--disp); fill: var(--muted); opacity: 0; paint-order: stroke; stroke: rgba(5, 12, 24, 0.85); stroke-width: 1.6px; }
-.flow.go text { opacity: 1; transition: opacity .5s ease; }
-.flow-node { position: absolute; width: 17%; max-width: 64px; aspect-ratio: 1; transform: translate(-50%, -50%); display: grid; place-items: center; }
-.flow-node img { width: 78%; height: 78%; border-radius: 50%; border: 2px solid rgba(148, 190, 255, 0.4); background: #123253; box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.8); }
-.flow-node span { position: absolute; top: 100%; margin-top: 2px; font: 500 10.5px var(--sans); color: var(--muted); white-space: nowrap; text-shadow: 0 1px 4px #050c18; }
+.board-col { position: absolute; top: -8px; z-index: 1; font-size: 10px; }
+.board-col.left { left: 4px; }
+.board-col.right { right: 4px; }
+.board .flow-node { position: absolute; transform: translateY(-50%); display: grid; justify-items: center; gap: 3px; width: 26%; z-index: 1; }
+.board .flow-node.left { left: 0; }
+.board .flow-node.right { right: 0; }
+.board .flow-node img { width: clamp(32px, 46%, 46px); aspect-ratio: 1; border-radius: 50%; border: 2px solid rgba(148, 190, 255, 0.4); background: #123253; box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.8); }
+.fn-name { font: 500 10.5px var(--sans); color: var(--muted); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.pay-pill { position: absolute; z-index: 2; padding: 3px 10px; border-radius: 999px; font: 600 11.5px var(--disp); color: #062330; white-space: nowrap; transform: translate(-50%, -50%); box-shadow: 0 5px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4); opacity: 0; }
+.flow.go .pay-pill { opacity: 1; transition: opacity .45s ease; }
 .flow-settled { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center; }
 .flow-settled .okring { width: 92px; height: 92px; border-radius: 50%; border: 3px solid var(--teal); display: grid; place-items: center; color: var(--teal); box-shadow: 0 0 40px rgba(31, 211, 180, 0.25), inset 0 0 24px rgba(31, 211, 180, 0.12); }
 .flow-settled .okring svg { width: 38px; height: 38px; }
@@ -391,12 +397,16 @@ body.ready .view > *:nth-child(7) { animation-delay: 0.35s; }
 .amt-hero input[type=date] { flex: 0 1 auto; min-width: 0; width: 150px; }
 .amt-hero input::-webkit-outer-spin-button, .amt-hero input::-webkit-inner-spin-button, .num-in::-webkit-outer-spin-button, .num-in::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .amt-hero input[type=number], .num-in[type=number] { -moz-appearance: textfield; appearance: textfield; }
-.seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: rgba(7, 16, 32, 0.7); border: 1px solid var(--line); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: rgba(7, 16, 32, 0.7); border: 1px solid var(--line); }
 .seg button { padding: 10px 6px; border: none; border-radius: 10px; background: none; color: var(--muted); font: 500 13.5px var(--sans); cursor: pointer; transition: all .2s; }
 .seg button.on { background: linear-gradient(165deg, rgba(111, 217, 255, 0.2), rgba(25, 185, 243, 0.14)); color: var(--brand-hi); box-shadow: inset 0 0 0 1px rgba(25, 185, 243, 0.35); }
-.member-edit { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 8px; border-radius: 14px; border: 1px solid transparent; }
+.member-edit { display: grid; grid-template-columns: 26px 42px minmax(0, 1fr) auto auto; gap: 11px; align-items: center; padding: 10px 8px; border-radius: 14px; border: 1px solid transparent; }
 .member-edit:hover { background: rgba(148, 190, 255, 0.04); }
 .member-edit.excluded { opacity: 0.45; }
+.member-edit.excluded .me b { text-decoration: line-through; text-decoration-color: rgba(255, 107, 129, 0.6); text-decoration-thickness: 1.5px; }
+.inc { width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--line-hi); background: rgba(7, 16, 32, 0.6); color: transparent; cursor: pointer; font: 700 12px/1 var(--sans); display: grid; place-items: center; padding: 0; transition: all .2s; }
+.inc.on { background: rgba(25, 185, 243, 0.16); border-color: var(--brand); color: var(--brand-hi); }
+.inc:hover { border-color: var(--brand); }
 .member-edit .av { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--line-hi); background: #123253; }
 .member-edit .me { display: grid; gap: 1px; min-width: 0; }
 .member-edit .me b { font: 600 14.5px var(--disp); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -616,8 +626,12 @@ body.creating .dock, body.creating .stage-tools { display: none; }
   .sheet { width: 100%; height: calc(100% - 54px); max-height: none; border-radius: 22px 22px 0 0; border: 1px solid var(--line); border-bottom: none; animation: sheetUp .4s cubic-bezier(.2, .8, .2, 1); }
   @keyframes sheetUp { from { transform: translateY(60px); opacity: 0; } }
   .seg button { font-size: 12px; padding: 10px 4px; }
-  .member-edit { grid-template-columns: 38px minmax(0, 1fr) auto; }
-  .member-edit .out { grid-column: 1 / -1; text-align: left; padding-left: 50px; min-width: 0; }
+  .member-edit { grid-template-columns: 24px 38px minmax(0, 1fr) auto; grid-template-areas: "inc av me ctrl" "out out out out"; row-gap: 2px; }
+  .member-edit .inc { grid-area: inc; }
+  .member-edit .av { grid-area: av; width: 38px; height: 38px; }
+  .member-edit .me { grid-area: me; }
+  .member-edit .ctrl { grid-area: ctrl; }
+  .member-edit .out { grid-area: out; text-align: left; padding-left: 74px; min-width: 0; }
   .dash-hero { padding: 22px; }
 }
 @media (max-width: 520px) {
@@ -946,12 +960,12 @@ const EXAMPLE_GROUPS = [
     expenses: [
       { id: 'ex1e1', desc: 'Maggi at 2 AM', amount: 160, cat: 'food', payer: 'ex1-m0', date: '2026-10-21', split: { type: 'equal', parts: [{ mid: 'ex1-m0', value: 0 }, { mid: 'ex1-m1', value: 0 }, { mid: 'ex1-m2', value: 0 }, { mid: 'ex1-m3', value: 0 }] } },
       { id: 'ex1e2', desc: 'Pav bhaji night', amount: 480, cat: 'food', payer: 'ex1-m1', date: '2026-10-19', split: { type: 'equal', parts: [{ mid: 'ex1-m0', value: 0 }, { mid: 'ex1-m1', value: 0 }, { mid: 'ex1-m2', value: 0 }, { mid: 'ex1-m3', value: 0 }] } },
-      { id: 'ex1e3', desc: 'Birthday cake for Kabir', amount: 850, cat: 'fun', payer: 'ex1-m2', date: '2026-10-17', split: { type: 'amounts', parts: [{ mid: 'ex1-m0', value: 250 }, { mid: 'ex1-m1', value: 200 }, { mid: 'ex1-m2', value: 400 }] } },
-      { id: 'ex1e4', desc: 'Auto to Sector 35', amount: 240, cat: 'travel', payer: 'ex1-m3', date: '2026-10-22', split: { type: 'shares', parts: [{ mid: 'ex1-m0', value: 2 }, { mid: 'ex1-m1', value: 1 }, { mid: 'ex1-m3', value: 1 }] } },
+      { id: 'ex1e3', desc: 'Birthday cake for Kabir', amount: 850, cat: 'fun', payer: 'ex1-m0', date: '2026-10-17', split: { type: 'amounts', parts: [{ mid: 'ex1-m0', value: 400 }, { mid: 'ex1-m1', value: 200 }, { mid: 'ex1-m2', value: 250 }] } },
+      { id: 'ex1e4', desc: 'Auto to Sector 35', amount: 240, cat: 'travel', payer: 'ex1-m3', date: '2026-10-22', split: { type: 'equal', parts: [{ mid: 'ex1-m0', value: 0 }, { mid: 'ex1-m1', value: 0 }, { mid: 'ex1-m3', value: 0 }] } },
       { id: 'ex1e5', desc: 'Cold drinks run', amount: 220, cat: 'groceries', payer: 'ex1-m0', date: '2026-10-23', split: { type: 'equal', parts: [{ mid: 'ex1-m0', value: 0 }, { mid: 'ex1-m2', value: 0 }, { mid: 'ex1-m3', value: 0 }] } },
     ],
     settlements: [
-      { id: 'ex1s1', from: 'ex1-m1', to: 'ex1-m0', amount: 250, date: '2026-10-23', note: 'UPI' },
+      { id: 'ex1s1', from: 'ex1-m2', to: 'ex1-m0', amount: 400, date: '2026-10-23', note: 'UPI' },
     ],
   },
   {
@@ -972,8 +986,9 @@ const EXAMPLE_GROUPS = [
       { id: 'ex2e5', desc: 'Airport cabs', amount: 900, cat: 'travel', payer: 'ex2-m5', date: '2026-10-12', split: { type: 'equal', parts: [{ mid: 'ex2-m0', value: 0 }, { mid: 'ex2-m1', value: 0 }, { mid: 'ex2-m2', value: 0 }, { mid: 'ex2-m3', value: 0 }, { mid: 'ex2-m4', value: 0 }, { mid: 'ex2-m5', value: 0 }] } },
     ],
     settlements: [
-      { id: 'ex2s1', from: 'ex2-m4', to: 'ex2-m0', amount: 1000, date: '2026-10-13', note: 'UPI' },
-      { id: 'ex2s2', from: 'ex2-m2', to: 'ex2-m1', amount: 800, date: '2026-10-14', note: 'cash' },
+      { id: 'ex2s1', from: 'ex2-m4', to: 'ex2-m1', amount: 1500, date: '2026-10-13', note: 'UPI' },
+      { id: 'ex2s2', from: 'ex2-m2', to: 'ex2-m1', amount: 190, date: '2026-10-14', note: 'cash' },
+      { id: 'ex2s3', from: 'ex2-m5', to: 'ex2-m3', amount: 600, date: '2026-10-14', note: 'UPI' },
     ],
   },
   {
@@ -1058,8 +1073,9 @@ function groupBalances(g) {
     for (const k in shares) if (net[k] !== undefined) net[k] -= shares[k];
   });
   g.settlements.forEach(s => {
-    if (net[s.from] !== undefined) net[s.from] -= toPaise(s.amount);
-    if (net[s.to] !== undefined) net[s.to] += toPaise(s.amount);
+    // A payment reduces the payer's debt (net rises toward 0) and reduces what the receiver is owed
+    if (net[s.from] !== undefined) net[s.from] += toPaise(s.amount);
+    if (net[s.to] !== undefined) net[s.to] -= toPaise(s.amount);
   });
   return net;
 }
@@ -1283,23 +1299,34 @@ function flowBlock(g, net, pays) {
   if (!real.length || g.members.length < 2) {
     return `<div class="flow-box flow"><div class="flow-settled"><div class="okring"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></div><div><b style="font:600 17px var(--disp)">All settled</b><br><span class="muted" style="font-size:13px">Nobody owes anybody here.</span></div></div></div>`;
   }
-  const n = g.members.length, cx = 50, cy = 50, R = 37;
-  const pos = g.members.map((m, i) => { const a = -Math.PI / 2 + i * TAU / n; return { m, x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), a }; });
-  const at = mid => pos.find(o => o.m.mid === mid);
+  // Two-column settlement board: who owes (left) → who gets (right)
+  const debtors = g.members.filter(m => (net[m.mid] || 0) < -1).sort((a, b) => (net[b.mid] || 0) - (net[a.mid] || 0));
+  const creditors = g.members.filter(m => (net[m.mid] || 0) > 1).sort((a, b) => (net[b.mid] || 0) - (net[a.mid] || 0));
   const max = Math.max(...real.map(p => p.amount));
-  const cols = ['#19b9f3', '#8f7bf5', '#1fd3b4', '#ff7fa3'];
-  let arcs = '', labels = '';
+  const cols = ['#19b9f3', '#8f7bf5', '#1fd3b4', '#ff7fa3', '#ffb454'];
+  const yFor = (i, n) => n === 1 ? 50 : 16 + i * (68 / (n - 1));
+  const leftPos = debtors.map((m, i) => ({ m, y: yFor(i, debtors.length) }));
+  const rightPos = creditors.map((m, i) => ({ m, y: yFor(i, creditors.length) }));
+  const at = (list, mid) => list.find(o => o.m.mid === mid);
+  let edges = '', pills = '';
   real.forEach((p, i) => {
-    const A = at(p.from), B = at(p.to);
-    let d = B.a - A.a; while (d > Math.PI) d -= TAU; while (d < -Math.PI) d += TAU;
-    const mid = A.a + d / 2, large = Math.abs(d) > Math.PI ? 1 : 0, sweep = d > 0 ? 1 : 0;
-    const col = cols[i % 4], w = (1.5 + 3.6 * (p.amount / max)).toFixed(2);
-    arcs += `<path class="arc" d="M ${A.x.toFixed(2)} ${A.y.toFixed(2)} A ${R} ${R} 0 ${large} ${sweep} ${B.x.toFixed(2)} ${B.y.toFixed(2)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" opacity="0.9" pathLength="1" style="transition-delay:${i * 130}ms"><title>${esc(nameOf(g, p.from))} pays ${esc(nameOf(g, p.to))} ${money(p.amount)}</title></path>`;
-    const lx = cx + (R + 8.5) * Math.cos(mid), ly = cy + (R + 8.5) * Math.sin(mid);
-    labels += `<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" style="transition-delay:${i * 130 + 260}ms">${moneyShort(p.amount)}</text>`;
+    const A = at(leftPos, p.from), B = at(rightPos, p.to);
+    if (!A || !B) return;
+    const col = cols[i % cols.length];
+    const w = (2 + 4.5 * (p.amount / max)).toFixed(2);
+    edges += `<path class="arc" d="M 26 ${A.y} C 44 ${A.y}, 56 ${B.y}, 74 ${B.y}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" opacity="0.85" pathLength="1" vector-effect="non-scaling-stroke" style="transition-delay:${i * 130}ms"><title>${esc(nameOf(g, p.from))} pays ${esc(nameOf(g, p.to))} ${money(p.amount)}</title></path>`;
+    const my = (A.y + B.y) / 2;
+    pills += `<span class="pay-pill" style="left:50%;top:${my}%;background:${col};transition-delay:${i * 130 + 300}ms">${moneyShort(p.amount)}</span>`;
   });
-  const nodes = pos.map(o => `<div class="flow-node" style="left:${o.x}%;top:${o.y}%"><img src="${portraitURL(o.m.charId)}" alt="${esc(o.m.name)}"><span>${esc(o.m.name)}</span></div>`).join('');
-  return `<div class="flow-box flow"><svg viewBox="0 0 100 100" aria-hidden="true">${arcs}${labels}</svg>${nodes}</div>`;
+  const node = (o, side) => `<div class="flow-node ${side}" style="top:${o.y}%"><img src="${portraitURL(o.m.charId)}" alt="${esc(o.m.name)}"><span class="fn-name">${esc(o.m.name)}</span></div>`;
+  return `<div class="flow-box board flow">
+    <span class="board-col label left">Owes</span>
+    <span class="board-col label right">Gets</span>
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${edges}</svg>
+    ${leftPos.map(o => node(o, 'left')).join('')}
+    ${rightPos.map(o => node(o, 'right')).join('')}
+    ${pills}
+  </div>`;
 }
 function settleRowHTML(g, p) {
   return `<div class="settle-row"><span class="pair"><img class="av" src="${portraitURL(charOf(g, p.from).charId)}" alt=""><b>${esc(nameOf(g, p.from))}</b><svg class="ic"><use href="#i-arrow"/></svg><img class="av" src="${portraitURL(charOf(g, p.to).charId)}" alt=""><b>${esc(nameOf(g, p.to))}</b></span><span class="amt num">${money(p.amount)}</span><button class="btn line" type="button" data-rec data-from="${p.from}" data-to="${p.to}" data-amt="${p.amount}">Record</button></div>`;
@@ -1561,32 +1588,21 @@ function openExpenseSheet(gid) {
 function closeSheet() { $('expenseSheet').hidden = true; sheet = null; }
 function sheetShares(amtP) {
   if (!(amtP > 0)) return null;
-  if (sheet.type === 'equal') {
-    const inc = sheet.parts.filter(p => p.inc).map(p => ({ mid: p.mid, value: 0 }));
-    return inc.length ? computeShares(amtP, { type: 'equal', parts: inc }) : null;
-  }
-  const pos = sheet.parts.filter(p => p.value > 0).map(p => ({ mid: p.mid, value: p.value }));
-  if (!pos.length) return null;
-  return computeShares(amtP, { type: sheet.type, parts: pos });
+  const inc = sheet.parts.filter(p => p.inc).map(p => ({ mid: p.mid, value: sheet.type === 'equal' ? 0 : (p.value > 0 ? p.value : 0) }));
+  if (!inc.length) return null;
+  return computeShares(amtP, { type: sheet.type, parts: inc });
 }
 function sheetValidate() {
   const amtP = toPaise(parseFloat(sheet.amount) || 0);
-  if (!sheet.desc.trim()) return { ok: false, msg: 'Give the expense a short description.' };
   if (!(amtP > 0)) return { ok: false, msg: 'Enter an amount greater than zero.' };
-  if (sheet.type === 'equal') {
-    if (sheet.parts.filter(p => p.inc).length < 2) return { ok: false, msg: 'Split between at least two people.' };
-  } else if (sheet.type === 'amounts') {
-    const pos = sheet.parts.filter(p => p.value > 0);
-    if (pos.length < 2) return { ok: false, msg: 'Assign amounts to at least two people.' };
-    const sum = Math.round(pos.reduce((a, p) => a + p.value, 0) * 100);
+  const incCount = sheet.parts.filter(p => p.inc).length;
+  if (incCount < 2) return { ok: false, msg: 'Include at least two people in the split.' };
+  if (sheet.type === 'amounts') {
+    const sum = Math.round(sheet.parts.filter(p => p.inc).reduce((a, p) => a + (p.value > 0 ? p.value : 0), 0) * 100);
     if (sum !== amtP) return { ok: false, msg: `Assigned ${money(sum)} of ${money(amtP)} — amounts must add up exactly.` };
   } else if (sheet.type === 'percent') {
-    const pos = sheet.parts.filter(p => p.value > 0);
-    if (pos.length < 2) return { ok: false, msg: 'Assign percentages to at least two people.' };
-    const sum = pos.reduce((a, p) => a + p.value, 0);
+    const sum = sheet.parts.filter(p => p.inc).reduce((a, p) => a + (p.value > 0 ? p.value : 0), 0);
     if (Math.abs(sum - 100) > 0.05) return { ok: false, msg: `Percentages add up to ${sum.toFixed(1)}% — they must total 100%.` };
-  } else {
-    if (sheet.parts.filter(p => p.value > 0).length < 2) return { ok: false, msg: 'Give shares to at least two people.' };
   }
   return { ok: true };
 }
@@ -1594,28 +1610,28 @@ function renderSheet() {
   const g = groups.find(x => x.id === sheet.gid);
   const cats = CATS.map(c => `<button type="button" class="${sheet.cat === c[0] ? 'on' : ''}" data-cat="${c[0]}">${c[1]}</button>`).join('');
   const payers = g.members.map(m => `<button type="button" class="${sheet.payer === m.mid ? 'on' : ''}" data-payer="${m.mid}"><img src="${portraitURL(m.charId)}" alt="">${esc(m.name)}${m.mid === g.meMid ? ' (you)' : ''}</button>`).join('');
-  const segs = [['equal', 'Equal'], ['amounts', 'Amounts'], ['percent', 'Percent'], ['shares', 'Shares']]
+  const segs = [['equal', 'Equal'], ['amounts', 'Amounts'], ['percent', 'Percent']]
     .map(s => `<button type="button" class="${sheet.type === s[0] ? 'on' : ''}" data-stype="${s[0]}">${s[1]}</button>`).join('');
   const rows = g.members.map(m => {
     const p = sheet.parts.find(x => x.mid === m.mid);
     let ctrl = '';
-    if (sheet.type === 'equal') ctrl = `<button type="button" class="tgl ${p.inc ? 'on' : ''}" data-inc="${m.mid}">${p.inc ? 'Splitting' : 'Excluded'}</button>`;
-    else if (sheet.type === 'amounts') ctrl = `<span class="ctrl">₹&nbsp;<input class="num-in" type="number" min="0" step="0.01" inputmode="decimal" data-amt="${m.mid}" value="${p.value || ''}" aria-label="Amount for ${esc(m.name)}"></span>`;
-    else if (sheet.type === 'percent') ctrl = `<span class="ctrl"><input class="num-in" type="number" min="0" max="100" step="0.5" inputmode="decimal" data-pct="${m.mid}" value="${p.value || ''}" aria-label="Percent for ${esc(m.name)}">%</span>`;
-    else ctrl = `<span class="ctrl stepper"><button type="button" data-st="-1" data-mid="${m.mid}" aria-label="Fewer shares">−</button><b>${p.value || 0}</b><button type="button" data-st="1" data-mid="${m.mid}" aria-label="More shares">+</button></span>`;
-    return `<div class="member-edit ${sheet.type === 'equal' && !p.inc ? 'excluded' : ''}" data-row="${m.mid}">
+    if (sheet.type === 'amounts') ctrl = `<span class="ctrl">₹&nbsp;<input class="num-in" type="number" min="0" step="0.01" inputmode="decimal" data-amt="${m.mid}" value="${p.inc ? (p.value || '') : ''}" ${p.inc ? '' : 'disabled'} aria-label="Amount for ${esc(m.name)}"></span>`;
+    else if (sheet.type === 'percent') ctrl = `<span class="ctrl"><input class="num-in" type="number" min="0" max="100" step="0.5" inputmode="decimal" data-pct="${m.mid}" value="${p.inc ? (p.value || '') : ''}" ${p.inc ? '' : 'disabled'} aria-label="Percent for ${esc(m.name)}">%</span>`;
+    return `<div class="member-edit ${p.inc ? '' : 'excluded'}" data-row="${m.mid}">
+      <button type="button" class="inc ${p.inc ? 'on' : ''}" data-inc="${m.mid}" aria-label="${p.inc ? 'Exclude' : 'Include'} ${esc(m.name)}" title="${p.inc ? 'Exclude ' + esc(m.name) : 'Include ' + esc(m.name)}">${p.inc ? '✓' : '+'}</button>
       <img class="av" src="${portraitURL(m.charId)}" alt="">
       <span class="me"><b>${esc(m.name)}</b><span>${m.mid === g.meMid ? 'you' : esc(CHARS[m.charId] ? CHARS[m.charId].name : 'member')}</span></span>
       ${ctrl}<span class="out num" id="out-${m.mid}">—</span></div>`;
   }).join('');
+  const segLabel = sheet.type === 'equal' ? 'Who\u2019s in' : sheet.type === 'amounts' ? 'Who shares this · amount each' : 'Who shares this · percent each';
   $('sheetCard').innerHTML = `
     <div class="sheet-head"><div><span class="label">New expense</span><h2>Add expense</h2><span class="gn">in ${esc(g.name)}</span></div><button type="button" class="close-x" id="shClose" aria-label="Close">✕</button></div>
     <div class="amt-hero"><span class="cur">₹</span><input id="shAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${sheet.amount || ''}" aria-label="Amount"><input id="shDate" type="date" value="${sheet.date}" aria-label="Date" style="max-width:150px;font:500 13px var(--sans);color:var(--muted);border:none;background:none"></div>
-    <label class="field"><span class="label">Description</span><input id="shDesc" maxlength="60" placeholder="Dinner at the beach shack" value="${esc(sheet.desc)}"></label>
+    <label class="field"><span class="label">Description · optional</span><input id="shDesc" maxlength="60" placeholder="Dinner at the beach shack" value="${esc(sheet.desc)}"></label>
     <div class="field"><span class="label">Category</span><div class="chips" style="margin:0" id="shCats">${cats}</div></div>
     <div class="field"><span class="label">Paid by</span><div class="chips" style="margin:0" id="shPayers">${payers}</div></div>
     <div class="field"><span class="label">Split method</span><div class="seg" id="shSeg">${segs}</div></div>
-    <div class="field"><span class="label">${sheet.type === 'equal' ? 'Who\u2019s in' : sheet.type === 'amounts' ? 'Amount per person' : sheet.type === 'percent' ? 'Percent per person' : 'Shares per person'}</span><div id="shRows">${rows}</div></div>
+    <div class="field"><span class="label">${segLabel}</span><div id="shRows">${rows}</div></div>
     <div class="remain" id="shRem"></div>
     <p class="form-error" id="shErr"></p>
     <div class="sheet-foot"><button type="button" class="btn line" id="shCancel">Cancel</button><button type="button" class="btn brand" id="shSave"><svg class="ic"><use href="#i-check"/></svg>Save expense</button></div>`;
@@ -1646,10 +1662,9 @@ function bindSheet() {
   $$('#sheetCard [data-inc]').forEach(b => b.addEventListener('click', () => {
     const p = sheet.parts.find(x => x.mid === b.dataset.inc);
     p.inc = !p.inc;
-    b.classList.toggle('on', p.inc);
-    b.textContent = p.inc ? 'Splitting' : 'Excluded';
-    b.closest('.member-edit').classList.toggle('excluded', !p.inc);
-    recalcSheet();
+    const sc = $('sheetCard').scrollTop;
+    renderSheet();
+    $('sheetCard').scrollTop = sc;
   }));
   $$('#sheetCard [data-amt]').forEach(b => b.addEventListener('input', () => {
     const p = sheet.parts.find(x => x.mid === b.dataset.amt);
@@ -1661,12 +1676,6 @@ function bindSheet() {
     p.value = Math.min(100, Math.max(0, parseFloat(b.value) || 0));
     recalcSheet();
   }));
-  $$('#sheetCard [data-st]').forEach(b => b.addEventListener('click', () => {
-    const p = sheet.parts.find(x => x.mid === b.dataset.mid);
-    p.value = Math.max(0, (p.value || 0) + Number(b.dataset.st));
-    b.parentElement.querySelector('b').textContent = p.value;
-    recalcSheet();
-  }));
   $('shSave').addEventListener('click', sheetSave);
 }
 function recalcSheet() {
@@ -1676,36 +1685,34 @@ function recalcSheet() {
   g.members.forEach(m => {
     const el = $('out-' + m.mid);
     if (!el) return;
+    const part = sheet.parts.find(x => x.mid === m.mid);
+    if (!part.inc && sheet.type !== 'equal') { el.textContent = '—'; return; }
     const v = shares ? shares[m.mid] : null;
     el.textContent = v == null ? '—' : money(v);
   });
   const rem = $('shRem');
+  const inc = sheet.parts.filter(p => p.inc);
   let html = '', cls = 'ok';
   if (!(amtP > 0)) { html = 'Enter an amount to split.'; cls = 'bad'; }
   else if (sheet.type === 'equal') {
-    const inc = sheet.parts.filter(p => p.inc).length;
-    if (inc < 2) { html = 'Pick at least two people to split between.'; cls = 'bad'; }
-    else { html = `Splitting ${money(amtP)} between ${inc} — <b>${money(Math.floor(amtP / inc))} each</b>`; }
+    if (inc.length < 2) { html = 'Include at least two people to split between.'; cls = 'bad'; }
+    else { html = `Splitting ${money(amtP)} between ${inc.length} — <b>${money(Math.floor(amtP / inc.length))} each</b>`; }
   } else if (sheet.type === 'amounts') {
-    const sum = Math.round(sheet.parts.reduce((a, p) => a + (p.value > 0 ? p.value : 0), 0) * 100);
+    const sum = Math.round(inc.reduce((a, p) => a + (p.value > 0 ? p.value : 0), 0) * 100);
     const left = amtP - sum;
     if (left === 0) { html = 'Fully assigned — every rupee accounted for ✓'; }
     else {
       html = `${money(Math.abs(left))} ${left > 0 ? 'left to assign' : 'over-assigned'}`; cls = 'bad';
       if (left > 0) html += ` <button type="button" class="link" id="shAuto">Split it evenly</button>`;
     }
-  } else if (sheet.type === 'percent') {
-    const sum = sheet.parts.reduce((a, p) => a + (p.value > 0 ? p.value : 0), 0);
+  } else {
+    const sum = inc.reduce((a, p) => a + (p.value > 0 ? p.value : 0), 0);
     const left = 100 - sum;
     if (Math.abs(left) < 0.05) { html = 'Percentages total 100% ✓'; }
     else {
       html = left > 0 ? left.toFixed(1) + '% unassigned' : Math.abs(left).toFixed(1) + '% over-assigned'; cls = 'bad';
       if (left > 0) html += ` <button type="button" class="link" id="shAuto">Even them out</button>`;
     }
-  } else {
-    const tw = sheet.parts.reduce((a, p) => a + (p.value > 0 ? p.value : 0), 0);
-    if (tw > 0) html = `Total ${tw} share${tw === 1 ? '' : 's'} — <b>${money(Math.floor(amtP / tw))} a share</b>`;
-    else { html = 'Give at least one share.'; cls = 'bad'; }
   }
   rem.className = 'remain ' + cls;
   rem.innerHTML = html;
@@ -1716,17 +1723,19 @@ function recalcSheet() {
 function autoDistribute() {
   const amtP = toPaise(parseFloat(sheet.amount) || 0);
   if (sheet.type === 'amounts') {
-    let pool = sheet.parts.filter(p => p.value > 0);
-    if (!pool.length) pool = sheet.parts.slice();
+    let pool = sheet.parts.filter(p => p.inc && p.value > 0);
+    if (!pool.length) pool = sheet.parts.filter(p => p.inc);
+    if (!pool.length) return;
     const base = Math.floor(amtP / pool.length), remP = amtP - base * pool.length;
     pool.forEach((p, i) => { p.value = (base + (i < remP ? 1 : 0)) / 100; });
   } else if (sheet.type === 'percent') {
-    const pool = sheet.parts.filter(p => p.value > 0);
-    if (!pool.length) sheet.parts.forEach(p => { p.value = Math.round(100 / sheet.parts.length * 100) / 100; });
-    else {
-      const sum = pool.reduce((a, p) => a + p.value, 0);
-      pool.forEach(p => { p.value = Math.round(p.value * 100 / sum * 100) / 100; });
-    }
+    const pool = sheet.parts.filter(p => p.inc);
+    const withVal = pool.filter(p => p.value > 0);
+    const src = withVal.length ? withVal : pool;
+    if (!pool.length) return;
+    const sum = src.reduce((a, p) => a + p.value, 0);
+    if (sum > 0) src.forEach(p => { p.value = Math.round(p.value * 100 / sum * 100) / 100; });
+    else pool.forEach(p => { p.value = Math.round(100 / pool.length * 100) / 100; });
   }
   const sc = $('sheetCard').scrollTop;
   renderSheet();
@@ -1741,10 +1750,8 @@ function sheetSave() {
   btn.classList.add('busy');
   setTimeout(() => {
     const g = groups.find(x => x.id === sheet.gid);
-    const parts = sheet.type === 'equal'
-      ? sheet.parts.filter(p => p.inc).map(p => ({ mid: p.mid, value: 0 }))
-      : sheet.parts.filter(p => p.value > 0).map(p => ({ mid: p.mid, value: p.value }));
-    const exp = { id: 'e' + Date.now(), desc: sheet.desc.trim(), amount: parseFloat(sheet.amount), cat: sheet.cat, payer: sheet.payer, date: sheet.date, split: { type: sheet.type, parts } };
+    const parts = sheet.parts.filter(p => p.inc).map(p => ({ mid: p.mid, value: sheet.type === 'equal' ? 0 : (p.value || 0) }));
+    const exp = { id: 'e' + Date.now(), desc: sheet.desc.trim() || catOf(sheet.cat)[1], amount: parseFloat(sheet.amount), cat: sheet.cat, payer: sheet.payer, date: sheet.date, split: { type: sheet.type, parts } };
     g.expenses.unshift(exp);
     saveGroups();
     const gid = g.id, eid = exp.id;

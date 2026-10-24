@@ -22,7 +22,7 @@ three.js r147, `OrbitControls` and `RoomEnvironment` are loaded as globals (`THR
 
 ## Data model (localStorage `splitsmart-groups`)
 
-Group = `{ id, name, created, meMid, members: [{ name, charId, mid }], expenses, settlements }`. `meMid` marks which member is the profile user (first member at creation). Expense = `{ id, desc, amount (rupees), cat, payer (mid), date (ISO), split: { type: 'equal'|'amounts'|'percent'|'shares', parts: [{ mid, value }] } }` — for `equal`, presence in `parts` means included and `value` is ignored. Settlement = `{ id, from, to, amount (rupees), date, note }`. All math is done in integer paise. `loadGroups` migrates legacy groups (adds `mid`s, `meMid`, empty `expenses`/`settlements`). `EXAMPLE_GROUPS` seed first-run data and are flagged `example`.
+Group = `{ id, name, created, meMid, members: [{ name, charId, mid }], expenses, settlements }`. `meMid` marks which member is the profile user (first member at creation). Expense = `{ id, desc (may be empty — the UI falls back to the category name), amount (rupees), cat, payer (mid), date (ISO), split: { type: 'equal'|'amounts'|'percent', parts: [{ mid, value }] } }` — `parts` lists the included members only (legacy 'shares' type still computes but the editor no longer offers it); `value` is only used by 'amounts'/'percent'. Settlement = `{ id, from, to, amount (rupees), date, note }` — a payment moves the payer's net toward zero (`net[from] += amount`, `net[to] -= amount`). All math is done in integer paise. `loadGroups` migrates legacy groups (adds `mid`s, `meMid`, empty `expenses`/`settlements`). `EXAMPLE_GROUPS` seed first-run data and are flagged `example`.
 
 ## Conventions when changing things
 
