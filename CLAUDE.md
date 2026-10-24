@@ -10,7 +10,10 @@ SplitSmart: a premium dark expense-splitting app with the three.js character sys
 
 ```bash
 python3 -m http.server   # then open http://localhost:8000
+node --test              # unit tests for the money/parsing logic
 ```
+
+`<script id="split-logic">` (before the main script) is DOM-free and unit-tested by `test/logic.test.mjs`: it defines `window.SplitLogic` (allocate, itemizedShares, manualShares, balances, settle, parseReceipt, checkTotals, upiLink, guessCategory, mergeGroups). Money is integer paise everywhere; UI code only calls it.
 
 three.js r147, `OrbitControls` and `RoomEnvironment` are loaded as globals (`THREE`, `THREE.OrbitControls`, `THREE.RoomEnvironment`) from jsdelivr via plain `<script>` tags, not ES modules. Keep to the r147 API (e.g. `outputEncoding`/`sRGBEncoding`, `examples/js/` controls); newer three.js releases removed these.
 
