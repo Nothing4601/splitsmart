@@ -2807,11 +2807,10 @@ function normaliseGroup(g) {
 function loadGroups() {
   try {
     const raw = JSON.parse(localStorage.getItem('splitsmart-groups'));
-    // The old untouched example set (no members marked as you) is replaced by the new one
-    const oldExamples = Array.isArray(raw) && raw.length && raw.every(g => g.example && !g.expenses);
-    if (Array.isArray(raw) && !oldExamples) return raw.map(normaliseGroup);
+    if (Array.isArray(raw)) return raw.map(normaliseGroup);
   } catch (e) {}
-  return exampleGroups();
+  try { localStorage.setItem('splitsmart-groups', '[]'); } catch (e) {}
+  return [];
 }
 // ---------- Sync bookkeeping ----------
 // So that two phones can merge their copies of a group (SplitLogic.mergeGroups), every save stamps
