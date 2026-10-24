@@ -883,6 +883,17 @@ mark.low-word { background: rgba(255, 180, 84, 0.3); color: var(--warn); border-
 .assign-item .toggles { display: flex; gap: 6px; flex-wrap: wrap; }
 .assign-item .tog.all { border-style: dashed; }
 
+/* Speak your split */
+.mic-btn { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; background: linear-gradient(165deg, var(--brand-hi), var(--brand)); color: var(--brand-ink); box-shadow: 0 8px 22px -8px rgba(25, 185, 243, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.4); transition: transform .15s ease, filter .2s; flex: none; }
+.mic-btn:hover { filter: brightness(1.08); }
+.mic-btn:active { transform: scale(0.94); }
+.voice-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border-radius: 13px; background: rgba(25, 185, 243, 0.06); border: 1px solid rgba(25, 185, 243, 0.3); }
+.v-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; }
+.v-dot.live { background: var(--rose); box-shadow: 0 0 0 0 rgba(255, 127, 163, 0.6); animation: vpulse 1.4s ease-out infinite; }
+@keyframes vpulse { 0% { box-shadow: 0 0 0 0 rgba(255, 127, 163, 0.55); } 70% { box-shadow: 0 0 0 12px rgba(255, 127, 163, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 127, 163, 0); } }
+.v-text { flex: 1 1 160px; min-width: 0; font: 500 13.5px var(--sans); color: var(--ink); }
+#vIn { flex: 1 1 100%; }
+
 @media (max-width: 640px) { .ov-tiles { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; } .sheet .seg { grid-template-columns: repeat(2, 1fr); } .split-row { grid-template-columns: 22px 34px minmax(0, 1fr); } .split-row .inp { grid-column: 2 / -1; justify-self: start; max-width: none; width: 100%; } }
 
 </style>
@@ -895,6 +906,7 @@ mark.low-word { background: rgba(255, 180, 84, 0.3); color: var(--warn); border-
     <path d="M27 5.24 A19 19 0 0 1 27 42.76 Z" fill="#19b9f3"/>
     <rect x="10" y="22.7" width="28" height="2.6" rx="1.3" fill="#eaf6ff"/>
   </symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4.2 4.2L19 7.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
@@ -1146,8 +1158,17 @@ mark.low-word { background: rgba(255, 180, 84, 0.3); color: var(--warn); border-
 <!-- Manual expense (add / edit) -->
 <div class="sheet-wrap" id="expenseSheet" hidden>
   <form class="sheet" id="expenseForm" role="dialog" aria-modal="true" aria-labelledby="expTitle" novalidate>
-    <header><h2 id="expTitle">Add expense</h2><button type="button" class="close-x" data-close aria-label="Close">✕</button></header>
+    <header><h2 id="expTitle">Add expense</h2><div style="display:flex;gap:8px;align-items:center">
+      <button type="button" class="mic-btn" id="vStart" aria-label="Speak the split" title="Speak the split — e.g. 1200 rupees dinner, everyone except Kabir"><svg class="ic"><use href="#i-mic"/></svg></button>
+      <button type="button" class="close-x" data-close aria-label="Close">✕</button></div></header>
     <div class="body">
+      <div class="voice-bar" id="vBar" hidden>
+        <span class="v-dot" id="vDot" aria-hidden="true"></span>
+        <div class="v-text" id="vText" aria-live="polite">Listening…</div>
+        <input class="inp" id="vIn" hidden placeholder='e.g. "1200 rupees dinner paid by Riya, everyone except Kabir"'>
+        <button type="button" class="btn-plain btn-sm" id="vType">Type it</button>
+        <button type="button" class="btn-accent btn-sm" id="vApply" hidden>Use it</button>
+      </div>
       <div class="form-grid">
         <label class="fld full"><span>Description</span><input class="inp" id="eDesc" maxlength="60" placeholder="Wi-Fi recharge" autocomplete="off"></label>
         <label class="fld"><span>Amount (₹)</span><input class="inp num" id="eAmount" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
@@ -2750,35 +2771,7 @@ function exampleGroups() {
   const canteen = mk('ex1', 'Night Canteen Gang', '2026-10-18', [{ name: 'Riya', charId: 8 }, { name: 'Meera', charId: 3 }, { name: 'Kabir', charId: 10 }]);
   const goa = mk('ex2', 'Wing B Goa Trip', '2026-10-09', [{ name: 'Dev', charId: 2 }, { name: 'Sana', charId: 5 }, { name: 'Ishaan', charId: 11 }, { name: 'Tara', charId: 1 }, { name: 'Neel', charId: 7 }]);
   const room = mk('ex3', 'Room 214', '2026-09-01', [{ name: 'Rohan', charId: 9 }, { name: 'Vikram', charId: 4 }]);
-  const add = (g, desc, date, payer, total, category, mode = 'equal', values = {}, participants = g.members.map(m => m.id)) => {
-    const { shares } = L.manualShares(total, mode, participants, values);
-    g.expenses.push({ id: uid('e'), kind: 'manual', desc, date, payer, total, category, mode, participants, values, shares, created: Date.now() });
-  };
-  const pay = (g, from, to, amount, date, note) => g.settlements.push({ id: uid('s'), from, to, amount, date, note, created: Date.now() });
-  add(canteen, 'Maggi at 2 AM', '2026-10-21', 'm0', 16000, 'Food');
-  add(canteen, 'Pav bhaji night', '2026-10-19', 'm1', 48000, 'Food');
-  add(canteen, 'Birthday cake for Kabir', '2026-10-17', 'm0', 85000, 'Entertainment', 'exact', { m0: 40000, m1: 20000, m2: 25000 }, ['m0', 'm1', 'm2']);
-  add(canteen, 'Auto to Sector 35', '2026-10-22', 'm3', 24000, 'Travel', 'equal', {}, ['m0', 'm1', 'm3']);
-  add(canteen, 'Cold drinks run', '2026-10-23', 'm0', 22000, 'Groceries', 'equal', {}, ['m0', 'm2', 'm3']);
-  pay(canteen, 'm2', 'm0', 40000, '2026-10-23', 'UPI');
-  add(goa, 'Villa for 3 nights', '2026-10-09', 'm1', 900000, 'Other', 'percent', { m1: 40, m0: 20, m2: 10, m3: 10, m4: 10, m5: 10 });
-  add(goa, 'Scooter rentals', '2026-10-10', 'm2', 160000, 'Travel', 'equal', {}, ['m1', 'm2', 'm4', 'm5']);
-  add(goa, 'Beach shack dinner', '2026-10-10', 'm0', 240000, 'Food', 'shares', { m0: 1, m1: 1, m2: 1, m3: 1, m4: 2, m5: 1 });
-  add(goa, 'Water sports', '2026-10-11', 'm3', 320000, 'Entertainment', 'exact', { m3: 120000, m1: 80000, m0: 60000, m4: 60000 }, ['m3', 'm1', 'm0', 'm4']);
-  add(goa, 'Airport cabs', '2026-10-12', 'm5', 90000, 'Travel');
-  pay(goa, 'm4', 'm1', 150000, '2026-10-13', 'UPI');
-  pay(goa, 'm2', 'm1', 19000, '2026-10-14', 'cash');
-  pay(goa, 'm5', 'm3', 60000, '2026-10-14', 'UPI');
-  add(room, 'Rent - September', '2026-09-01', 'm0', 1200000, 'Other');
-  add(room, 'Rent - October', '2026-10-01', 'm0', 1200000, 'Other');
-  add(room, 'Fiber internet', '2026-10-05', 'm1', 59900, 'Utilities');
-  add(room, 'Monthly groceries', '2026-10-18', 'm2', 74000, 'Groceries');
-  add(room, 'Maid advance', '2026-10-20', 'm0', 50000, 'Other', 'equal', {}, ['m0', 'm1']);
-  pay(room, 'm1', 'm0', 400000, '2026-09-02', 'September rent');
-  pay(room, 'm2', 'm0', 400000, '2026-09-03', 'September rent');
-  pay(room, 'm1', 'm0', 375000, '2026-10-22', 'UPI');
-  room.recurring.push({ id: uid('r'), desc: 'Wi-Fi recharge', total: 99900, payer: 'm1', category: 'Utilities', mode: 'equal', participants: ['m0', 'm1', 'm2'], values: {}, day: 1, last: '2026-10' });
-  [canteen, goa, room].forEach(g => g.activity.push({ ts: Date.now(), text: 'Example group created' }));
+  [canteen, goa, room].forEach(g => g.activity.push({ ts: Date.now(), text: 'Group ready — everything at zero. Add your own expenses, or speak one with the mic.' }));
   return [canteen, goa, room];
 }
 // Older saves had members without ids and no expenses; bring them up to date
@@ -5034,6 +5027,265 @@ $('groupForm').addEventListener('submit', e => {
 
 
 // ---------- Sheets (dialogs) ----------
+
+// ============================================================
+// Speak your split — voice (Web Speech API) or typed natural
+// language, parsed into an expense: amount, payer, who's in or
+// out, even/uneven shares. The result PREFILLS the expense form
+// for review; nothing is saved without the Save button.
+// Understands e.g.:
+//   "1200 rupees dinner paid by Riya, everyone except Kabir"
+//   "600 chai, only Riya and Meera"
+//   "500 snacks, Riya 200 Meera 100, rest equally"
+//   "800 ka khana, Kabir ko chhodkar sab barabar"
+// ============================================================
+const voiceWords = (() => {
+  const EXCLUDE = /\b(except|excluding|exclude|skip|skipping|skipped|without|leave out|left out|didn'?t|did not|don'?t include|not for|drop)\b|chhod(?:kar|ke)?|siva(?:yi)?|siwai|ke siva/;
+  const INCLUDE = /\b(only|just|sirf|only for)\b/;
+  const ATE = /\b(ate|had|eaten|eating|took|shared by|between)\b/;
+  const REST = /\b(rest|others|remaining|everyone else|everybody else|balance people|baaki|baki|rest of)\b/;
+  const EQUAL = /\b(equal|equally|equali|barabar|samet|same each|evenly)\b/;
+  const ALL = /\b(all|everyone|everybody|sab|sabhi|sab log|full group)\b/;
+  const PAID_BY = /(?:paid by|payed by|paid|pada tha|paid for)\s+([a-z][a-z ]{0,24}?)(?=\s+(?:and|but|rs|rupees|₹|\d)|$|,|\.)/;
+  return { EXCLUDE, INCLUDE, ATE, REST, EQUAL, ALL, PAID_BY };
+})();
+
+// Fuzzy member match: full name, first name, or a close word (one edit) for longer names
+function matchMembers(text, members) {
+  const t = ' ' + text.toLowerCase() + ' ';
+  const found = new Map();   // id -> first index
+  const words = t.split(/[^a-z]+/).filter(Boolean);
+  for (const m of members) {
+    const full = m.name.toLowerCase();
+    const first = full.split(/\s+/)[0];
+    let idx = -1;
+    if (full.length >= 3 && t.includes(' ' + full + ' ')) idx = t.indexOf(' ' + full + ' ') + 1;
+    else if (first.length >= 3 && t.includes(' ' + first + ' ')) idx = t.indexOf(' ' + first + ' ') + 1;
+    else if (first.length >= 4) {
+      for (const w of words) {
+        if (w.length < 4 || w === 'rest' || w === 'equal' || w === 'rupees' || w === 'paid' || w === 'and') continue;
+        if (w === first || lev(w, first) <= 1) { idx = t.indexOf(w); break; }
+      }
+    }
+    if (idx >= 0) found.set(m.id, { m, idx });
+  }
+  return [...found.values()].sort((a, b) => a.idx - b.idx);
+}
+function lev(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 0; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+
+// Parse spoken/typed text against a group's members.
+// Returns { amount, desc, payerId, participants, values, mode, summary } (paise / member ids).
+function parseVoiceSplit(text, group) {
+  const raw = String(text || '').trim();
+  const t = ' ' + raw.toLowerCase().replace(/[₹,]/g, ' ').replace(/!/g, '.').replace(/\s+/g, ' ') + ' ';
+  const members = group.members;
+  const ids = members.map(m => m.id);
+
+  // Per-person amounts: a matched name followed by a number ("riya 200, meera 100")
+  const named = matchMembers(t, members);
+  const values = {};
+  for (const { m, idx } of named) {
+    const after = t.slice(idx + m.name.length, idx + m.name.length + 16);
+    const num = after.match(/^\s*(?:ko|ka|ke|ne)?\s*(\d+(?:\.\d{1,2})?)/);
+    if (num) values[m.id] = L.toPaise(num[1]);
+  }
+
+  // The bill amount: a number marked as rupees, else the largest number that is not
+  // someone's per-person value (a per-person value only ever FOLLOWS a name)
+  const nums = [...t.matchAll(/\d+(?:\.\d{1,2})?/g)].map(x => ({ v: L.toPaise(x[0]), i: x.index }));
+  const perPersonSum = Object.values(values).reduce((a, b) => a + b, 0);
+  let amount = null;
+  const plain = /(?:rs\.?|rupees?)\s+(\d+(?:\.\d{1,2})?)/.exec(t) || /(\d+(?:\.\d{1,2})?)\s*(?:rupees|rs)\b/.exec(t);
+  if (plain) amount = L.toPaise(plain[1]);
+  if (amount == null) {
+    const consumed = new Set();
+    for (const { m, idx } of named) for (const n of nums) {
+      // a number after this name, within 16 chars, is that person's value
+      if (n.i > idx && n.i < idx + m.name.length + 16) consumed.add(n);
+    }
+    const free = nums.filter(n => !consumed.has(n));
+    if (free.length) amount = Math.max(...free.map(n => n.v));
+    else if (Object.keys(values).length) amount = perPersonSum;
+  }
+
+  // Payer: "paid by NAME" or "NAME paid" — the payer always takes part (they fronted the bill)
+  let payerId = null;
+  const pb = voiceWords.PAID_BY.exec(t);
+  if (pb) {
+    const hit = matchMembers(pb[1], members)[0];
+    if (hit) payerId = hit.m.id;
+  }
+  if (!payerId) {
+    for (const { m, idx } of named) if (/^\s*(paid|ne|padha|diya)/.test(t.slice(idx + m.name.length, idx + m.name.length + 10))) { payerId = m.id; break; }
+  }
+
+  // Who takes part. The payer is never excluded by name cues — they fronted the bill.
+  const cue = {
+    exclude: voiceWords.EXCLUDE.test(t),
+    include: voiceWords.INCLUDE.test(t) || voiceWords.ATE.test(t),
+    rest: voiceWords.REST.test(t),
+    equal: voiceWords.EQUAL.test(t),
+    all: voiceWords.ALL.test(t),
+  };
+  const namedIds = named.map(n => n.m.id).filter(id => id !== payerId);
+  let participants;
+  if (cue.exclude) {
+    // "skip Riya and Kabir" / "Kabir ko chhodkar" — everyone except the named people
+    participants = ids.filter(id => !namedIds.includes(id));
+  } else if (cue.include && namedIds.length && !cue.rest) {
+    // "only Riya and Meera" — just the named people
+    participants = namedIds;
+  } else if (Object.keys(values).length) {
+    // per-person amounts ("riya 200 meera 100, rest equally") — valued people plus, with a
+    // "rest" cue, everyone else too
+    participants = [...Object.keys(values), ...(cue.rest ? ids.filter(id => values[id] == null && id !== payerId) : [])];
+  } else {
+    participants = ids;
+  }
+  if (!participants.length) participants = ids;
+
+  // Mode: exact when per-person values cover the amount, else equal
+  let mode = 'equal';
+  if (Object.keys(values).length) {
+    mode = 'exact';
+    if (amount == null) amount = perPersonSum;
+    const covered = participants.filter(id => values[id] != null);
+    const others = participants.filter(id => values[id] == null);
+    if (others.length) {
+      const left = amount - covered.reduce((a, id) => a + values[id], 0);
+      if (left > 0) L.allocate(left, others.map(() => 1)).forEach((p, i) => { values[others[i]] = p; });
+      else if (left < 0) { mode = 'equal'; for (const k in values) delete values[k]; }
+    }
+  }
+  if (amount == null) {
+    const any = nums.find(n => n.v > 1000) || nums[0];
+    amount = any ? any.v : null;
+  }
+
+  // Description: whatever real words are left once numbers, names, payer and cue
+  // words are removed ("dinner", "auto", "chai" survive)
+  const nameWords = new Set(named.flatMap(({ m }) => m.name.toLowerCase().split(/\s+/)));
+  let desc = t
+    .replace(voiceWords.PAID_BY, ' ').replace(voiceWords.PAID_BY, ' ')
+    .replace(/\d+(?:\.\d+)?/g, ' ')
+    .replace(/\b(and|the|a|an|of|for|was|is|are|it|its|this|that|these|those|item|items|people|person|please|add|bill|expense|split|share|shares|rupees|rs|ka|ki|ke|ko|ne|sab|sabhi|log|barabar|equally|equal|rest|others|everyone|everybody|all|only|just|sirf|skip|except|excluding|without|paid|pay|eat|eats|ate|eaten|eating|had|took|among|between|their|own|one|two|three|four|five|chhodkar|chhodke|remaining)\b/g, ' ')
+    .split(/[^a-z]+/).filter(w => w.length > 2 && !nameWords.has(w));
+  desc = [...new Set(desc)].slice(0, 3).join(' ');
+
+  const nameOf = id => members.find(m => m.id === id)?.name || '';
+  const parts = participants.map(nameOf);
+  const summary = (amount != null ? L.rupees(amount) + (desc ? ' · ' + desc : '') : desc || 'no amount heard')
+    + ' · ' + (cue.exclude ? 'everyone except ' + namedIds.map(nameOf).join(' & ') : parts.length === ids.length ? 'everyone' : parts.join(' & '))
+    + (payerId ? ' · paid by ' + nameOf(payerId) : '')
+    + (mode === 'exact' ? ' · exact amounts' : ' · equally');
+
+  return { amount, desc: titleCase(desc).slice(0, 40), payerId, participants, values, mode, cue, summary };
+}
+
+// Apply a parse to the open expense form (nothing saves until Submit)
+function applyVoiceToForm(p) {
+  if (document.getElementById('expenseSheet').hidden) return toast('Open the expense form first.');
+  if (p.amount != null) { $('eAmount').value = (p.amount / 100).toFixed(2); }
+  if (p.desc) $('eDesc').value = p.desc;
+  if (p.payerId && [...$('ePayer').options].some(o => o.value === p.payerId)) $('ePayer').value = p.payerId;
+  ef.parts = new Set(p.participants);
+  ef.mode = p.mode;
+  ef.values = {};
+  if (p.mode === 'exact') for (const [id, v] of Object.entries(p.values)) ef.values[id] = (v / 100).toFixed(2);
+  renderSplitRows();
+  updateSplitSum();
+  toast('Understood: ' + p.summary);
+}
+
+// ---------- Recording UI (mic + typed fallback) ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let vRec = null, vFinalText = '';
+function openVoiceBar() {
+  $('vBar').hidden = false;
+  $('vText').textContent = 'Listening… say something like “1200 rupees dinner, everyone except Kabir”';
+  $('vIn').value = '';
+  $('vIn').hidden = true;
+  $('vApply').hidden = true;
+}
+function closeVoiceBar() {
+  $('vBar').hidden = true;
+  stopVoice();
+}
+function startVoice() {
+  openVoiceBar();
+  if (!SR) {
+    $('vText').textContent = 'This browser can’t listen here — type it instead, same words work:';
+    $('vIn').hidden = false;
+    $('vIn').focus();
+    return;
+  }
+  try {
+    stopVoice();
+    vRec = new SR();
+    vRec.lang = navigator.language || 'en-IN';
+    vRec.continuous = true;
+    vRec.interimResults = true;
+    vFinalText = '';
+    vRec.onresult = ev => {
+      let interim = '';
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const r = ev.results[i];
+        if (r.isFinal) vFinalText += r[0].transcript + ' ';
+        else interim += r[0].transcript;
+      }
+      $('vText').textContent = (vFinalText + interim).trim() || 'Listening…';
+    };
+    vRec.onerror = e => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        $('vText').textContent = 'Microphone blocked. Type it instead — same words work:';
+        $('vIn').hidden = false;
+        $('vIn').focus();
+        stopVoice();
+      }
+    };
+    vRec.onend = () => {
+      if (vFinalText.trim()) {
+        const p = parseVoiceSplit(vFinalText, ef.g);
+        if (p.amount != null || p.desc) {
+          applyVoiceToForm(p);
+          closeVoiceBar();
+        } else {
+          $('vText').textContent = 'Heard: “' + vFinalText.trim() + '” — no amount found. Try again or type it:';
+          $('vIn').hidden = false;
+        }
+      }
+    };
+    vRec.start();
+    $('vDot').classList.add('live');
+  } catch (err) {
+    $('vText').textContent = 'Voice didn’t start (' + err.message + '). Type it instead:';
+    $('vIn').hidden = false;
+  }
+}
+function stopVoice() {
+  try { vRec && vRec.stop(); } catch (e) {}
+  vRec = null;
+  const dot = $('vDot');
+  if (dot) dot.classList.remove('live');
+}
+$('vStart').addEventListener('click', () => { $('vBar').hidden ? startVoice() : closeVoiceBar(); });
+$('vType').addEventListener('click', () => { $('vIn').hidden = false; $('vApply').hidden = false; $('vIn').focus(); });
+$('vApply').addEventListener('click', () => {
+  const txt = $('vIn').value.trim();
+  if (!txt) return toast('Type the split first, e.g. “1200 rupees dinner, everyone except Kabir”.');
+  const p = parseVoiceSplit(txt, ef.g);
+  if (p.amount == null && !p.desc) return toast('Couldn’t find an amount in that. Include a number like “1200 rupees”.');
+  applyVoiceToForm(p);
+  closeVoiceBar();
+});
+$('vIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('vApply').click(); } });
+
 function toast(msg, type = 'ok') {
   const t = document.createElement('div');
   t.className = 'toast ' + type;
