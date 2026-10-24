@@ -601,6 +601,65 @@ body.ready .view > *:nth-child(7) { animation-delay: 0.35s; }
 .row .tool { flex: 1; padding: 12px; }
 body.creating .dock, body.creating .stage-tools { display: none; }
 
+/* ---------- Cursor interaction layer ---------- */
+/* Spotlight + border glow that follow the pointer inside cards (vars --mx/--my set in JS) */
+.stat, .gcard2, .panel, .pp-stats > div { position: relative; }
+.stat::after, .gcard2::after, .panel::after, .pp-stats > div::after,
+.stat::before, .gcard2::before, .panel::before, .pp-stats > div::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; z-index: 0;
+}
+.stat::after, .gcard2::after, .panel::after, .pp-stats > div::after {
+  background: radial-gradient(200px circle at var(--mx, 50%) var(--my, 50%), rgba(111, 196, 255, 0.12), transparent 65%);
+  transition: opacity .35s ease;
+}
+.stat::before, .gcard2::before, .panel::before, .pp-stats > div::before {
+  padding: 1px;
+  background: radial-gradient(160px circle at var(--mx, 50%) var(--my, 50%), rgba(111, 217, 255, 0.55), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  transition: opacity .25s ease;
+}
+.stat:hover::after, .gcard2:hover::after, .panel:hover::after, .pp-stats > div:hover::after,
+.stat:hover::before, .gcard2:hover::before, .panel:hover::before, .pp-stats > div:hover::before { opacity: 1; }
+.gcard2, .panel { transition: box-shadow .3s ease, transform .18s ease, border-color .2s; }
+.gcard2:hover, .panel:hover { box-shadow: 0 26px 60px -24px rgba(1, 6, 16, 0.95), 0 0 0 1px rgba(111, 217, 255, 0.13), 0 0 44px -18px rgba(25, 185, 243, 0.28); }
+.gcard2 .cov, .gd-hero .cov { transition: transform .35s cubic-bezier(.2, .8, .3, 1); will-change: transform; }
+
+/* Understated cursor follower (native cursor stays visible) */
+#cursor-dot, #cursor-ring { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 200; border-radius: 50%; will-change: transform; }
+#cursor-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--brand-hi); opacity: .85; }
+#cursor-ring { width: 28px; height: 28px; margin: -14px 0 0 -14px; border: 1.5px solid rgba(111, 217, 255, 0.4); transition: width .2s ease, height .2s ease, margin .2s ease, border-color .2s ease, opacity .3s ease; }
+body.cursor-hot #cursor-ring { width: 40px; height: 40px; margin: -20px 0 0 -20px; border-color: rgba(111, 217, 255, 0.75); }
+body.cursor-off #cursor-dot, body.cursor-off #cursor-ring { opacity: 0; }
+
+/* Settlement-path highlighting: rows, avatars and board arcs respond together */
+.settle-row { border-radius: 12px; transition: background .25s ease; }
+.settle-row:hover, .settle-row.hl { background: rgba(143, 123, 245, 0.14); }
+.settle-row:hover .pair img, .settle-row.hl .pair img { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(25, 185, 243, 0.22); }
+.settle-row:hover .amt, .settle-row.hl .amt { color: var(--brand-hi); }
+.net-row { transition: background .2s ease; }
+.net-row.hl { background: rgba(25, 185, 243, 0.07); }
+.board .arc { transition: stroke-dashoffset 1s cubic-bezier(.35, .6, .25, 1), opacity .25s ease, filter .25s ease; }
+.board .arc.dim { opacity: .16; }
+.board .arc.hl { opacity: 1; filter: drop-shadow(0 0 5px rgba(111, 217, 255, 0.9)); }
+
+/* Spending-mix donut */
+.mix { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.donut { width: 148px; flex: none; }
+.donut .seg { transition: opacity .25s ease, stroke-width .18s ease, filter .18s ease; }
+.donut.dim-others .seg:not(.hl) { opacity: .3; }
+.donut .seg.hl { stroke-width: 19; filter: drop-shadow(0 0 6px rgba(25, 185, 243, 0.55)); }
+.legend { display: grid; gap: 4px; flex: 1; min-width: 150px; }
+.legend-row { display: flex; align-items: center; gap: 9px; padding: 5px 8px; border-radius: 10px; border: none; background: none; color: var(--ink); width: 100%; text-align: left; transition: background .2s ease; }
+.legend-row:hover, .legend-row.hl { background: rgba(148, 190, 255, 0.07); }
+.legend-row i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.legend-row b { font: 500 13px var(--sans); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.legend-row span { font: 600 12.5px var(--disp); color: var(--muted); white-space: nowrap; }
+.chart-tip { position: fixed; z-index: 95; pointer-events: none; padding: 8px 12px; border-radius: 11px; background: rgba(10, 22, 42, 0.95); border: 1px solid var(--line-hi); box-shadow: var(--shadow); font: 500 13px var(--sans); color: var(--ink); opacity: 0; transform: scale(.94); transition: opacity .16s ease, transform .16s ease; }
+.chart-tip b { font: 600 13.5px var(--disp); color: var(--brand-hi); }
+.chart-tip.show { opacity: 1; transform: none; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 980px) {
   .dash-cols { grid-template-columns: 1fr; }
@@ -1223,9 +1282,9 @@ function renderDashboard() {
       </div>
     </section>
     <div class="stat-row">
-      <div class="stat glass" data-tilt><span class="label"><span class="medal cyan"><svg class="ic"><use href="#i-arrow"/></svg></span>You&rsquo;re owed</span><b class="num pos" id="stOwe">₹0</b><span>${perGroup.filter(x => x.net > 1).length} group${perGroup.filter(x => x.net > 1).length === 1 ? '' : 's'} in your favour</span></div>
-      <div class="stat glass" data-tilt><span class="label"><span class="medal rose"><svg class="ic"><use href="#i-arrow"/></svg></span>You owe</span><b class="num ${youOwe > 0 ? 'neg' : 'zero'}" id="stDebt">₹0</b><span>${perGroup.filter(x => x.net < -1).length} group${perGroup.filter(x => x.net < -1).length === 1 ? '' : 's'} to clear</span></div>
-      <div class="stat glass" data-tilt><span class="label"><span class="medal violet"><svg class="ic"><use href="#i-users"/></svg></span>Tracked</span><b class="num" id="stTrack">₹0</b><span>${groups.length} group${groups.length === 1 ? '' : 's'} · ${friends.size} friend${friends.size === 1 ? '' : 's'}</span></div>
+      <div class="stat glass"><span class="label"><span class="medal cyan"><svg class="ic"><use href="#i-arrow"/></svg></span>You&rsquo;re owed</span><b class="num pos" id="stOwe">₹0</b><span>${perGroup.filter(x => x.net > 1).length} group${perGroup.filter(x => x.net > 1).length === 1 ? '' : 's'} in your favour</span></div>
+      <div class="stat glass"><span class="label"><span class="medal rose"><svg class="ic"><use href="#i-arrow"/></svg></span>You owe</span><b class="num ${youOwe > 0 ? 'neg' : 'zero'}" id="stDebt">₹0</b><span>${perGroup.filter(x => x.net < -1).length} group${perGroup.filter(x => x.net < -1).length === 1 ? '' : 's'} to clear</span></div>
+      <div class="stat glass"><span class="label"><span class="medal violet"><svg class="ic"><use href="#i-users"/></svg></span>Tracked</span><b class="num" id="stTrack">₹0</b><span>${groups.length} group${groups.length === 1 ? '' : 's'} · ${friends.size} friend${friends.size === 1 ? '' : 's'}</span></div>
     </div>
     <div class="dash-cols">
       <section class="panel glass">
@@ -1289,7 +1348,7 @@ function netlistHTML(g, net) {
     const w = Math.round(Math.abs(v) / max * 100);
     const cls = v > 1 ? 'pos' : v < -1 ? 'neg' : 'zero';
     const rowCls = v < -1 ? 'owes' : '';
-    return `<div class="net-row ${rowCls}"><img class="av" src="${portraitURL(m.charId)}" alt="">
+    return `<div class="net-row ${rowCls}" data-mid="${m.mid}"><img class="av" src="${portraitURL(m.charId)}" alt="">
       <span class="nm"><b>${esc(m.name)}${m.mid === g.meMid ? '<span class="you-tag">You</span>' : ''}</b><span class="bar"><i data-w="${w}"></i></span></span>
       <span class="amt num ${cls}">${Math.abs(v) < 2 ? '₹0' : (v > 0 ? '+' : '−') + money(Math.abs(v))}</span></div>`;
   }).join('');
@@ -1314,7 +1373,7 @@ function flowBlock(g, net, pays) {
     if (!A || !B) return;
     const col = cols[i % cols.length];
     const w = (2 + 4.5 * (p.amount / max)).toFixed(2);
-    edges += `<path class="arc" d="M 26 ${A.y} C 44 ${A.y}, 56 ${B.y}, 74 ${B.y}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" opacity="0.85" pathLength="1" vector-effect="non-scaling-stroke" style="transition-delay:${i * 130}ms"><title>${esc(nameOf(g, p.from))} pays ${esc(nameOf(g, p.to))} ${money(p.amount)}</title></path>`;
+    edges += `<path class="arc" data-from="${p.from}" data-to="${p.to}" d="M 26 ${A.y} C 44 ${A.y}, 56 ${B.y}, 74 ${B.y}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" opacity="0.85" pathLength="1" vector-effect="non-scaling-stroke" style="transition-delay:${i * 130}ms"><title>${esc(nameOf(g, p.from))} pays ${esc(nameOf(g, p.to))} ${money(p.amount)}</title></path>`;
     const my = (A.y + B.y) / 2;
     pills += `<span class="pay-pill" style="left:50%;top:${my}%;background:${col};transition-delay:${i * 130 + 300}ms">${moneyShort(p.amount)}</span>`;
   });
@@ -1329,7 +1388,7 @@ function flowBlock(g, net, pays) {
   </div>`;
 }
 function settleRowHTML(g, p) {
-  return `<div class="settle-row"><span class="pair"><img class="av" src="${portraitURL(charOf(g, p.from).charId)}" alt=""><b>${esc(nameOf(g, p.from))}</b><svg class="ic"><use href="#i-arrow"/></svg><img class="av" src="${portraitURL(charOf(g, p.to).charId)}" alt=""><b>${esc(nameOf(g, p.to))}</b></span><span class="amt num">${money(p.amount)}</span><button class="btn line" type="button" data-rec data-from="${p.from}" data-to="${p.to}" data-amt="${p.amount}">Record</button></div>`;
+  return `<div class="settle-row" data-from="${p.from}" data-to="${p.to}"><span class="pair"><img class="av" src="${portraitURL(charOf(g, p.from).charId)}" alt=""><b>${esc(nameOf(g, p.from))}</b><svg class="ic"><use href="#i-arrow"/></svg><img class="av" src="${portraitURL(charOf(g, p.to).charId)}" alt=""><b>${esc(nameOf(g, p.to))}</b></span><span class="amt num">${money(p.amount)}</span><button class="btn line" type="button" data-rec data-from="${p.from}" data-to="${p.to}" data-amt="${p.amount}">Record</button></div>`;
 }
 function settledHTML() {
   return `<div class="flow-settled" style="position:static;padding:16px 0"><div class="okring" style="width:60px;height:60px"><svg style="width:26px;height:26px"><use href="#i-check"/></svg></div><b style="font:600 16px var(--disp)">Everyone&rsquo;s even</b><span class="muted" style="font-size:13px">No payments needed right now.</span></div>`;
@@ -1402,11 +1461,17 @@ function renderGroupDetail(g) {
           ${pays.length ? pays.map(p => settleRowHTML(g, p)).join('') : settledHTML()}
         </section>
       </div>
-      <section class="panel glass">
-        <div class="panel-head"><h2>Expenses</h2><button class="btn brand" id="gdAdd2" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add</button></div>
-        <div class="chips" id="expChips">${chipsHTML(g, 'all')}</div>
-        <div id="expList">${expListHTML(g, 'all')}</div>
-      </section>
+      <div class="gd-col">
+        <section class="panel glass">
+          <div class="panel-head"><h2>Spending mix</h2><span class="label">${money(spent)} total</span></div>
+          ${mixHTML(g)}
+        </section>
+        <section class="panel glass">
+          <div class="panel-head"><h2>Expenses</h2><button class="btn brand" id="gdAdd2" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add</button></div>
+          <div class="chips" id="expChips">${chipsHTML(g, 'all')}</div>
+          <div id="expList">${expListHTML(g, 'all')}</div>
+        </section>
+      </div>
     </div>
   </div>`;
   $('gdAdd').addEventListener('click', () => openExpenseSheet(g.id));
@@ -1427,6 +1492,25 @@ function renderGroupDetail(g) {
     const row = e.target.closest('[data-exp]');
     if (row) openDetail(g.id, row.dataset.exp);
   });
+  // Settlement-path highlighting: rows and net rows light up their arcs on the board
+  const board = document.querySelector('.gd-grid .board');
+  const setArcHL = pred => {
+    if (!board) return;
+    board.querySelectorAll('.arc').forEach(p => {
+      const on = pred ? pred(p.dataset.from, p.dataset.to) : false;
+      p.classList.toggle('hl', on);
+      p.classList.toggle('dim', pred ? !on : false);
+    });
+  };
+  $$('#settlePanel .settle-row').forEach(row => {
+    row.addEventListener('pointerenter', () => setArcHL((f, t) => f === row.dataset.from && t === row.dataset.to));
+    row.addEventListener('pointerleave', () => setArcHL(null));
+  });
+  $$('.net-row').forEach(row => {
+    row.addEventListener('pointerenter', () => setArcHL((f, t) => f === row.dataset.mid || t === row.dataset.mid));
+    row.addEventListener('pointerleave', () => setArcHL(null));
+  });
+  bindMix();
 }
 
 // ---------- Activity ----------
@@ -1860,8 +1944,9 @@ function pickOpen(action) {
   mountExtras();
 }
 
-// ---------- 3D tilt ----------
+// ---------- 3D tilt (gang cards only — restrained depth, cover parallax) ----------
 function attachTilt(root) {
+  if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   root.querySelectorAll('[data-tilt]').forEach(el => {
     if (el._tiltBound) return;
@@ -1870,9 +1955,19 @@ function attachTilt(root) {
       const r = el.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width - 0.5;
       const y = (e.clientY - r.top) / r.height - 0.5;
-      el.style.transform = `perspective(900px) rotateX(${(-y * 4.5).toFixed(2)}deg) rotateY(${(x * 6).toFixed(2)}deg) translateY(-2px)`;
+      el.style.transition = 'transform .12s ease-out';
+      el.style.transform = `perspective(900px) rotateX(${(-y * 3.4).toFixed(2)}deg) rotateY(${(x * 4.2).toFixed(2)}deg)`;
+      const cov = el.querySelector('.cov');
+      if (cov) cov.style.transform = `translate3d(${(x * 7).toFixed(1)}px, ${(y * 7).toFixed(1)}px, 0) scale(1.06)`;
     });
-    el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+    const reset = () => {
+      el.style.transition = 'transform .55s cubic-bezier(.2, 1.3, .35, 1)';
+      el.style.transform = '';
+      const cov = el.querySelector('.cov');
+      if (cov) cov.style.transform = '';
+    };
+    el.addEventListener('pointerleave', reset);
+    el.addEventListener('pointercancel', reset);
   });
 }
 
@@ -1902,6 +1997,128 @@ function bootSplash() {
   setTimeout(finish, 3050);
   $('splashSkip').addEventListener('click', () => { clearTimeout(retry1); clearTimeout(retry2); finish(); });
   splash.addEventListener('pointerdown', tryPlay);
+}
+
+// ============================================================
+// Premium cursor interaction system
+// Pointer effects are rAF-driven and delegated; everything is
+// gated on (hover: hover) + (pointer: fine) and reduced-motion.
+// ============================================================
+const MIX_COLORS = ['#19b9f3', '#8f7bf5', '#1fd3b4', '#ff7fa3', '#ffb454', '#6fd9ff', '#b6a8ff', '#8fa5c3'];
+
+// Spending-mix donut — real per-category totals from the group's expenses
+function mixHTML(g) {
+  const totals = {};
+  g.expenses.forEach(e => { totals[e.cat] = (totals[e.cat] || 0) + toPaise(e.amount); });
+  const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) return `<div class="empty" style="padding:26px 18px"><h3 style="font:600 15px var(--disp);margin:0">No spending yet</h3><p style="font-size:13px;margin:0">Add expenses to see where the money goes.</p></div>`;
+  const total = entries.reduce((a, [, v]) => a + v, 0);
+  const R = 42, C = 2 * Math.PI * R;
+  let acc = 0, segs = '', legend = '';
+  entries.forEach(([cat, p], i) => {
+    const frac = p / total, col = MIX_COLORS[i % MIX_COLORS.length];
+    segs += `<circle class="seg" data-cat="${cat}" data-amt="${p}" data-pct="${Math.round(frac * 100)}" cx="60" cy="60" r="${R}" fill="none" stroke="${col}" stroke-width="15" stroke-dasharray="${(frac * C).toFixed(2)} ${(C - frac * C).toFixed(2)}" stroke-dashoffset="${(-acc * C).toFixed(2)}" transform="rotate(-90 60 60)"><title>${esc(catOf(cat)[1])} · ${money(p)} · ${Math.round(frac * 100)}%</title></circle>`;
+    legend += `<div class="legend-row" data-cat="${cat}"><i style="background:${col}"></i><b>${esc(catOf(cat)[1])}</b><span class="num">${money(p)} · ${Math.round(frac * 100)}%</span></div>`;
+    acc += frac;
+  });
+  return `<div class="mix"><svg class="donut" viewBox="0 0 120 120" role="img" aria-label="Spending by category">${segs}</svg><div class="legend">${legend}</div></div>`;
+}
+function bindMix() {
+  const donut = document.querySelector('.gd-grid .donut');
+  if (!donut || donut._mixBound) return;
+  donut._mixBound = true;
+  let tip = document.getElementById('chart-tip');
+  if (!tip) { tip = document.createElement('div'); tip.id = 'chart-tip'; tip.className = 'chart-tip'; document.body.appendChild(tip); }
+  const segs = [...donut.querySelectorAll('.seg')];
+  const legendRows = [...donut.closest('.panel').querySelectorAll('.legend-row')];
+  const setHL = cat => {
+    donut.classList.toggle('dim-others', !!cat);
+    segs.forEach(s => s.classList.toggle('hl', s.dataset.cat === cat));
+    legendRows.forEach(r => r.classList.toggle('hl', r.dataset.cat === cat));
+  };
+  const place = e => {
+    tip.style.left = Math.min(innerWidth - 180, e.clientX + 14) + 'px';
+    tip.style.top = Math.min(innerHeight - 60, e.clientY + 16) + 'px';
+  };
+  segs.forEach(s => {
+    const cat = s.dataset.cat;
+    s.addEventListener('pointerenter', e => {
+      setHL(cat);
+      tip.innerHTML = `<b>${esc(catOf(cat)[1])}</b> · ${money(Number(s.dataset.amt))} · ${s.dataset.pct}%`;
+      tip.classList.add('show');
+      place(e);
+    });
+    s.addEventListener('pointermove', place, { passive: true });
+    s.addEventListener('pointerleave', () => { setHL(null); tip.classList.remove('show'); });
+  });
+  legendRows.forEach(r => {
+    r.addEventListener('pointerenter', () => setHL(r.dataset.cat));
+    r.addEventListener('pointerleave', () => setHL(null));
+  });
+}
+
+// Magnetic primary buttons: a few px toward the cursor, spring return
+function magnetize(el) {
+  if (el._mag) return;
+  el._mag = true;
+  const base = el.classList.contains('fab') ? 'translateX(-50%) ' : '';
+  let x = 0, y = 0;
+  el.addEventListener('pointermove', e => {
+    const r = el.getBoundingClientRect();
+    x = Math.max(-5, Math.min(5, (e.clientX - r.left - r.width / 2) * 0.22));
+    y = Math.max(-5, Math.min(5, (e.clientY - r.top - r.height / 2) * 0.3));
+    el.style.transition = 'transform .2s cubic-bezier(.2, .8, .3, 1)';
+    el.style.transform = `${base}translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+  });
+  el.addEventListener('pointerdown', () => {
+    el.style.transform = `${base}translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(.97)`;
+  });
+  el.addEventListener('pointerup', () => {
+    el.style.transform = `${base}translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+  });
+  const reset = () => {
+    el.style.transition = 'transform .32s cubic-bezier(.25, 1.5, .4, 1)';
+    el.style.transform = '';
+    x = 0; y = 0;
+  };
+  el.addEventListener('pointerleave', reset);
+  el.addEventListener('blur', reset);
+}
+
+// Cursor layer: dot + trailing ring, spotlight tracking, magnetic binding.
+// Native cursor is never hidden; everything is pointermove-driven and idle when the pointer rests.
+const finePointer = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
+function initCursorLayer() {
+  if (!finePointer() || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const dot = document.createElement('div'); dot.id = 'cursor-dot';
+  const ring = document.createElement('div'); ring.id = 'cursor-ring';
+  document.body.append(ring, dot);
+  let mx = -100, my = -100, dx = -100, dy = -100, rx = -100, ry = -100, raf = 0;
+  const loop = () => {
+    dx += (mx - dx) * 0.5; dy += (my - dy) * 0.5;
+    rx += (mx - rx) * 0.16; ry += (my - ry) * 0.16;
+    dot.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0)`;
+    ring.style.transform = `translate3d(${rx.toFixed(1)}px, ${ry.toFixed(1)}px, 0)`;
+    raf = (Math.abs(mx - dx) > 0.3 || Math.abs(my - dy) > 0.3 || Math.abs(mx - rx) > 0.3 || Math.abs(my - ry) > 0.3)
+      ? requestAnimationFrame(loop) : 0;
+  };
+  document.addEventListener('pointermove', e => {
+    mx = e.clientX; my = e.clientY;
+    if (!raf) raf = requestAnimationFrame(loop);
+    const card = e.target.closest('.stat, .gcard2, .panel, .pp-stats > div');
+    if (card) {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left).toFixed(0) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top).toFixed(0) + 'px');
+    }
+  }, { passive: true });
+  document.documentElement.addEventListener('mouseleave', () => document.body.classList.add('cursor-off'));
+  document.documentElement.addEventListener('mouseenter', () => document.body.classList.remove('cursor-off'));
+  document.addEventListener('pointerover', e => {
+    document.body.classList.toggle('cursor-hot', !!e.target.closest('a, button, [role="button"], select, label'));
+    const mag = e.target.closest('.btn.brand, .tabbar .fab');
+    if (mag) magnetize(mag);
+  }, { passive: true });
 }
 
 const TAU = Math.PI * 2;
@@ -2889,6 +3106,7 @@ addEventListener('resize', () => {
 updateProfileUI();
 try { saveGroups(); } catch (e) {}
 bootSplash();
+initCursorLayer();
 route();
 requestAnimationFrame(frame);
 
