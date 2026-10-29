@@ -30,12 +30,24 @@ tags, not ES modules. Keep to the r147 API (e.g. `outputEncoding`/`sRGBEncoding`
 
 ## Design
 
-Light "paper & ink": a warm off-white sheet (`--paper`) over a faint painterly wash,
-white cards with a hairline border, indigo ink (`--accent` `#252f91`) and one
-electric-blue accent (`--blue` `#426bff`). Fraunces for anything read as a headline or
-an amount, Plus Jakarta Sans for anything clicked. The shell is a left rail from
-1024px up (Hisaab / Gangs / Scan / Me) and a bottom tab bar below that; the character
-lobby is the one dark surface and keeps its own `--night`/`--cream` tokens.
+Painted paper. A warm cream sheet (`--paper` `#faf5ea`) over a soft wash, cards the
+colour of notepaper (`--card` `#fffdf8`), brown-black ink (`--ink` `#2d2a24`) and
+indigo (`--accent` `#2b3576`) for the brand. Two marks carry the hand-made feel: a
+brush stroke (`--brush`) behind the open page in the rail, and a highlighter
+(`--hl`) on the row you're pointing at. Fraunces for anything read as a headline or
+an amount, Nunito for anything clicked. Headings carry a hand-drawn pen line, drawn
+once as an inline SVG and reused.
+
+Covers are **painted, not plotted**: `drawArt` lays a wash of watercolour on warm
+paper and adds a few margin doodles — a squiggle, a loop, some hatching. Each gang
+picks one of the eight `ART_PALETTES` by `hashSeed(id) % 8`, so a gang always looks
+like itself and neighbours rarely match. Never draw node graphs, scatter plots or
+connected-dot patterns on a cover; that is the look this replaced. Covers are light,
+so text over them is ink with a cream scrim behind it, never white on a dark overlay.
+
+The shell is a left rail from 1024px up (Hisaab / Gangs / Scan / Me) and a bottom tab
+bar below that; the character lobby is the one dark surface and keeps its own
+`--night`/`--cream` tokens.
 
 ## Architecture
 
