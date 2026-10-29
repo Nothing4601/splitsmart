@@ -45,7 +45,11 @@ like itself and neighbours rarely match. Never draw node graphs, scatter plots o
 connected-dot patterns on a cover; that is the look this replaced. Covers are light,
 so text over them is ink with a cream scrim behind it, never white on a dark overlay.
 
-The shell is a left rail from 1024px up (Expenses / Gangs / Scan / Tour / Me) and a
+Focus rings and the custom pointer use `--ring` (`#c9762f`), not the brand indigo —
+on cream paper a blue ring reads as a stray piece of someone else's UI. Indigo stays
+on the things you press: primary buttons, the segmented control, checkboxes.
+
+The shell is a left rail from 1024px up (Tour / Expenses / Gangs / Scan / Me) and a
 bottom tab bar below that; the character lobby is the one dark surface and keeps its
 own `--night`/`--cream` tokens.
 
@@ -104,11 +108,18 @@ Main script, top to bottom:
   (`.pay-row.hot` + `.list.dimmed`), the chart tooltip, and the dot-and-ring cursor.
   All of it is gated on `(hover: hover) and (pointer: fine)` and
   `prefers-reduced-motion`.
-- **Tour** (`renderTour`, `CHAPTERS`): the "what this app does" page. Six chapters,
-  each a `position: sticky` card the next one slides over. A `scroll` listener feeds
-  one rAF `tourTick`, which writes `--p` on each card (how far the next has covered
-  it, 0 → 1); the stylesheet reads `--p` for the scale-back and the fade toward
-  paper, so scrolling never touches layout. Chapter *n* paints `drawArt(cv, n + 40)`,
+- **Tour** (`renderTour`, `CHAPTERS`): the "what this app does" page, and where a
+  phone with no gangs on it lands. Six chapters, each a `position: sticky` card the
+  next one slides over. A `scroll` listener feeds one rAF `tourTick`, which writes
+  `--p` on each card (how far the next has covered it, 0 → 1); the stylesheet reads
+  `--p` for the scale-back and the fade toward paper, so scrolling never touches
+  layout. Three details keep the pile square, and all three were bugs once:
+  chapters carry **no bottom margin** (a gap there means you scroll through bare
+  paper between chapters), the scale-back runs from `transform-origin: 50% 0%` (from
+  the centre, six cards shrink toward six different points and the stack fans out),
+  and a covered card goes to `0.82` paper opacity so you see the live card and a
+  hint of the one behind it rather than six nested outlines — which is also what
+  stops the stack showing through when the last chapter scrolls away. Chapter *n* paints `drawArt(cv, n + 40)`,
   and 40 is a multiple of 8, so the palette index equals the chapter index and the
   page walks the whole `ART_PALETTES` set in order. Content inside a chapter arrives
   on an IntersectionObserver (`.chap.in`). Under reduced motion the chapters go

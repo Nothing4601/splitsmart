@@ -40,6 +40,8 @@
   --accent-2: #1f2758;
   --blue: #3f5fe0;
   --blue-soft: rgba(63, 95, 224, 0.12);
+  --ring: #c9762f;                       /* focus and the pointer, in ink's family */
+  --ring-soft: rgba(201, 118, 47, 0.22);
   --rose: #cf6f72;
   --rose-hi: #f0b4b0;
   /* marks: the brush behind the open page, the highlighter on a live row */
@@ -93,7 +95,7 @@ button { font: inherit; color: inherit; }
 input, select, textarea { font: inherit; color: inherit; }
 a { color: inherit; }
 h1, h2, h3 { font-family: var(--serif); font-variation-settings: "SOFT" 20, "WONK" 1; font-weight: 600; letter-spacing: -0.012em; }
-:focus-visible { outline: 2.5px solid var(--blue); outline-offset: 2px; border-radius: 8px; }
+:focus-visible { outline: 2.5px solid var(--ink); outline-offset: 2px; border-radius: 8px; }
 ::selection { background: rgba(66, 107, 255, 0.2); }
 ::-webkit-scrollbar { width: 11px; height: 11px; }
 ::-webkit-scrollbar-thumb { background: #ddd9e8; border-radius: 9px; border: 3px solid transparent; background-clip: content-box; }
@@ -252,7 +254,7 @@ input.inp, select.inp, textarea.inp {
   transition: border-color 0.18s, box-shadow 0.18s;
 }
 input.inp:focus, select.inp:focus, textarea.inp:focus {
-  outline: none; border-color: var(--blue); box-shadow: 0 0 0 3.5px var(--blue-soft);
+  outline: none; border-color: var(--ring); box-shadow: 0 0 0 3.5px var(--ring-soft);
 }
 input.inp.num { text-align: right; font-variant-numeric: tabular-nums; }
 .inp.low, .low-word { background: var(--warn-bg); border-color: var(--warn-line); }
@@ -524,7 +526,7 @@ button.li { width: 100%; border: none; border-bottom: 1px solid var(--line); bac
   border: 1px solid var(--line-2); border-radius: 10px; background: #fff;
   padding: 10px 12px; color: var(--ink); font: 500 16px var(--sans); min-width: 0; width: 100%;
 }
-.modal input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3.5px var(--blue-soft); }
+.modal input:focus { outline: none; border-color: var(--ring); box-shadow: 0 0 0 3.5px var(--ring-soft); }
 .members { display: grid; gap: 9px; }
 .member { display: grid; grid-template-columns: 44px 1fr 34px; gap: 10px; align-items: center; }
 .member .avatar-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: radial-gradient(circle at 50% 35%, #fffdf8, #e8dfcd); cursor: pointer; overflow: hidden; }
@@ -564,7 +566,7 @@ button.li { width: 100%; border: none; border-bottom: 1px solid var(--line); bac
 
 /* ----------------------------------------------------------------- scanner */
 .drop { border: 1.5px dashed var(--line-2); border-radius: var(--r); padding: 28px 18px; display: grid; gap: 14px; justify-items: center; text-align: center; background: rgba(255, 255, 255, 0.7); }
-.drop.over { background: var(--lav); border-color: var(--blue); }
+.drop.over { background: var(--lav); border-color: var(--ring); }
 .drop p { margin: 0; color: var(--muted); max-width: 46ch; }
 .drop .row2 { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .cam { display: grid; gap: 10px; }
@@ -573,8 +575,8 @@ button.li { width: 100%; border: none; border-bottom: 1px solid var(--line); bac
 .preview img { max-width: 100%; max-height: 52vh; border: 1px solid var(--line); border-radius: var(--r-sm); background: #fff; }
 .queue { display: flex; gap: 8px; flex-wrap: wrap; }
 .queue img { width: 52px; height: 52px; object-fit: cover; border: 2px solid transparent; border-radius: 9px; }
-.queue img.on { border-color: var(--blue); }
-.msg { padding: 11px 13px; border-left: 3px solid var(--blue); border-radius: 0 10px 10px 0; background: var(--lav); font-size: 13.5px; }
+.queue img.on { border-color: var(--ring); }
+.msg { padding: 11px 13px; border-left: 3px solid var(--ring); border-radius: 0 10px 10px 0; background: var(--lav); font-size: 13.5px; }
 .msg.err { border-color: var(--neg); background: var(--neg-bg); }
 .msg.warn { border-color: var(--warn-line); background: var(--warn-bg); }
 .msg.ok { border-color: var(--pos); background: var(--pos-bg); }
@@ -626,7 +628,7 @@ button.li { width: 100%; border: none; border-bottom: 1px solid var(--line); bac
 .pp-cta { font: 600 13px var(--sans); color: var(--accent); margin-top: 4px; }
 .pp-details { display: grid; gap: 26px; align-content: start; min-width: 0; }
 .pp-details input { border: 1px solid var(--line-2); border-radius: 11px; background: #fff; padding: 11px 13px; color: var(--ink); font: 500 18px var(--sans); min-width: 0; width: 100%; }
-.pp-details input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3.5px var(--blue-soft); }
+.pp-details input:focus { outline: none; border-color: var(--ring); box-shadow: 0 0 0 3.5px var(--ring-soft); }
 .pp-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .pp-stats div { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 15px 16px; display: grid; box-shadow: var(--sh-1); }
 .pp-stats b { font: 600 32px/1.05 var(--serif); font-variant-numeric: tabular-nums; }
@@ -712,12 +714,12 @@ body.in-lobby .app > .side, body.in-lobby .tabbar, body.in-lobby .topbar { displ
 
 /* --------------------------------------------------- the custom cursor layer */
 .cur-dot, .cur-ring { position: fixed; top: 0; left: 0; z-index: 999; pointer-events: none; border-radius: 50%; opacity: 0; transition: opacity 0.25s ease; }
-.cur-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--accent); }
-.cur-ring { width: 28px; height: 28px; margin: -14px 0 0 -14px; border: 1.5px solid rgba(37, 47, 145, 0.35); transition: opacity 0.25s ease, width 0.22s ease, height 0.22s ease, margin 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
+.cur-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--ink); }
+.cur-ring { width: 28px; height: 28px; margin: -14px 0 0 -14px; border: 1.5px solid rgba(45, 42, 36, 0.3); transition: opacity 0.25s ease, width 0.22s ease, height 0.22s ease, margin 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
 body.has-cursor .cur-dot, body.has-cursor .cur-ring { opacity: 1; }
-body.cur-wide .cur-ring { width: 46px; height: 46px; margin: -23px 0 0 -23px; border-color: rgba(66, 107, 255, 0.5); background: rgba(66, 107, 255, 0.07); }
-body.cur-link .cur-ring { width: 36px; height: 36px; margin: -18px 0 0 -18px; border-color: var(--blue); }
-body.cur-link .cur-dot { background: var(--blue); }
+body.cur-wide .cur-ring { width: 46px; height: 46px; margin: -23px 0 0 -23px; border-color: rgba(201, 118, 47, 0.55); background: rgba(201, 118, 47, 0.08); }
+body.cur-link .cur-ring { width: 36px; height: 36px; margin: -18px 0 0 -18px; border-color: var(--ring); }
+body.cur-link .cur-dot { background: var(--ring); }
 body.cur-hide .cur-dot, body.cur-hide .cur-ring { opacity: 0; }
 
 /* ------------------------------------------------------------------- tour */
@@ -734,15 +736,15 @@ body.cur-hide .cur-dot, body.cur-hide .cur-ring { opacity: 0; }
 @keyframes cue { 0% { opacity: 0; transform: translateY(-3px); } 35% { opacity: 1; } 100% { opacity: 0; transform: translateY(11px); } }
 
 .stack { list-style: none; margin: 0; padding: 0; display: block; }
-.chap { position: sticky; top: calc(20px + var(--i) * 11px); margin-bottom: 12vh; }
-.chap:last-child { margin-bottom: 6vh; }
+.chap { position: sticky; top: calc(24px + var(--i) * 6px); margin-bottom: 0; }
 .chap-card {
   position: relative; overflow: hidden; isolation: isolate;
   border-radius: 30px; border: 1px solid var(--line-2); box-shadow: var(--sh-2);
   min-height: min(74vh, 560px);
   display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
   align-items: center; gap: clamp(20px, 3vw, 46px); padding: clamp(24px, 3.4vw, 48px);
-  transform: scale(calc(1 - var(--p, 0) * 0.055)) translateY(calc(var(--p, 0) * -16px));
+  transform-origin: 50% 0%;
+  transform: scale(calc(1 - var(--p, 0) * 0.04)) translateY(calc(var(--p, 0) * 10px));
   will-change: transform;
 }
 .chap-art { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
@@ -753,7 +755,7 @@ body.cur-hide .cur-dot, body.cur-hide .cur-ring { opacity: 0; }
 /* the covered chapter settles back into the paper */
 .chap-card::after {
   content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none;
-  background: var(--paper); opacity: calc(var(--p, 0) * 0.6);
+  background: var(--paper); opacity: calc(var(--p, 0) * 0.82);
 }
 .chap-copy, .chap-vis { position: relative; z-index: 2; min-width: 0; }
 .chap-copy { display: grid; gap: 13px; justify-items: start; align-content: center; }
@@ -799,7 +801,7 @@ body.cur-hide .cur-dot, body.cur-hide .cur-ring { opacity: 0; }
 .mock-chars { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; }
 .mock-chars img { width: 44px; height: 44px; border-radius: 13px; background: var(--paper-2); }
 
-.tour-end { display: grid; gap: 14px; justify-items: center; text-align: center; padding: clamp(34px, 6vw, 70px) 20px; }
+.tour-end { display: grid; gap: 14px; justify-items: center; text-align: center; padding: clamp(60px, 11vw, 130px) 20px clamp(34px, 6vw, 70px); }
 .tour-end h2 { margin: 0; font-size: clamp(26px, 4vw, 40px); }
 .tour-end p { margin: 0; color: var(--muted); max-width: 44ch; }
 .tour-end .row2 { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
@@ -812,7 +814,7 @@ body.cur-hide .cur-dot, body.cur-hide .cur-ring { opacity: 0; }
 
 @media (max-width: 900px) {
   .chap-card { grid-template-columns: minmax(0, 1fr); min-height: 0; align-content: center; gap: 22px; }
-  .chap { top: calc(70px + var(--i) * 9px); margin-bottom: 9vh; }
+  .chap { top: calc(68px + var(--i) * 5px); }
   .chap-vis { max-width: 420px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -956,10 +958,10 @@ body.ready .view.tour > .stack, body.ready .view.tour > .tour-rail { animation: 
       <b>SplitSmart</b>
     </a>
     <nav class="snav" aria-label="Main">
+      <button type="button" data-view-link="tour"><svg aria-hidden="true"><use href="#i-tour"/></svg>Tour</button>
       <button type="button" data-view-link="expenses" aria-current="page"><svg aria-hidden="true"><use href="#i-expenses"/></svg>Expenses</button>
       <button type="button" data-view-link="gangs"><svg aria-hidden="true"><use href="#i-gangs"/></svg>Gangs</button>
       <button type="button" data-view-link="scan"><svg aria-hidden="true"><use href="#i-scan"/></svg>Scan</button>
-      <button type="button" data-view-link="tour"><svg aria-hidden="true"><use href="#i-tour"/></svg>Tour</button>
       <button type="button" data-view-link="me"><svg aria-hidden="true"><use href="#i-me"/></svg>Me</button>
     </nav>
     <div class="side-foot">
@@ -1160,10 +1162,10 @@ body.ready .view.tour > .stack, body.ready .view.tour > .tour-rail { animation: 
 </div>
 
 <nav class="tabbar" aria-label="Main">
+  <button type="button" data-view-link="tour"><svg aria-hidden="true"><use href="#i-tour"/></svg>Tour</button>
   <button type="button" data-view-link="expenses" aria-current="page"><svg aria-hidden="true"><use href="#i-expenses"/></svg>Expenses</button>
   <button type="button" data-view-link="gangs"><svg aria-hidden="true"><use href="#i-gangs"/></svg>Gangs</button>
   <button type="button" data-view-link="scan"><svg aria-hidden="true"><use href="#i-scan"/></svg>Scan</button>
-  <button type="button" data-view-link="tour"><svg aria-hidden="true"><use href="#i-tour"/></svg>Tour</button>
   <button type="button" data-view-link="me"><svg aria-hidden="true"><use href="#i-me"/></svg>Me</button>
 </nav>
 
@@ -6411,5 +6413,7 @@ bootSplash();
 
 renderGroups();
 renderOverview();
-markNav('expenses');
+// Nothing to show a brand-new phone, so introduce the app instead
+if (!groups.length && !curGroup && $('profilePage').hidden) showView('tour', true);
+else markNav('expenses');
 </script>
