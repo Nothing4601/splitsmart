@@ -4,7 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-SplitSmart: a premium dark expense-splitting app with the three.js character system baked in. Hash-routed SPA views (dashboard, groups, group detail with balances/settle, activity, profile) plus the full-screen character lobby reachable from the profile page. The whole app is one file, `index.html` (CSS, markup and script inline), plus one binary asset: `assets/brand/smart-split-intro.mp4` (the ≤3s brand intro played by the splash). There is no build step, package manager, linter or test suite.
+SplitSmart: a receipt-scanning, item-by-item bill splitter with settle-up, live sync
+between phones and a three.js character system. The whole app is one file,
+`index.html` (CSS, markup and script inline); beside it are `sw.js` +
+`manifest.webmanifest` + `icons/` (PWA), `assets/brand/smart-split-intro.mp4` (the ≤3s
+brand intro the splash plays) and `test/logic.test.mjs`. There is no build step,
+package manager or linter.
 
 ## Run
 
@@ -13,25 +18,94 @@ python3 -m http.server   # then open http://localhost:8000
 node --test              # unit tests for the money/parsing logic
 ```
 
-`<script id="split-logic">` (before the main script) is DOM-free and unit-tested by `test/logic.test.mjs`: it defines `window.SplitLogic` (allocate, itemizedShares, manualShares, balances, settle, parseReceipt, checkTotals, upiLink, guessCategory, mergeGroups). Money is integer paise everywhere; UI code only calls it.
+Lazy-loaded at runtime (never on first paint): Tesseract.js 5.1.1 + `tessdata_fast`
+from jsDelivr (first scan), Transformers.js 3.0.2 + `Xenova/mobilebert-uncased-mnli`
+in a module Web Worker built from a Blob (first review), qrcode-generator 1.4.4 (first
+QR), and `Xenova/whisper-tiny.en` in a second Blob worker (first *Say it*).
 
-three.js r147, `OrbitControls` and `RoomEnvironment` are loaded as globals (`THREE`, `THREE.OrbitControls`, `THREE.RoomEnvironment`) from jsdelivr via plain `<script>` tags, not ES modules. Keep to the r147 API (e.g. `outputEncoding`/`sRGBEncoding`, `examples/js/` controls); newer three.js releases removed these.
+three.js r147, `OrbitControls` and `RoomEnvironment` are loaded as globals (`THREE`,
+`THREE.OrbitControls`, `THREE.RoomEnvironment`) from jsdelivr via plain `<script>`
+tags, not ES modules. Keep to the r147 API (e.g. `outputEncoding`/`sRGBEncoding`,
+`examples/js/` controls); newer three.js releases removed these.
 
-## Architecture (single `<script>` in index.html, top to bottom)
+## Design
 
-- **Character engine (unchanged from the original lobby)**: `M`/`LACQ`/`FAB`/`GOLD` materials, one-letter shape helpers, `canvasTex`, the 12 `CHARS` definitions, `PART_NAMES` mix-and-match, `compose`, `buildCharacter`, pose/`EMOTES` keyframe animation, the shared `cardRenderer` that paints portraits into 2D canvases (`drawActor`, `drawStill`, `portraitURL`), the roster ring (`select`, `layoutCards`), gallery, atelier/creator, and the `frame()` rAF loop. The lobby chrome (buttons, nameplate, dock) is styled by the app CSS; the engine itself should stay untouched.
-- **SplitSmart app code (after the engine)**: helpers (`$`, `esc`, paise math `toPaise`/`money`/`moneyShort`), toasts + success `burst`, profile (localStorage `lobby-name`/`lobby-char`), the groups/expense data layer, the balance engine (`computeShares` — exact integer-paise shares with remainder distribution; `groupBalances`; `simplify` — greedy fewest-payments), the hash router (`route`, `withSkeleton` loading state, `go`), and one render function per view (`renderDashboard`, `renderGroupsView`, `renderGroupDetail`, `renderActivity`, `showProfile`), plus overlays: new-group modal, add-expense sheet (`sheet` state + `recalcSheet`), settle modal, expense-detail modal, group picker.
-- **Splash**: `bootSplash` plays the intro video once per browser session (skipped when `sessionStorage.ss-intro` is set or `prefers-reduced-motion`), with a skip button, a 3.05s hard cap, and a pure-CSS fallback animation if the video errors. `body.ready` gates the entrance animations.
+Light "paper & ink": a warm off-white sheet (`--paper`) over a faint painterly wash,
+white cards with a hairline border, indigo ink (`--accent` `#252f91`) and one
+electric-blue accent (`--blue` `#426bff`). Fraunces for anything read as a headline or
+an amount, Plus Jakarta Sans for anything clicked. The shell is a left rail from
+1024px up (Hisaab / Gangs / Scan / Me) and a bottom tab bar below that; the character
+lobby is the one dark surface and keeps its own `--night`/`--cream` tokens.
 
-## Data model (localStorage `splitsmart-groups`)
+## Architecture
 
-Group = `{ id, name, created, meMid, members: [{ name, charId, mid }], expenses, settlements }`. `meMid` marks which member is the profile user (first member at creation). Expense = `{ id, desc (may be empty — the UI falls back to the category name), amount (rupees), cat, payer (mid), date (ISO), split: { type: 'equal'|'amounts'|'percent', parts: [{ mid, value }] } }` — `parts` lists the included members only (legacy 'shares' type still computes but the editor no longer offers it); `value` is only used by 'amounts'/'percent'. Settlement = `{ id, from, to, amount (rupees), date, note }` — a payment moves the payer's net toward zero (`net[from] += amount`, `net[to] -= amount`). All math is done in integer paise. `loadGroups` migrates legacy groups (adds `mid`s, `meMid`, empty `expenses`/`settlements`). `EXAMPLE_GROUPS` seed first-run data and are flagged `example`.
+`<script id="split-logic">` comes first and must stay DOM-free: it defines
+`window.SplitLogic` (`allocate` largest-remainder rounding, `itemizedShares`,
+`manualShares`, `balances`, `settle` exact-minimum DP, `parseReceipt`, `checkTotals`,
+`upiLink`, `guessCategory`, `mergeGroups`, `parseSpoken`/`normaliseSpeech`,
+`parseAssignSpeech`). All money is integer paise. `test/logic.test.mjs` extracts this
+block from index.html and runs it in `vm`, so keep the `id` and keep it self-contained.
+
+Main script, top to bottom:
+
+- **Character engine**: `M`/`LACQ`/`FAB`/`GOLD` materials, one-letter shape helpers
+  (`S`, `B`, `Cy`, `Co`, `T`, `Cap`, `hemi`, `put`), `canvasTex`, the `CHARS`
+  definitions with `PART_NAMES`, `buildCharacter`, the pose/`EMOTES` keyframe
+  animation, the shared hidden `cardRenderer` that paints portraits into 2D canvases
+  (`drawActor`, `drawStill`, `portraitURL`), the roster ring, gallery, creator, and
+  the `frame()` rAF loop. The engine itself should stay untouched.
+- **Group data**: `{ id, name, created, members: [{ id, name, charId, upi?, me? }],
+  expenses, settlements, recurring, activity }`; `normaliseGroup` migrates older
+  saves. Every mutation goes through `commit(g, logText)` (activity log, save,
+  re-render), which also calls `stampChanges` for sync, so never mutate a saved group
+  without `commit`, and give new records unique ids (`uid()`). `groupState(g)` derives
+  balances and suggested payments.
+- **Shell**: `showView(name)` switches between the four pages by toggling
+  `#home [data-view]`; `markNav` lights the rail and the tab bar. `#group/<id>`,
+  `#sync=` and `#import=` still go through `route()` on `hashchange`. `showView('me')`
+  opens the profile page, which is where the character lobby is reached from.
+- **Live sync**: a shared group has `syncKey`; `commit` calls `schedulePublish`, and
+  `publishGroup` posts AES-GCM sealed, deflated records to an ntfy.sh topic derived
+  from the key. `syncTick` polls and merges via `applyRemote`.
+- **Scanner** (`openScanner`, state in `scan`): capture → `readCurrent` (canvas
+  `preprocess`, Tesseract PSM 6) → review (`scan.draft`) → assign → `saveReceipt`
+  (photo to IndexedDB via `imgDB`).
+- **Say it** (`openVoice`) and **Say who had what** (`openAssignVoice`) share
+  `voiceSheet`: record → `transcribe` (Whisper worker) → editable transcript →
+  `L.parseSpoken` drafts.
+- **Charts**: `donutChart`, `hbarChart` and `vbarChart` all emit a `data-tip`
+  attribute of `label|amount|share`; the cursor layer reads it to drive one shared
+  `.ctip` tooltip and the dim/highlight states.
+- **The cursor layer** (end of the script): one passive `pointermove` feeds one rAF
+  `frameTick` that writes CSS custom properties and transforms only. It drives the
+  card spotlight (`[data-spot]` + `.glow`), the gang-card 3D tilt (`[data-tilt]`),
+  magnetic primary buttons (`[data-magnet]`), settlement-row highlighting
+  (`.pay-row.hot` + `.list.dimmed`), the chart tooltip, and the dot-and-ring cursor.
+  All of it is gated on `(hover: hover) and (pointer: fine)` and
+  `prefers-reduced-motion`.
+- **Splash**: `bootSplash` plays the intro video once per browser session (skipped
+  when `sessionStorage.ss-intro` is set or under reduced motion), with a skip button,
+  a 3.05s hard cap, and a pure-CSS fallback if the video errors. `body.ready` gates
+  the staggered page entrance.
+- **Persistence**: `localStorage` keys `splitsmart-groups`, `lobby-customs`,
+  `lobby-name`, `lobby-char`, `lobby-upi`, `splitsmart-sync`, `splitsmart-device`;
+  receipt photos in IndexedDB `splitsmart`/`receipts`. All access is in try/catch.
 
 ## Conventions when changing things
 
-- Keep it a single static file deployable to static hosting (GitHub Pages style): no bundler, no backend. The intro video under `assets/brand/` is the only binary.
-- New built-in character: add an entry to `CHARS` **and** a matching row to `PART_NAMES` at the same index; give it an `emote` key that exists in `EMOTES` (or add one). Inserting in the middle shifts indexes and breaks saved custom specs in users' localStorage; append instead.
-- New emote: add keyframes to `EMOTES`; it shows up in the creator dropdown via `EMOTE_LABEL`.
-- Expense/settlement `parts` and balances key members by `mid`, never by name or index — keep it that way so renames and ordering stay safe.
-- View renders write into `#app` via `innerHTML`; dynamic covers use `data-cover` + `drawArt` and are painted by `mountExtras`. If you add a view, route it in `route()` and add it to `navKey` so the nav pills highlight.
-- Respect `prefers-reduced-motion` (the CSS kills animations; the splash skips).
+- A fresh install must stay empty: `exampleGroups()` returns `[]` and `loadGroups()`
+  drops anything flagged `example`. Don't seed demo data.
+- New built-in character: append to `CHARS` **and** add a matching row to `PART_NAMES`
+  at the same index; give it an `emote` key that exists in `EMOTES`. Inserting in the
+  middle shifts indexes and breaks saved custom specs in users' `localStorage`.
+- Money logic belongs in the `split-logic` block with a test in
+  `test/logic.test.mjs`; UI code only calls it. Format with `rupees()`.
+- Expense/settlement `parts` and balances key members by `mid`, never by name or
+  index.
+- Escape user text with `esc()` when building HTML strings.
+- Keep it a static site deployable to GitHub Pages: app code stays in `index.html`, no
+  bundler, no backend. Bump `CACHE` in `sw.js` when cached shell files change shape.
+- Cursor effects are decorative: anything they reveal must also be reachable without
+  hover, and nothing may block a click. Add new ones through the existing
+  `data-spot` / `data-tilt` / `data-magnet` / `data-tip` hooks rather than new
+  listeners.
