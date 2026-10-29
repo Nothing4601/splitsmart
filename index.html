@@ -115,7 +115,7 @@ h1, h2, h3 { font-family: var(--serif); font-variation-settings: "SOFT" 20, "WON
   padding-left: max(14px, env(safe-area-inset-left, 0px));
 }
 .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; text-decoration: none; color: var(--ink); }
-.brand .mark { width: 34px; height: 34px; flex: none; border-radius: 12px 15px 11px 14px / 14px 11px 15px 12px; display: grid; place-items: center; background: linear-gradient(145deg, var(--blue), var(--accent)); color: #fff; box-shadow: 0 6px 14px -6px rgba(43, 53, 118, 0.75); }
+.brand .mark { width: 34px; height: 34px; flex: none; border-radius: 12px 15px 11px 14px / 14px 11px 15px 12px; display: grid; place-items: center; background: linear-gradient(145deg, #e8743a, #c4521f); color: #fff; box-shadow: 0 6px 14px -6px rgba(196, 82, 31, 0.7); }
 .brand .mark svg { width: 20px; height: 20px; }
 .brand b { font: 600 19px var(--serif); letter-spacing: -0.015em; }
 .snav { display: grid; gap: 3px; }
@@ -301,7 +301,7 @@ a.li { color: inherit; text-decoration: none; }
 a.li:hover, button.li:hover { background: var(--lav); }
 button.li { width: 100%; border: none; border-bottom: 1px solid var(--line); background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
 
-/* -------------------------------------------------------- dashboard (hisaab) */
+/* -------------------------------------------------------- dashboard (expenses) */
 .hero {
   position: relative; overflow: hidden; border-radius: var(--r-lg); color: var(--ink);
   min-height: 200px; display: grid; align-items: end; isolation: isolate;
@@ -720,25 +720,128 @@ body.cur-link .cur-ring { width: 36px; height: 36px; margin: -18px 0 0 -18px; bo
 body.cur-link .cur-dot { background: var(--blue); }
 body.cur-hide .cur-dot, body.cur-hide .cur-ring { opacity: 0; }
 
+/* ------------------------------------------------------------------- tour */
+/* Chapters are sticky, so each one parks under the header and the next slides
+   up over it. --p is how far the next chapter has covered this one (0 → 1);
+   the scroll driver writes it, the rules below read it. */
+.view.tour { display: block; }
+.tour-intro { display: grid; gap: 12px; justify-items: start; padding: clamp(18px, 5vw, 56px) 0 clamp(26px, 6vw, 64px); max-width: 46ch; }
+.tour-intro h1 { margin: 0; font-size: clamp(34px, 6vw, 62px); line-height: 1.02; max-width: 15ch; }
+.tour-intro p { margin: 0; color: var(--muted); font-size: 17px; max-width: 34ch; }
+.scroll-cue { display: inline-flex; align-items: center; gap: 9px; margin-top: 8px; font: 600 12.5px var(--sans); color: var(--muted); }
+.scroll-cue i { width: 20px; height: 32px; border: 1.6px solid var(--line-2); border-radius: 999px; position: relative; }
+.scroll-cue i::after { content: ""; position: absolute; left: 50%; top: 7px; width: 3px; height: 6px; margin-left: -1.5px; border-radius: 2px; background: var(--muted); animation: cue 1.7s cubic-bezier(.4, 0, .3, 1) infinite; }
+@keyframes cue { 0% { opacity: 0; transform: translateY(-3px); } 35% { opacity: 1; } 100% { opacity: 0; transform: translateY(11px); } }
+
+.stack { list-style: none; margin: 0; padding: 0; display: block; }
+.chap { position: sticky; top: calc(20px + var(--i) * 11px); margin-bottom: 12vh; }
+.chap:last-child { margin-bottom: 6vh; }
+.chap-card {
+  position: relative; overflow: hidden; isolation: isolate;
+  border-radius: 30px; border: 1px solid var(--line-2); box-shadow: var(--sh-2);
+  min-height: min(74vh, 560px);
+  display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  align-items: center; gap: clamp(20px, 3vw, 46px); padding: clamp(24px, 3.4vw, 48px);
+  transform: scale(calc(1 - var(--p, 0) * 0.055)) translateY(calc(var(--p, 0) * -16px));
+  will-change: transform;
+}
+.chap-art { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+.chap-card::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(100deg, rgba(255, 253, 246, 0.96), rgba(255, 253, 246, 0.88) 38%, rgba(255, 253, 246, 0.42) 70%, rgba(255, 253, 246, 0.2));
+}
+/* the covered chapter settles back into the paper */
+.chap-card::after {
+  content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  background: var(--paper); opacity: calc(var(--p, 0) * 0.6);
+}
+.chap-copy, .chap-vis { position: relative; z-index: 2; min-width: 0; }
+.chap-copy { display: grid; gap: 13px; justify-items: start; align-content: center; }
+.chap-no {
+  font: 600 12px var(--sans); letter-spacing: 0.16em; color: var(--ink);
+  background: var(--brush); padding: 4px 12px;
+  border-radius: 12px 16px 11px 15px / 15px 11px 16px 12px;
+}
+.chap-copy h2 { margin: 0; font-size: clamp(27px, 3.6vw, 44px); line-height: 1.05; }
+.chap-copy > p { margin: 0; color: var(--muted); font-size: 16px; max-width: 36ch; }
+.chap-points { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+.chap-points li { display: flex; gap: 9px; align-items: flex-start; font-size: 14.5px; color: var(--ink); }
+.chap-points li::before { content: ""; flex: none; width: 7px; height: 7px; margin-top: 7px; border-radius: 50%; background: #d9873f; }
+
+/* content arrives once the chapter is on screen */
+.chap-copy > *, .chap-vis > * { opacity: 0; transform: translateY(16px); transition: opacity 0.6s cubic-bezier(.2, .75, .2, 1), transform 0.6s cubic-bezier(.2, .75, .2, 1); }
+.chap.in .chap-copy > *, .chap.in .chap-vis > * { opacity: 1; transform: none; }
+.chap.in .chap-copy > *:nth-child(2) { transition-delay: 0.07s; }
+.chap.in .chap-copy > *:nth-child(3) { transition-delay: 0.13s; }
+.chap.in .chap-copy > *:nth-child(4) { transition-delay: 0.19s; }
+.chap.in .chap-vis > * { transition-delay: 0.14s; }
+
+/* the little product mock on the right of each chapter */
+.mock { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 18px 40px -22px rgba(79, 62, 38, 0.5); padding: 15px; display: grid; gap: 10px; }
+.mock-h { display: flex; align-items: center; gap: 8px; font: 700 13px var(--sans); }
+.mock-h .dot { width: 8px; height: 8px; border-radius: 50%; background: #d9873f; flex: none; }
+.mock-h small { margin-left: auto; color: var(--faint); font-size: 11.5px; font-weight: 500; }
+.mock-row { display: flex; align-items: center; gap: 9px; font-size: 13.5px; padding: 7px 9px; border-radius: 11px; background: var(--paper); }
+.mock-row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mock-row .amt { font-variant-numeric: tabular-nums; font-weight: 700; }
+.mock-row.lit { background: var(--hl); }
+.mock-row img { width: 24px; height: 24px; border-radius: 50%; flex: none; }
+.mock-faces { display: flex; }
+.mock-faces img { width: 24px; height: 24px; border-radius: 50%; margin-right: -7px; border: 2px solid var(--card); }
+.mock-line { height: 7px; border-radius: 4px; background: var(--paper-2); }
+.mock-note { font-size: 12px; color: var(--muted); }
+.mock-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.mock-wave { display: flex; align-items: center; gap: 3px; height: 34px; }
+.mock-wave i { flex: 1; border-radius: 3px; background: linear-gradient(180deg, #f0bb6e, #d9873f); }
+.mock-phones { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center; }
+.mock-phone { border: 1.5px solid var(--line-2); border-radius: 15px; padding: 9px; display: grid; gap: 6px; background: var(--card); }
+.mock-phone .mock-line:first-child { background: var(--brush); }
+.mock-chars { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; }
+.mock-chars img { width: 44px; height: 44px; border-radius: 13px; background: var(--paper-2); }
+
+.tour-end { display: grid; gap: 14px; justify-items: center; text-align: center; padding: clamp(34px, 6vw, 70px) 20px; }
+.tour-end h2 { margin: 0; font-size: clamp(26px, 4vw, 40px); }
+.tour-end p { margin: 0; color: var(--muted); max-width: 44ch; }
+.tour-end .row2 { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+
+/* which chapter you're in */
+.tour-rail { position: fixed; right: 22px; top: 50%; transform: translateY(-50%); z-index: 15; display: grid; gap: 10px; }
+.tour-rail button { width: 10px; height: 10px; padding: 0; border: 0; border-radius: 50%; background: var(--line-2); cursor: pointer; transition: background 0.25s, transform 0.25s; }
+.tour-rail button[aria-current="true"] { background: #d9873f; transform: scale(1.5); }
+@media (max-width: 1100px) { .tour-rail { display: none; } }
+
+@media (max-width: 900px) {
+  .chap-card { grid-template-columns: minmax(0, 1fr); min-height: 0; align-content: center; gap: 22px; }
+  .chap { top: calc(70px + var(--i) * 9px); margin-bottom: 9vh; }
+  .chap-vis { max-width: 420px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chap { position: static; }
+  .chap-card { transform: none; }
+  .chap-card::after { display: none; }
+  .chap-copy > *, .chap-vis > * { opacity: 1; transform: none; }
+  .scroll-cue i::after { animation: none; }
+}
+
 /* ------------------------------------------- brand intro + page entrance */
-#splash { position: fixed; inset: 0; z-index: 200; background: #0d1030; display: grid; place-items: center; transition: opacity 0.55s ease, transform 0.55s ease; }
-#splash.out { opacity: 0; transform: scale(1.035); pointer-events: none; }
+#splash { position: fixed; inset: 0; z-index: 200; background: var(--paper); display: grid; place-items: center; transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.3, .1, .3, 1); }
+#splash.out { opacity: 0; transform: scale(1.09); pointer-events: none; }
 #splash video { width: 100%; height: 100%; object-fit: cover; display: block; }
-#splashSkip { position: absolute; right: max(20px, env(safe-area-inset-right, 0px)); bottom: max(20px, env(safe-area-inset-bottom, 0px)); padding: 9px 16px; border-radius: 999px; border: 1px solid rgba(190, 205, 255, 0.4); background: rgba(13, 16, 48, 0.55); color: #dfe6ff; font: 600 12.5px var(--sans); cursor: pointer; opacity: 0.8; backdrop-filter: blur(8px); }
-#splashSkip:hover { opacity: 1; border-color: var(--blue); }
+#splashSkip { position: absolute; right: max(20px, env(safe-area-inset-right, 0px)); bottom: max(20px, env(safe-area-inset-bottom, 0px)); padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(255, 253, 246, 0.72); color: var(--muted); font: 600 12.5px var(--sans); cursor: pointer; opacity: 0.85; backdrop-filter: blur(8px); }
+#splashSkip:hover { opacity: 1; color: var(--ink); border-color: var(--ink); }
 #splash .fb { display: none; text-align: center; }
 #splash.fallback video { display: none; }
 #splash.fallback .fb { display: grid; justify-items: center; gap: 24px; }
 .fb-disc { position: relative; width: 112px; height: 112px; }
-.fb-disc i { position: absolute; inset: 0; border-radius: 50%; background: var(--blue); box-shadow: 0 0 60px rgba(66, 107, 255, 0.45); }
+.fb-disc i { position: absolute; inset: 0; border-radius: 50%; background: #d9743f; box-shadow: 0 0 60px rgba(217, 116, 63, 0.35); }
 .fb-l { clip-path: inset(0 52% 0 0); animation: fbL 2.3s cubic-bezier(.65, 0, .25, 1) both; }
 .fb-r { clip-path: inset(0 0 0 52%); animation: fbR 2.3s cubic-bezier(.65, 0, .25, 1) both; }
-.fb-bar { position: absolute; left: 16%; right: 16%; top: calc(50% - 2px); height: 4px; border-radius: 2px; background: #eef2ff; animation: fbBar 2.3s ease both; }
+.fb-bar { position: absolute; left: 16%; right: 16%; top: calc(50% - 2px); height: 4px; border-radius: 2px; background: var(--paper); animation: fbBar 2.3s ease both; }
 @keyframes fbL { 0%, 18% { transform: none; } 55%, 80% { transform: translateX(-28px); } 100% { transform: none; } }
 @keyframes fbR { 0%, 18% { transform: none; } 55%, 80% { transform: translateX(28px); } 100% { transform: none; } }
 @keyframes fbBar { 0% { opacity: 0; } 30%, 100% { opacity: 1; } }
-.fb-word { font: 600 29px var(--serif); color: #eef2ff; animation: fbWord 0.9s 1.35s both; }
-.fb-word em { font-style: normal; color: var(--blue); }
+.fb-word { font: 600 29px var(--serif); color: var(--ink); animation: fbWord 0.9s 1.35s both; }
+.fb-word em { font-style: normal; color: #d9743f; }
 @keyframes fbWord { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 body.ready .view > * { animation: rise 0.55s cubic-bezier(.2, .75, .2, 1) both; }
@@ -746,6 +849,7 @@ body.ready .view > *:nth-child(2) { animation-delay: 0.06s; }
 body.ready .view > *:nth-child(3) { animation-delay: 0.12s; }
 body.ready .view > *:nth-child(4) { animation-delay: 0.18s; }
 body.ready .view > *:nth-child(5) { animation-delay: 0.24s; }
+body.ready .view.tour > .stack, body.ready .view.tour > .tour-rail { animation: none; }   /* a transform here would break the sticky chapters */
 
 /* ------------------------------------------------------------------- print */
 @media print {
@@ -825,7 +929,7 @@ body.ready .view > *:nth-child(5) { animation-delay: 0.24s; }
 </div>
 
 <svg class="sr-only" aria-hidden="true"><defs>
-  <symbol id="i-hisaab" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <symbol id="i-expenses" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
     <path d="M5 3.5h14a1 1 0 0 1 1 1v16l-2.6-1.6-2.6 1.6-2.6-1.6-2.6 1.6L7 19l-3 1.5v-16a1 1 0 0 1 1-1Z"/><path d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4"/>
   </symbol>
   <symbol id="i-gangs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -833,6 +937,9 @@ body.ready .view > *:nth-child(5) { animation-delay: 0.24s; }
   </symbol>
   <symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
     <path d="M3.5 8V5.5a2 2 0 0 1 2-2H8M16 3.5h2.5a2 2 0 0 1 2 2V8M20.5 16v2.5a2 2 0 0 1-2 2H16M8 20.5H5.5a2 2 0 0 1-2-2V16"/><path d="M3.5 12h17"/>
+  </symbol>
+  <symbol id="i-tour" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2.8 13.9 8l5.6.3-4.3 3.6 1.4 5.4L12 14.4 7.4 17.3l1.4-5.4L4.5 8.3 10.1 8Z"/><path d="M19 17.5v3M17.5 19h3"/>
   </symbol>
   <symbol id="i-me" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>
@@ -844,14 +951,15 @@ body.ready .view > *:nth-child(5) { animation-delay: 0.24s; }
 
 <div class="app">
   <aside class="side">
-    <a class="brand" href="#top" data-home data-view-link="hisaab" aria-label="SplitSmart, home">
+    <a class="brand" href="#top" data-home data-view-link="expenses" aria-label="SplitSmart, home">
       <span class="mark"><svg aria-hidden="true"><use href="#i-logo"/></svg></span>
       <b>SplitSmart</b>
     </a>
     <nav class="snav" aria-label="Main">
-      <button type="button" data-view-link="hisaab" aria-current="page"><svg aria-hidden="true"><use href="#i-hisaab"/></svg>Hisaab</button>
+      <button type="button" data-view-link="expenses" aria-current="page"><svg aria-hidden="true"><use href="#i-expenses"/></svg>Expenses</button>
       <button type="button" data-view-link="gangs"><svg aria-hidden="true"><use href="#i-gangs"/></svg>Gangs</button>
       <button type="button" data-view-link="scan"><svg aria-hidden="true"><use href="#i-scan"/></svg>Scan</button>
+      <button type="button" data-view-link="tour"><svg aria-hidden="true"><use href="#i-tour"/></svg>Tour</button>
       <button type="button" data-view-link="me"><svg aria-hidden="true"><use href="#i-me"/></svg>Me</button>
     </nav>
     <div class="side-foot">
@@ -865,7 +973,7 @@ body.ready .view > *:nth-child(5) { animation-delay: 0.24s; }
 
   <div class="col">
     <header class="topbar">
-      <a class="brand" href="#top" data-home data-view-link="hisaab" aria-label="SplitSmart, home">
+      <a class="brand" href="#top" data-home data-view-link="expenses" aria-label="SplitSmart, home">
         <span class="mark"><svg aria-hidden="true"><use href="#i-logo"/></svg></span>
         <b>SplitSmart</b>
       </a>
@@ -878,8 +986,8 @@ body.ready .view > *:nth-child(5) { animation-delay: 0.24s; }
     <main id="home">
       <div class="wrap">
 
-        <!-- ------------------------------------------------ Hisaab -->
-        <section class="view" id="top" data-view="hisaab">
+        <!-- ---------------------------------------------- Expenses -->
+        <section class="view" id="top" data-view="expenses">
           <div class="hero">
             <canvas class="hero-art" id="heroArt" aria-hidden="true"></canvas>
             <div class="hero-copy">
@@ -947,6 +1055,25 @@ body.ready .view > *:nth-child(5) { animation-delay: 0.24s; }
             </div>
           </div>
           <div id="scanPick"></div>
+        </section>
+
+        <!-- -------------------------------------------------- Tour -->
+        <section class="view tour" data-view="tour" hidden>
+          <div class="tour-intro">
+            <span class="label">A quick tour</span>
+            <h1>What SplitSmart does</h1>
+            <p>Six things, in the order you'd actually use them. Keep scrolling — each one stacks on the last.</p>
+            <span class="scroll-cue">Scroll<i aria-hidden="true"></i></span>
+          </div>
+          <ol class="stack" id="tourStack"></ol>
+          <div class="tour-end">
+            <h2>That's the whole app.</h2>
+            <p>No account, no server. Everything lives on this device until you choose to share a gang.</p>
+            <div class="row2">
+              <button class="btn-accent" data-magnet data-new-group>+ New gang</button>
+              <button class="btn-plain" data-magnet data-go-scan>Scan a bill</button>
+            </div>
+          </div>
         </section>
 
       </div>
@@ -1033,9 +1160,10 @@ body.ready .view > *:nth-child(5) { animation-delay: 0.24s; }
 </div>
 
 <nav class="tabbar" aria-label="Main">
-  <button type="button" data-view-link="hisaab" aria-current="page"><svg aria-hidden="true"><use href="#i-hisaab"/></svg>Hisaab</button>
+  <button type="button" data-view-link="expenses" aria-current="page"><svg aria-hidden="true"><use href="#i-expenses"/></svg>Expenses</button>
   <button type="button" data-view-link="gangs"><svg aria-hidden="true"><use href="#i-gangs"/></svg>Gangs</button>
   <button type="button" data-view-link="scan"><svg aria-hidden="true"><use href="#i-scan"/></svg>Scan</button>
+  <button type="button" data-view-link="tour"><svg aria-hidden="true"><use href="#i-tour"/></svg>Tour</button>
   <button type="button" data-view-link="me"><svg aria-hidden="true"><use href="#i-me"/></svg>Me</button>
 </nav>
 
@@ -5748,7 +5876,7 @@ requestAnimationFrame(frame);
    =========================================================================== */
 
 // ---------- Which of the four pages is showing ----------
-let shellView = 'hisaab';
+let shellView = 'expenses';
 const navButtons = () => document.querySelectorAll('button[data-view-link]');
 function markNav(name) {
   navButtons().forEach(b => {
@@ -5765,7 +5893,9 @@ function showView(name, keepScroll) {
   shellView = name;
   markNav(name);
   if (name === 'scan') renderScanPick();
-  if (name === 'hisaab') requestAnimationFrame(drawHeroArt);
+  if (name === 'expenses') requestAnimationFrame(drawHeroArt);
+  if (name === 'tour') { renderTour(); requestAnimationFrame(() => { paintChapters(); tourTick(); }); }
+  if (tourRail) tourRail.hidden = name !== 'tour';
   if (!keepScroll) scrollTo(0, 0);
 }
 document.querySelectorAll('[data-view-link]').forEach(el => el.addEventListener('click', e => {
@@ -6090,6 +6220,168 @@ if (fine.matches) {
   }
 }
 
+/* ---------------------------------------------------------------- the tour
+   Six chapters, each a sticky card the next one slides over. The driver below
+   writes one custom property per chapter (--p: how far it has been covered)
+   and the stylesheet does the rest, so scrolling never touches layout. */
+const CHAPTERS = [
+  {
+    no: '01', title: 'Scan the bill',
+    lead: 'Photograph the receipt, or pick one from your camera roll. The lines are read here, on your phone — the photo never leaves it.',
+    points: ['Reads item names, quantities and prices', 'Checks the lines add up to the total', 'Flags anything it wasn’t sure about'],
+    vis: () => `<div class="mock">
+      <div class="mock-h"><span class="dot"></span>Receipt<small>read on device</small></div>
+      <div class="mock-row"><span class="nm">Paneer tikka</span><span class="amt">₹320</span></div>
+      <div class="mock-row"><span class="nm">Butter naan ×4</span><span class="amt">₹240</span></div>
+      <div class="mock-row"><span class="nm">Cold coffee ×2</span><span class="amt">₹260</span></div>
+      <div class="mock-line" style="width:60%"></div>
+      <div class="mock-row" style="background:var(--pos-bg)"><span class="nm">Total</span><span class="amt">₹820</span></div>
+    </div>`,
+  },
+  {
+    no: '02', title: 'Tap who had what',
+    lead: 'Go down the items and put people on the ones they shared. Everyone pays for what they actually ate.',
+    points: ['Per-item, not per-head', 'Taxes and charges spread across the items', 'Anything left over splits evenly'],
+    vis: faces => `<div class="mock">
+      <div class="mock-h"><span class="dot"></span>Who had what<small>3 of 3 assigned</small></div>
+      <div class="mock-row"><span class="nm">Paneer tikka</span><span class="mock-faces">${faces(0, 3)}</span></div>
+      <div class="mock-row"><span class="nm">Butter naan</span><span class="mock-faces">${faces(1, 4)}</span></div>
+      <div class="mock-row"><span class="nm">Cold coffee</span><span class="mock-faces">${faces(2, 2)}</span></div>
+      <div class="mock-note">Tap a face to add or remove them.</div>
+    </div>`,
+  },
+  {
+    no: '03', title: 'Or just say it',
+    lead: '“Dev paid six hundred for pizza, split equally.” Speech is transcribed on the device and turned into a draft you check before it saves.',
+    points: ['Understands who paid, how much and for what', 'Handles “everyone except Riya” and “Riya 200, rest equally”', 'Nothing saves without your review'],
+    vis: () => `<div class="mock">
+      <div class="mock-h"><span class="dot"></span>Say it<small>listening</small></div>
+      <div class="mock-wave">${Array.from({ length: 26 }, (_, i) => `<i style="height:${18 + Math.round(Math.abs(Math.sin(i * 0.9)) * 70)}%"></i>`).join('')}</div>
+      <div class="mock-note">“Dev paid 600 for pizza, split equally”</div>
+      <div class="mock-chips"><span class="chip">Dev paid</span><span class="chip">₹600.00</span><span class="chip">Food</span><span class="chip">Split equally</span></div>
+    </div>`,
+  },
+  {
+    no: '04', title: 'Split it however you like',
+    lead: 'Equal, exact amounts, percentages or shares. The maths is done in whole paise, so the parts always add back up to the bill.',
+    points: ['No rounding leaks — remainders are handed out, not dropped', 'Leave people out of a bill they weren’t part of', 'Set a bill to repeat every month'],
+    vis: () => `<div class="mock">
+      <div class="mock-h"><span class="dot"></span>Split<small>₹820.00</small></div>
+      <div class="seg" style="pointer-events:none"><button aria-pressed="true">Equal</button><button>Exact</button><button>%</button><button>Shares</button></div>
+      <div class="mock-row"><span class="nm">You</span><span class="amt">₹273.34</span></div>
+      <div class="mock-row"><span class="nm">Dev</span><span class="amt">₹273.33</span></div>
+      <div class="mock-row"><span class="nm">Sana</span><span class="amt">₹273.33</span></div>
+      <div class="mock-note">Adds up to ₹820.00 exactly.</div>
+    </div>`,
+  },
+  {
+    no: '05', title: 'Settle with the fewest payments',
+    lead: 'Instead of everyone paying everyone, it works out the smallest set of payments that clears the whole gang — then hands you a UPI link for each.',
+    points: ['Exact minimum, not a rough guess', 'UPI deep link and a QR code per payment', 'One tap to mark a payment done'],
+    vis: faces => `<div class="mock">
+      <div class="mock-h"><span class="dot"></span>Who owes whom<small>2 payments</small></div>
+      <div class="mock-row lit">${faces(3, 1)}<span class="nm">Tara pays Sana</span><span class="amt">₹1,348</span></div>
+      <div class="mock-row">${faces(5, 1)}<span class="nm">Dev pays you</span><span class="amt">₹452</span></div>
+      <div class="mock-note">Everyone is square after these two.</div>
+    </div>`,
+  },
+  {
+    no: '06', title: 'Keep everyone in step',
+    lead: 'Share a gang with a link. Both phones keep the same expenses, encrypted end to end — and pick a character so your friends know which row is yours.',
+    points: ['Add an expense on one phone, it appears on the other', 'Works offline; catches up when you’re back', 'Twelve characters, or build your own'],
+    vis: faces => `<div class="mock">
+      <div class="mock-h"><span class="dot"></span>Wing B Goa Trip<small>in sync</small></div>
+      <div class="mock-phones">
+        <div class="mock-phone"><div class="mock-line"></div><div class="mock-line" style="width:70%"></div><div class="mock-line" style="width:85%"></div></div>
+        <div class="mock-phone"><div class="mock-line"></div><div class="mock-line" style="width:70%"></div><div class="mock-line" style="width:85%"></div></div>
+      </div>
+      <div class="mock-chars">${faces(6, 5, 'chars')}</div>
+    </div>`,
+  },
+];
+
+let tourBuilt = false;
+function renderTour() {
+  if (tourBuilt) return;
+  tourBuilt = true;
+  const stack = $('tourStack');
+  const faces = (offset, n, kind) => Array.from({ length: n }, (_, k) =>
+    `<img src="${portraitURL((offset * 3 + k * 2) % CHARS.length)}" alt="">`).join('');
+  stack.innerHTML = CHAPTERS.map((c, i) => `<li class="chap" style="--i:${i}">
+      <article class="chap-card">
+        <canvas class="chap-art" aria-hidden="true"></canvas>
+        <div class="chap-copy">
+          <span class="chap-no">${c.no}</span>
+          <h2>${esc(c.title)}</h2>
+          <p>${esc(c.lead)}</p>
+          <ul class="chap-points">${c.points.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="chap-vis">${c.vis(faces)}</div>
+      </article>
+    </li>`).join('');
+
+  // a dot per chapter, so you can see where you are and jump
+  const rail = document.createElement('nav');
+  rail.className = 'tour-rail';
+  rail.setAttribute('aria-label', 'Tour chapters');
+  rail.innerHTML = CHAPTERS.map((c, i) =>
+    `<button type="button" data-chap="${i}" aria-label="${esc(c.no)} ${esc(c.title)}"${i ? '' : ' aria-current="true"'}></button>`).join('');
+  rail.addEventListener('click', e => {
+    const b = e.target.closest('[data-chap]');
+    if (b) stack.children[+b.dataset.chap].scrollIntoView({ behavior: calm.matches ? 'auto' : 'smooth', block: 'start' });
+  });
+  $('tourStack').after(rail);
+  tourRail = rail;
+
+  // paint each chapter's sheet; palette index follows the chapter
+  paintChapters();
+  addEventListener('resize', () => { clearTimeout(paintTimer); paintTimer = setTimeout(paintChapters, 200); });
+
+  // content arrives as a chapter reaches the screen
+  const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('in', e.isIntersecting)),
+    { rootMargin: '-12% 0px -12% 0px' });
+  stack.querySelectorAll('.chap').forEach(el => io.observe(el));
+}
+let tourRail = null, paintTimer = 0;
+function paintChapters() {
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  document.querySelectorAll('#tourStack .chap-art').forEach((cv, i) => {
+    if (!cv.clientWidth) return;
+    cv.width = Math.round(cv.clientWidth * dpr);
+    cv.height = Math.round(cv.clientHeight * dpr);
+    drawArt(cv, i + 40, 1);     // 40 is a multiple of 8, so palette index === chapter
+  });
+}
+
+// --- the scroll driver -----------------------------------------------------
+let tourRaf = 0;
+function tourTick() {
+  tourRaf = 0;
+  const stack = $('tourStack');
+  if (!stack || !stack.children.length) return;
+  const chaps = stack.children;
+  let active = 0;
+  for (let i = 0; i < chaps.length; i++) {
+    const el = chaps[i], card = el.firstElementChild, next = chaps[i + 1];
+    let p = 0;
+    if (next && !calm.matches) {
+      const here = el.getBoundingClientRect().top, there = next.getBoundingClientRect().top;
+      p = clamp(1 - (there - here) / Math.max(1, card.offsetHeight * 0.85), 0, 1);
+    }
+    card.style.setProperty('--p', p.toFixed(3));
+    if (p < 0.5) { active = i; break; }
+    active = i + 1;
+  }
+  if (tourRail) tourRail.querySelectorAll('button').forEach((b, i) => {
+    if (i === Math.min(active, CHAPTERS.length - 1)) b.setAttribute('aria-current', 'true');
+    else b.removeAttribute('aria-current');
+  });
+}
+addEventListener('scroll', () => {
+  if (shellView !== 'tour' || tourRaf) return;
+  tourRaf = requestAnimationFrame(tourTick);
+}, { passive: true });
+
 // ---------- The brand intro, then the first paint of the new shell ----------
 function bootSplash() {
   const splash = $('splash'), vid = $('splashVid');
@@ -6097,9 +6389,9 @@ function bootSplash() {
   const finish = () => {
     if (done) return;
     done = true;
-    splash.classList.add('out');
-    document.body.classList.add('ready');
-    setTimeout(() => splash.remove(), 650);
+    document.body.classList.add('ready');      // the page rises behind the film
+    requestAnimationFrame(() => splash.classList.add('out'));
+    setTimeout(() => splash.remove(), 800);
     try { sessionStorage.setItem('ss-intro', '1'); } catch (e) {}
   };
   let seen = false;
@@ -6119,5 +6411,5 @@ bootSplash();
 
 renderGroups();
 renderOverview();
-markNav('hisaab');
+markNav('expenses');
 </script>

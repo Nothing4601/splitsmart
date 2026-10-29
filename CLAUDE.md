@@ -45,9 +45,18 @@ like itself and neighbours rarely match. Never draw node graphs, scatter plots o
 connected-dot patterns on a cover; that is the look this replaced. Covers are light,
 so text over them is ink with a cream scrim behind it, never white on a dark overlay.
 
-The shell is a left rail from 1024px up (Hisaab / Gangs / Scan / Me) and a bottom tab
-bar below that; the character lobby is the one dark surface and keeps its own
-`--night`/`--cream` tokens.
+The shell is a left rail from 1024px up (Expenses / Gangs / Scan / Tour / Me) and a
+bottom tab bar below that; the character lobby is the one dark surface and keeps its
+own `--night`/`--cream` tokens.
+
+The brand film is graded to the app, not the other way round:
+`assets/brand/smart-split-intro.mp4` was re-encoded through
+`negate,hue=h=8:s=0.76,eq=gamma=1.04:brightness=-0.012`, which turns the original
+dark-navy/cyan clip into cream paper with a terracotta mark. Its background now
+measures within three points of `--paper`, so the splash fades into the app with no
+colour step, and the rail's logo mark wears the same terracotta. If the film is ever
+replaced, re-grade it to land on `--paper` or the hand-off will read as "a video
+played".
 
 ## Architecture
 
@@ -95,10 +104,22 @@ Main script, top to bottom:
   (`.pay-row.hot` + `.list.dimmed`), the chart tooltip, and the dot-and-ring cursor.
   All of it is gated on `(hover: hover) and (pointer: fine)` and
   `prefers-reduced-motion`.
+- **Tour** (`renderTour`, `CHAPTERS`): the "what this app does" page. Six chapters,
+  each a `position: sticky` card the next one slides over. A `scroll` listener feeds
+  one rAF `tourTick`, which writes `--p` on each card (how far the next has covered
+  it, 0 → 1); the stylesheet reads `--p` for the scale-back and the fade toward
+  paper, so scrolling never touches layout. Chapter *n* paints `drawArt(cv, n + 40)`,
+  and 40 is a multiple of 8, so the palette index equals the chapter index and the
+  page walks the whole `ART_PALETTES` set in order. Content inside a chapter arrives
+  on an IntersectionObserver (`.chap.in`). Under reduced motion the chapters go
+  static and `--p` stays 0. The mocks in each chapter are built from the app's own
+  components (`.chip`, `.seg`, `portraitURL`) rather than screenshots, so they can't
+  drift from the real UI.
 - **Splash**: `bootSplash` plays the intro video once per browser session (skipped
   when `sessionStorage.ss-intro` is set or under reduced motion), with a skip button,
-  a 3.05s hard cap, and a pure-CSS fallback if the video errors. `body.ready` gates
-  the staggered page entrance.
+  a 3.05s hard cap, and a pure-CSS fallback if the video errors. It adds `body.ready`
+  *before* fading the film, so the page has finished arriving underneath by the time
+  the film clears.
 - **Persistence**: `localStorage` keys `splitsmart-groups`, `lobby-customs`,
   `lobby-name`, `lobby-char`, `lobby-upi`, `splitsmart-sync`, `splitsmart-device`;
   receipt photos in IndexedDB `splitsmart`/`receipts`. All access is in try/catch.
