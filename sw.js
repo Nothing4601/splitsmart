@@ -2,9 +2,8 @@
 // The page itself is network-first (so updates arrive), libraries from the CDN are
 // cache-first. Tesseract keeps its model in IndexedDB and Transformers.js in its own
 // cache, so they aren't duplicated here.
-const CACHE = 'splitsmart-v9';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png',
-  './pop/', './pop/index.html', './pop/manifest.webmanifest'];
+const CACHE = 'splitsmart-v10';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 const CDN = /^https:\/\/(cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
 
 self.addEventListener('install', e => {
@@ -23,7 +22,7 @@ self.addEventListener('fetch', e => {
     e.respondWith(fetch(req).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
       return res;
-    }).catch(() => caches.match(req, { ignoreSearch: true }).then(r => r || caches.match(url.pathname.includes('/pop/') ? './pop/index.html' : './index.html'))));
+    }).catch(() => caches.match(req, { ignoreSearch: true }).then(r => r || caches.match('./index.html'))));
   } else if (CDN.test(req.url)) {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
       if (res.ok || res.type === 'opaque') { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
