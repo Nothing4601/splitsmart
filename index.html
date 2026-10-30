@@ -2102,7 +2102,7 @@ body.ready .view.tour > .stack, body.ready .view.tour > .tour-rail { animation: 
   function parseAssignSpeech(text, items, members, meId, total) {
     const all = members.map(m => m.id), notes = [];
     const FILL = /^(the|a|an|some|of|my|his|her|their|our|also|too|just|only|both|whole|item|items|thing|things|plate|plates|portion|bill|bills|it|that|this|one|then|so|okay|ok|um|uh|list|lists|people|stuff|food|dish|dishes|order|orders|in|into|amongst|equally|evenly|together|each|apiece|first|second|third|fourth|fifth|sixth)$/;
-    const VERB = /^(had|has|have|ate|eaten|eat|took|take|takes|got|get|gets|ordered|order|orders|drank|drink|shared|share|shares|split|was|were|is|are|goes|go|went|for|to|by|between|among|amongst|belongs)$/;
+    const VERB = /^(had|has|have|ate|eaten|eat|took|take|takes|got|get|gets|ordered|order|orders|drank|drink|ate|consumed|consume|finished|shared|share|shares|sharing|split|splits|splitting|divide|divides|divided|dividing|distribute|distributes|distributed|give|gives|given|gave|paid|pay|pays|put|puts|charge|charged|was|were|is|are|goes|go|went|for|to|by|across|between|among|amongst|belongs)$/;
     const itemish = w => items.some(it => itemScore([w], it.name) >= 0.7);
     // someone referred to by role rather than by name — we can't tell who they are
     const PERSONISH = /^(friend|friends|guy|guys|mate|mates|buddy|buddies|bro|dude|dudes|person|persons|fellow|fellows|roommate|roomie|flatmate|flatmates)$/;
@@ -2159,13 +2159,20 @@ body.ready .view.tour > .stack, body.ready .view.tour > .tour-rail { animation: 
       if (cur?.type === 'I' && !cur.rest && !cur.every) { if (!cur.phrases.length) cur.phrases.push([]); cur.phrases.at(-1).push(t.w); }
       else groups.push(cur = { type: 'I', phrases: [[t.w]] });
     }
+    // an item run that matches nothing on the bill, sitting between "the rest"
+    // and the people it belongs to, is words — not a dish
+    const noise = g => g.type === 'I' && !g.rest && !g.every &&
+      (g.phrases || []).every(ph => !ph.length || !items.some(it => itemScore(ph, it.name) >= 0.6));
     const got = new Map(), pairs = [];
     let rest = null, every = null;
     for (let i = 0; i < groups.length; i++) {
       const a = groups[i];
       if (a.used || (a.type !== 'P' && a.type !== 'I')) continue;
       let j = i + 1;
-      while (groups[j]?.type === 'V') j++;
+      while (groups[j]?.type === 'V' || ((a.rest || a.every) && groups[j] && !groups[j].used && noise(groups[j]))) {
+        if (groups[j].type === 'I') groups[j].used = true;   // consumed as filler
+        j++;
+      }
       const b = groups[j];
       if (!b || b.used || b.type === a.type || (b.type !== 'P' && b.type !== 'I')) continue;
       a.used = b.used = true;
