@@ -7,8 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 SplitSmart: a receipt-scanning, item-by-item bill splitter with settle-up, live sync
 between phones and a three.js character system. The whole app is one file,
 `index.html` (CSS, markup and script inline); beside it are `sw.js` +
-`manifest.webmanifest` + `icons/` (PWA), `assets/brand/smart-split-intro.mp4` (the ≤3s
-brand intro the splash plays) and `test/logic.test.mjs`. There is no build step,
+`manifest.webmanifest` + `icons/` (PWA), `vendor/` (three.js and its two helpers,
+shipped with the site rather than fetched from a CDN),
+`assets/brand/smart-split-intro.mp4` (the ≤3s brand intro the splash plays) and
+`test/logic.test.mjs`. There is no build step,
 package manager or linter.
 
 ## Run
@@ -23,9 +25,14 @@ from jsDelivr (first scan), Transformers.js 3.0.2 + `Xenova/mobilebert-uncased-m
 in a module Web Worker built from a Blob (first review), qrcode-generator 1.4.4 (first
 QR), and `Xenova/whisper-tiny.en` in a second Blob worker (first *Say it*).
 
-three.js r147, `OrbitControls` and `RoomEnvironment` are loaded as globals (`THREE`,
-`THREE.OrbitControls`, `THREE.RoomEnvironment`) from jsdelivr via plain `<script>`
-tags, not ES modules. Keep to the r147 API (e.g. `outputEncoding`/`sRGBEncoding`,
+three.js r147, `OrbitControls` and `RoomEnvironment` are **vendored into
+`vendor/`** and loaded as globals (`THREE`, `THREE.OrbitControls`,
+`THREE.RoomEnvironment`) via plain `<script>` tags, not ES modules. They used to
+come from jsdelivr, and that was a single point of failure for the whole site: the
+engine runs on the first line of the main script, so a CDN that was slow or blocked
+threw `THREE is not defined` and left a blank page — no nav, no expenses, nothing.
+Keep them local. A small listener registered before the main script catches the
+same failure however it happens and shows `.boot-fail` instead of a blank page. Keep to the r147 API (e.g. `outputEncoding`/`sRGBEncoding`,
 `examples/js/` controls); newer three.js releases removed these.
 
 ## Design
