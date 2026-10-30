@@ -1874,7 +1874,8 @@ body.ready .view.tour > .stack, body.ready .view.tour > .tour-rail { animation: 
   }
   const SPEECH_WORDS = new Set(('paid pay pays paying payed spent spend gave give covered bought put for on split splitting equally equal evenly between among amongst with except excluding without but '
     + 'other than rest remaining remainder others everyone everybody all whole group us we each share shares part parts ratio by and the a an of to from it is was this that '
-    + 'back his her their its he she they them me i my mine myself you your our just only also then so cab').split(' '));
+    + 'back his her their its he she they them me i my mine myself you your our just only also then so cab '
+    + 'friend friends guy guys mate mates buddy buddies bro dude dudes person persons people folks fellow roommate roomie flatmate flatmates').split(' '));
   // 3 exact, 2 sounds the same, 1 one letter off; 0.5 "loose" (only trusted where a name is expected)
   function matchMember(word, members, glued = false) {
     const w = word.replace(/'s$/, '');
@@ -2100,15 +2101,22 @@ body.ready .view.tour > .stack, body.ready .view.tour > .tour-rail { animation: 
   }
   function parseAssignSpeech(text, items, members, meId, total) {
     const all = members.map(m => m.id), notes = [];
-    const FILL = /^(the|a|an|some|of|my|his|her|their|our|also|too|just|only|both|whole|item|items|thing|things|plate|plates|portion|bill|it|that|this|one|then|so|okay|ok|um|uh|list|people|stuff|food|dishes)$/;
+    const FILL = /^(the|a|an|some|of|my|his|her|their|our|also|too|just|only|both|whole|item|items|thing|things|plate|plates|portion|bill|bills|it|that|this|one|then|so|okay|ok|um|uh|list|lists|people|stuff|food|dish|dishes|order|orders|in|into|amongst|equally|evenly|together|each|apiece|first|second|third|fourth|fifth|sixth)$/;
     const VERB = /^(had|has|have|ate|eaten|eat|took|take|takes|got|get|gets|ordered|order|orders|drank|drink|shared|share|shares|split|was|were|is|are|goes|go|went|for|to|by|between|among|amongst|belongs)$/;
     const itemish = w => items.some(it => itemScore([w], it.name) >= 0.7);
+    // someone referred to by role rather than by name — we can't tell who they are
+    const PERSONISH = /^(friend|friends|guy|guys|mate|mates|buddy|buddies|bro|dude|dudes|person|persons|fellow|fellows|roommate|roomie|flatmate|flatmates)$/;
+    const unnamed = new Set();
     // "other people", "everyone else", "the others" = everyone not named in this sentence;
     // "the remaining list", "rest of the items", "everything else" = items not named
     const said = (' ' + normaliseSpeech(text) + ' ')
-      .replace(/ (all )?(the )?(other (people|guys|members|friends|ones|folks)|others|rest of (them|us|the (people|group|gang|guys))) /g, ' OTHERS ')
+      // "the rest of the people", "rest people", "remaining friends" — people, not items.
+      // This has to run first: otherwise "rest" is eaten as a leftover ITEM and the
+      // people it was pointing at are lost.
+      .replace(/ (all )?(the )?(rest|remaining|remainder|other)s?( of)?( the)? (people|members|friends|guys|folks|persons|mates|group|gang|team|crowd|lot) /g, ' OTHERS ')
+      .replace(/ (all )?(the )?(other (people|guys|members|friends|ones|folks)|others|rest of (them|us)) /g, ' OTHERS ')
       .replace(/ (everyone|everybody|all) else /g, ' OTHERS ')
-      .replace(/ (the )?(rest|remaining|remainder|leftover|left over)( of)?( the)?( items?| things?| list| stuff| food| bill| dishes| ones| order)? /g, ' REST ')
+      .replace(/ (the )?(rest|remaining|remainder|leftover|left over)( of)?( the)?( items?| things?| lists?| stuff| food| bills?| dishes?| ones| orders?)? /g, ' REST ')
       .replace(/ (everything|anything|all) else /g, ' REST ');
     const toks = said.split(' ').filter(Boolean).map(w => {
       if (w === 'OTHERS') return { type: 'P', ids: [], others: true };
@@ -2118,7 +2126,7 @@ body.ready .view.tour > .stack, body.ready .view.tour > .tour-rail { animation: 
       if (/^(and|with|plus|&)$/.test(w)) return { type: 'soft' };
       if (/^(except|excluding|without|but)$/.test(w)) return { type: 'X' };
       if (/^(i|me|myself|mine)$/.test(w)) return meId ? { type: 'P', ids: [meId] } : { type: 'fill' };
-      if (/^(everyone|everybody|all|we|us|together|equally|evenly)$/.test(w)) return { type: 'P', ids: all, everyone: true };
+      if (/^(everyone|everybody|all|we|us)$/.test(w)) return { type: 'P', ids: all, everyone: true };
       if (/^(rest|remaining|remainder)$/.test(w)) return { type: 'R' };
       if (/^(other|else)$/.test(w)) return { type: 'fill' };
       if (/^(everything|anything)$/.test(w)) return { type: 'E' };
@@ -2126,6 +2134,7 @@ body.ready .view.tour > .stack, body.ready .view.tour > .tour-rail { animation: 
       if (FILL.test(w) || /^\d+(\.\d+)?%?$/.test(w)) return { type: 'fill' };
       const m = matchMember(w, members);
       if (m && (m.score >= 1 || !itemish(w))) return { type: 'P', ids: [m.id] };
+      if (PERSONISH.test(w)) { unnamed.add(w); return { type: 'fill' }; }
       return { type: 'W', w };
     });
     // runs of people, runs of item words (several items split by "and"/commas), verbs in between
@@ -2186,6 +2195,17 @@ body.ready .view.tour > .stack, body.ready .view.tour > .tour-rail { animation: 
         got.set(k, all.filter(id => ids.includes(id) || (got.get(k) || []).includes(id)));
       }
     }
+    // Items that were named but never attached to anybody — say so, rather than
+    // leaving them quietly unassigned. This is what happens when someone is
+    // referred to by role ("second friend ate the dosa") instead of by name.
+    for (const g of groups) {
+      if (g.type !== 'I' || g.used || g.rest || g.every) continue;
+      for (const ph of (g.phrases || []).filter(x => x.length)) {
+        const hit = items.map(it => ({ it, s: itemScore(ph, it.name) })).filter(x => x.s >= 0.6).sort((x, y) => y.s - x.s);
+        if (hit.length && hit[0].s > (hit[1]?.s ?? 0) && !got.has(hit[0].it.key)) notes.push(`Didn’t catch who had “${hit[0].it.name}”.`);
+      }
+    }
+    if (unnamed.size) notes.push(`Say people by name — I don’t know who “${[...unnamed].join('”, “')}” is.`);
     const out = { items: [...got].map(([key, ids]) => ({ key, ids })), rest, every, bill: null, notes };
     // no items named: maybe a split of the whole bill ("split it equally between me and Arjun")
     if (!out.items.length && !rest && !every && total > 0 && /\b(split|divide|equally|evenly|each|share|shares)\b|%/.test(text.toLowerCase())) {

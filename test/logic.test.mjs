@@ -440,3 +440,38 @@ test('who had what: "the remaining list was shared by other people" means the pe
   // only two of us named and nobody else in the group: "the others" falls back to everyone
   assert.deepEqual(plain(L.parseAssignSpeech('I had the vada, the rest shared by other people', menu, team.slice(0, 1), 'r', 1)).rest, ['r']);
 });
+
+test('who had what: "the rest of the people" means the people, however it is said', () => {
+  const team = [{ id: 'r', name: 'Srikrishna', me: true }, { id: 'h', name: 'Heet' }, { id: 'a', name: 'Arjun' }, { id: 'm', name: 'Meera' }];
+  const menu = [{ key: 1, name: 'VADA' }, { key: 2, name: 'SWEET LASSI' }, { key: 3, name: 'GHEE PODI DOSA' }, { key: 4, name: 'SADA DOSA' }, { key: 5, name: 'IDLI' }];
+  const said = t => plain(L.parseAssignSpeech(t, menu, team, 'r', 100000));
+  // every one of these names two people and hands the remainder to the other two
+  for (const tail of [
+    'split the rest between the rest of the people',
+    'split the rest in rest people equally',          // no "of the", and "equally" must not re-add everyone
+    'rest of the bills for the remaining people',     // plural "bills"
+    'the remaining items go to the other guys',
+    'the rest of the bills split among the others',
+    'leftover dishes for the remaining friends',
+    'everything else shared by everyone else',
+  ]) assert.deepEqual(said(`I had vada, Heet had idli, ${tail}`).rest, ['a', 'm'], tail);
+  // "everyone" still means everyone, and naming people still beats both
+  assert.deepEqual(said('I had vada, the rest everyone shared').rest, ['r', 'h', 'a', 'm']);
+  assert.deepEqual(said('I had vada, split the rest between all of us equally').rest, ['r', 'h', 'a', 'm']);
+  assert.deepEqual(said('Heet had idli, rest split equally between me and Arjun').rest, ['r', 'a']);
+});
+
+test('who had what: someone called by role, not by name, is flagged rather than guessed', () => {
+  const team = [{ id: 'r', name: 'Srikrishna', me: true }, { id: 'h', name: 'Heet' }, { id: 'a', name: 'Arjun' }, { id: 'm', name: 'Meera' }];
+  const menu = [{ key: 1, name: 'VADA' }, { key: 2, name: 'SWEET LASSI' }, { key: 3, name: 'GHEE PODI DOSA' }, { key: 4, name: 'SADA DOSA' }];
+  const r = plain(L.parseAssignSpeech(
+    'I ate vada and lassi, second friend ate one ghee podi dhosa and one sada dosa and split rest of the bills in rest people equally',
+    menu, team, 'r', 100000));
+  // what we do know
+  assert.deepEqual(byKey(r), { 1: ['r'], 2: ['r'] });
+  assert.deepEqual(r.rest, ['h', 'a', 'm']);        // not me, since I was named
+  // what we don't: the two dishes stay unassigned, and we say why
+  assert.ok(r.notes.some(n => /GHEE PODI DOSA/.test(n)), r.notes.join(' / '));
+  assert.ok(r.notes.some(n => /SADA DOSA/.test(n)), r.notes.join(' / '));
+  assert.ok(r.notes.some(n => /by name/.test(n)), r.notes.join(' / '));
+});
