@@ -408,6 +408,7 @@ const FOUR = [{ id: 'r', name: 'Riya', me: true }, { id: 'a', name: 'Arjun' }, {
 const MENU = [{ key: 1, name: 'Large Farmhouse Pi' }, { key: 2, name: 'Masala Maggi' }, { key: 3, name: 'Cheese Maggi' }, { key: 4, name: 'Egg Maggi' }, { key: 5, name: 'Cold Coffee' }];
 const who = text => plain(L.parseAssignSpeech(text, MENU, FOUR, 'r', 84000));
 const byKey = r => Object.fromEntries(r.items.map(x => [x.key, x.ids]));
+const byKeyOf = byKey;
 
 test('who had what: people and items in any order, the rest, clipped receipt names', () => {
   const r = who('Arjun and Meera had the pizza, I had the cold coffee, masala maggi for Kabir, the rest everyone shared.');
@@ -459,6 +460,25 @@ test('who had what: "the rest of the people" means the people, however it is sai
   assert.deepEqual(said('I had vada, the rest everyone shared').rest, ['r', 'h', 'a', 'm']);
   assert.deepEqual(said('I had vada, split the rest between all of us equally').rest, ['r', 'h', 'a', 'm']);
   assert.deepEqual(said('Heet had idli, rest split equally between me and Arjun').rest, ['r', 'a']);
+});
+
+test('who had what: it does not matter which word joins the remainder to the people', () => {
+  const team = [{ id: 'y', name: 'Aryan', me: true }, { id: 's', name: 'Srikrishna' }, { id: 'a', name: 'Arjun' }, { id: 'm', name: 'Meera' }];
+  const menu = [{ key: 1, name: 'VADA' }, { key: 2, name: 'IDLI' }, { key: 3, name: 'GHEE PODI DOSA' }, { key: 4, name: 'SWEET LASSI' }];
+  const said = t => plain(L.parseAssignSpeech(t, menu, team, 'y', 100000));
+  const mine = { 1: ['y'], 2: ['y'], 3: ['s'], 4: ['s'] };
+  // no comma before the remainder, and "divide" rather than "split"
+  const r = said('I ate vada and idli, Srikrishna ate dhosa and lassi rest of the bills divide in rest of the people');
+  assert.deepEqual([byKeyOf(r), r.rest, r.notes], [mine, ['a', 'm'], []]);
+  // the verb that hands the remainder over
+  for (const v of ['divide', 'divided', 'split', 'share', 'distribute', 'give', 'put', 'goes to', 'is for', 'for'])
+    assert.deepEqual(said(`I ate vada and idli, Srikrishna ate dhosa and lassi, rest of the bills ${v} in rest of the people`).rest, ['a', 'm'], v);
+  // a word in between that is on nobody's menu is filler, not a dish
+  for (const f of ['kindly divide', 'please split', 'just divide', 'equally divide', 'divide equally'])
+    assert.deepEqual(said(`I ate vada and idli, Srikrishna ate dhosa and lassi, rest of the bills ${f} among rest of the people`).rest, ['a', 'm'], f);
+  // and the connective
+  for (const c of ['in', 'among', 'amongst', 'between', 'across', 'to', 'for', 'with'])
+    assert.deepEqual(said(`I ate vada and idli, Srikrishna ate dhosa and lassi, rest of the bills divide ${c} rest of the people`).rest, ['a', 'm'], c);
 });
 
 test('who had what: someone called by role, not by name, is flagged rather than guessed', () => {

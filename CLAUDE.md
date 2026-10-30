@@ -104,7 +104,11 @@ Main script, top to bottom:
   are lost. "equally"/"evenly"/"together" are fillers, not a word for everyone —
   treating them as "everyone" put the named people straight back into the remainder.
   Someone named by role rather than by name ("second friend") is never guessed at:
-  the parser leaves their items unassigned and says so in `notes`.
+  the parser leaves their items unassigned and says so in `notes`. The word joining
+  the remainder to the people it goes to is not fixed: `VERB` has to carry every way
+  of saying it ("divide" was missing once, and was read as a dish, which broke the
+  pairing), and a run of words between them that matches nothing on the bill is
+  stepped over as filler ("kindly", "please") rather than paired with the people.
 - **Charts**: `donutChart`, `hbarChart` and `vbarChart` all emit a `data-tip`
   attribute of `label|amount|share`; the cursor layer reads it to drive one shared
   `.ctip` tooltip and the dim/highlight states.
