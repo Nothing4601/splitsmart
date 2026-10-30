@@ -97,7 +97,14 @@ Main script, top to bottom:
   (photo to IndexedDB via `imgDB`).
 - **Say it** (`openVoice`) and **Say who had what** (`openAssignVoice`) share
   `voiceSheet`: record → `transcribe` (Whisper worker) → editable transcript →
-  `L.parseSpoken` drafts.
+  `L.parseSpoken` drafts. In `parseAssignSpeech`, "the rest" is ambiguous and the
+  order of the rewrites in `said` settles it: the **people** sense ("the rest of the
+  people", "rest people", "remaining friends") must be matched before the **item**
+  sense, or the remainder is eaten as a leftover dish and the people it pointed at
+  are lost. "equally"/"evenly"/"together" are fillers, not a word for everyone —
+  treating them as "everyone" put the named people straight back into the remainder.
+  Someone named by role rather than by name ("second friend") is never guessed at:
+  the parser leaves their items unassigned and says so in `notes`.
 - **Charts**: `donutChart`, `hbarChart` and `vbarChart` all emit a `data-tip`
   attribute of `label|amount|share`; the cursor layer reads it to drive one shared
   `.ctip` tooltip and the dim/highlight states.

@@ -2,7 +2,7 @@
 // The page itself is network-first (so updates arrive), libraries from the CDN are
 // cache-first. Tesseract keeps its model in IndexedDB and Transformers.js in its own
 // cache, so they aren't duplicated here.
-const CACHE = 'splitsmart-v13';
+const CACHE = 'splitsmart-v14';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 const CDN = /^https:\/\/(cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
 
