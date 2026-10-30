@@ -8,7 +8,7 @@ with nothing sent to a server.
 
 ## What it does
 
-- **Hisaab** — one dashboard across every gang: what you owe, what you're owed, your
+- **Expenses** — one dashboard across every gang: what you owe, what you're owed, your
   net position, who owes whom, and your spending by category, by gang and by month.
 - **Gangs** — a group per room, trip or canteen run. Expenses, balances, insights,
   members and a full activity log.
