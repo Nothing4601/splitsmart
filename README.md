@@ -5,7 +5,7 @@
 **Scan a receipt, give each item to the people who actually shared it,
 and settle up with the fewest payments.**
 
-[**Open the app →**](https://nothing4601.github.io/splitsmart/)
+[**Click here to open the app **](https://nothing4601.github.io/splitsmart/)
 
 [![live](https://img.shields.io/badge/live-github%20pages-2b3576)](https://nothing4601.github.io/splitsmart/)
 ![tests](https://img.shields.io/badge/tests-38%20passing-2b7a55)
