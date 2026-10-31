@@ -7,12 +7,6 @@ and settle up with the fewest payments.**
 
 [**Click here to open the app**](https://nothing4601.github.io/splitsmart/)
 
-[![live](https://img.shields.io/badge/live-github%20pages-2b3576)](https://nothing4601.github.io/splitsmart/)
-![tests](https://img.shields.io/badge/tests-38%20passing-2b7a55)
-![backend](https://img.shields.io/badge/backend-none-c9762f)
-![build](https://img.shields.io/badge/build%20step-none-c9762f)
-![pwa](https://img.shields.io/badge/PWA-installable-2b3576)
-
 <img src="screenshot.png" width="760" alt="SplitSmart dashboard: what you owe and are owed across every group, who owes whom, and spending by category">
 
 </div>
