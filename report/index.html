@@ -8,7 +8,7 @@
 <style>
   @page { size: A4 portrait; margin: 0; }
   :root {
-    --paper:#faf5ea; --card:#fffdf8; --ink:#2d2a24; --muted:#6f6758; --faint:#9b927f;
+    --paper:#fffdf8; --ink:#2d2a24; --muted:#6f6758; --faint:#9b927f;
     --line:#e6dcc7; --accent:#2b3576; --burnt:#c9762f; --ok:#2b7a55;
     --serif:"Fraunces","Iowan Old Style",Georgia,serif;
     --sans:"Nunito","Segoe UI",system-ui,sans-serif;
@@ -16,44 +16,33 @@
   * { box-sizing:border-box; }
   body { margin:0; background:#e9e4da; font-family:var(--sans); color:var(--ink); }
   .page {
-    width:210mm; min-height:297mm; margin:0 auto; background:var(--paper);
-    padding:10mm 11mm 8mm; display:flex; flex-direction:column; gap:3.4mm;
+    width:210mm; height:297mm; margin:0 auto; background:var(--paper);
+    padding:16mm 16mm 12mm; display:flex; flex-direction:column; gap:6mm;
   }
-  /* ---- header ---- */
-  header { display:flex; align-items:flex-start; gap:5mm; border-bottom:1.1pt solid var(--ink); padding-bottom:3mm; }
-  .mark { width:11mm; height:11mm; flex:none; border-radius:3.2mm 4mm 3mm 3.8mm/3.8mm 3mm 4mm 3.2mm;
-          background:linear-gradient(145deg,#e8743a,#c4521f); display:grid; place-items:center; }
-  .mark svg { width:6.4mm; height:6.4mm; }
+  header { display:flex; align-items:flex-end; gap:6mm; border-bottom:1.2pt solid var(--ink); padding-bottom:4mm; }
   .head-main { flex:1; min-width:0; }
-  h1 { font-family:var(--serif); font-size:23pt; line-height:1; margin:0 0 1.4mm; letter-spacing:-.01em; }
-  .tag { font-size:8.4pt; line-height:1.35; color:var(--muted); margin:0; max-width:118mm; }
-  .links { text-align:right; font-size:7.6pt; line-height:1.65; flex:none; }
+  h1 { font-family:var(--serif); font-size:26pt; line-height:1; margin:0 0 2mm; letter-spacing:-.01em; }
+  .tag { font-size:9.5pt; line-height:1.4; color:var(--muted); margin:0; max-width:112mm; }
+  .links { text-align:right; font-size:8.2pt; line-height:1.5; flex:none; }
   .links a, .links b { color:var(--accent); text-decoration:none; font-weight:700; display:block; }
-  .links span { color:var(--faint); display:block; margin-top:.9mm; }
+  .links span { color:var(--faint); display:block; margin-top:1.4mm; }
   .links span:first-child { margin-top:0; }
-  /* ---- shots ---- */
-  .shots { display:grid; grid-template-columns:1fr; gap:1.8mm; max-width:136mm; margin:0 auto; width:100%; }
-  .shot { border:.8pt solid var(--line); border-radius:2.4mm; overflow:hidden; background:var(--card); display:block; }
-  .shot img { width:100%; display:block; }
-  .cap { font-size:6.8pt; color:var(--faint); margin:.8mm 0 0; }
-  /* ---- tiers ---- */
-  .tiers { display:grid; grid-template-columns:repeat(3,1fr); gap:4mm; }
-  .tier h2 { font-family:var(--serif); font-size:10.5pt; margin:0 0 .4mm; }
-  .tier .sub { font-size:6.8pt; color:var(--burnt); font-weight:700; letter-spacing:.04em; text-transform:uppercase; margin:0 0 1.6mm; }
-  ul { list-style:none; margin:0; padding:0; display:grid; gap:.85mm; }
-  li { font-size:7.1pt; line-height:1.26; padding-left:3.6mm; position:relative; }
-  li::before { content:"✓"; position:absolute; left:0; top:0; color:var(--ok); font-weight:700; font-size:7pt; }
+  .tiers { display:grid; grid-template-columns:repeat(3,1fr); gap:6mm; }
+  .tier h2 { font-family:var(--serif); font-size:12pt; margin:0 0 .6mm; }
+  .tier .sub { font-size:7.4pt; color:var(--burnt); font-weight:700; letter-spacing:.05em; text-transform:uppercase; margin:0 0 2.6mm; }
+  ul { list-style:none; margin:0; padding:0; display:grid; gap:1.9mm; }
+  li { font-size:8.2pt; line-height:1.34; padding-left:4.2mm; position:relative; }
+  li::before { content:"✓"; position:absolute; left:0; top:.1mm; color:var(--ok); font-weight:700; font-size:7.6pt; }
   li b { font-weight:700; }
   li i { font-style:normal; color:var(--muted); }
-  /* ---- lower band ---- */
-  .band { display:grid; grid-template-columns:1.05fr 1fr; gap:4mm; border-top:1.1pt solid var(--ink); padding-top:3mm; }
-  .box h3 { font-family:var(--serif); font-size:10.5pt; margin:0 0 1.6mm; }
-  .box p { font-size:7.2pt; line-height:1.38; margin:0 0 1.2mm; }
+  .band { display:grid; grid-template-columns:1fr 1fr; gap:6mm; border-top:1.2pt solid var(--ink); padding-top:4mm; }
+  .box h3 { font-family:var(--serif); font-size:12pt; margin:0 0 2.4mm; }
+  .box p { font-size:8.2pt; line-height:1.45; margin:0 0 2.2mm; }
   .box p:last-child { margin-bottom:0; }
-  .box b { font-weight:700; }
-  .box .k { color:var(--burnt); font-weight:700; }
-  footer { margin-top:auto; border-top:.8pt solid var(--line); padding-top:2.2mm;
-           display:flex; justify-content:space-between; font-size:6.9pt; color:var(--faint); }
+  .box b { font-weight:700; } .box .k { color:var(--burnt); font-weight:700; }
+  code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:7.6pt; }
+  footer { margin-top:auto; border-top:.8pt solid var(--line); padding-top:3mm;
+           display:flex; justify-content:space-between; font-size:7.4pt; color:var(--faint); }
   @media print { body { background:none; } .page { margin:0; } }
 </style>
 </head>
@@ -61,14 +50,10 @@
 <div class="page">
 
   <header>
-    <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
-      <path d="M11 3.2a8.8 8.8 0 0 0 0 17.6Z" fill="#fff" stroke="none"/>
-      <path d="M13 3.2a8.8 8.8 0 0 1 0 17.6Z" fill="#fff" stroke="none" opacity=".55"/>
-      <path d="M5 12h14"/></svg></span>
     <div class="head-main">
       <h1>SplitSmart</h1>
-      <p class="tag">Scan a receipt, give each item to the people who actually shared it, and settle up with the
-        fewest payments. One HTML file — no account, no backend, no build step, nothing leaves the device unless you share a gang.</p>
+      <p class="tag">Scan a receipt, give each item to the people who actually shared it, and settle up with the fewest
+        payments. One HTML file — no account, no backend, no build step. Nothing leaves the device unless you share a group.</p>
     </div>
     <div class="links">
       <span>Live</span><a href="https://nothing4601.github.io/splitsmart/">nothing4601.github.io/splitsmart</a>
@@ -77,53 +62,45 @@
     </div>
   </header>
 
-  <div class="shots">
-    <span class="shot"><img src="dashboard.png" alt="SplitSmart dashboard: balances across every group, who owes whom, spending by category"></span>
-    <span class="shot"><img src="settle.png" alt="Settle up: the fewest payments, with the hovered row highlighted"></span>
-    <p class="cap">Across every group, netted by person. Settle-up suggests the exact minimum set of payments; pointing at one shows who pays whom.</p>
-  </div>
-
   <div class="tiers">
     <div class="tier">
       <h2>Tier 1</h2>
-      <p class="sub">Core · 7 of 7</p>
+      <p class="sub">Core · all 7</p>
       <ul>
-        <li><b>Groups</b> <i>— create, rename, delete; switch from one dashboard</i></li>
-        <li><b>Members</b> <i>— add/remove, each with a 3D character avatar</i></li>
-        <li><b>Capture</b> <i>— upload or camera, with preview before reading</i></li>
-        <li><b>OCR</b> <i>— Tesseract in a worker; progress bar, UI stays live</i></li>
-        <li><b>Parsing</b> <i>— name, qty, unit price, line total; subtotal, CGST/SGST, service, discount, total; addresses, GSTIN and footers dropped</i></li>
-        <li><b>Review</b> <i>— every field editable, lines added/deleted, low-confidence words highlighted, photo beside the table</i></li>
-        <li><b>Validation</b> <i>— warns with the exact difference when the lines don't reach the printed total</i></li>
+        <li><b>Groups &amp; members</b> <i>— create, rename, delete; add and remove people; switch from one dashboard</i></li>
+        <li><b>Capture</b> <i>— upload or camera, with a preview before reading</i></li>
+        <li><b>OCR &amp; parsing</b> <i>— Tesseract in a worker with a progress bar; items, quantities, prices, CGST/SGST, service, discount and total; addresses, GSTIN and footers dropped</i></li>
+        <li><b>Review</b> <i>— every field editable, lines added or deleted, low-confidence words highlighted, photo beside the table</i></li>
+        <li><b>Validation</b> <i>— shows the exact difference when the lines don't reach the printed total</i></li>
         <li><b>Manual expense</b> <i>— description, amount, payer, participants, date</i></li>
         <li><b>Balances</b> <i>— each member's net, recomputed on every change</i></li>
       </ul>
     </div>
     <div class="tier">
       <h2>Tier 2</h2>
-      <p class="sub">Advanced · 7 of 7</p>
+      <p class="sub">Advanced · all 7</p>
       <ul>
-        <li><b>Itemized assignment</b> <i>— tap avatars onto a line; shared items split between assignees; unassigned lines flagged before saving</i></li>
-        <li><b>Four split modes</b> <i>— equal, exact, percent, shares; percentages must reach 100 and amounts must reach the bill</i></li>
+        <li><b>Itemized assignment</b> <i>— tap people onto a line; shared items split between them; unassigned lines flagged before saving</i></li>
+        <li><b>Four split modes</b> <i>— equal, exact, percent, shares, with the input validated</i></li>
         <li><b>Proportional tax</b> <i>— tax, service and discounts follow each person's item subtotal, not a head count</i></li>
-        <li><b>Rounding</b> <i>— integer paise throughout; largest-remainder allocation, so shares always sum to the bill exactly</i></li>
-        <li><b>Debt simplification</b> <i>— exact minimum payments by dynamic programming, not a greedy guess; mark any settled</i></li>
-        <li><b>Categories</b> <i>— zero-shot model into the six categories, loaded on first use; your override always wins</i></li>
-        <li><b>Persistence</b> <i>— groups, expenses and settlements in localStorage; receipt photos in IndexedDB</i></li>
+        <li><b>Rounding</b> <i>— integer paise throughout; largest-remainder allocation, so shares always sum to the bill</i></li>
+        <li><b>Debt simplification</b> <i>— exact minimum payments by dynamic programming; mark any settled</i></li>
+        <li><b>Categories</b> <i>— zero-shot model, loaded on first use; your override always wins</i></li>
+        <li><b>Persistence</b> <i>— localStorage for the data, IndexedDB for receipt photos</i></li>
       </ul>
     </div>
     <div class="tier">
       <h2>Tier 3</h2>
-      <p class="sub">Brownie points · 9 of 9</p>
+      <p class="sub">Brownie points · all 9</p>
       <ul>
-        <li><b>UPI settle-up</b> <i>— upi://pay deep link and QR per payment, pre-filled</i></li>
-        <li><b>Analytics</b> <i>— donut by category, bars by member, by group and by month</i></li>
-        <li><b>Share, no backend</b> <i>— export/import JSON, or encode a group into a link</i></li>
-        <li><b>PWA &amp; offline</b> <i>— installable; every byte it needs ships with the site</i></li>
-        <li><b>Recurring</b> <i>— monthly items add themselves each cycle</i></li>
-        <li><b>Export</b> <i>— settlement summary as PDF, expenses as CSV</i></li>
-        <li><b>Batch scan</b> <i>— a queue of receipts read in one go</i></li>
-        <li><b>Accessibility</b> <i>— keyboard reachable, ARIA roles and labels, visible focus rings, honours reduced motion</i></li>
+        <li><b>UPI settle-up</b> <i>— deep link and QR per payment</i></li>
+        <li><b>Analytics</b> <i>— by category, member, group and month</i></li>
+        <li><b>Share, no backend</b> <i>— JSON export/import, or a link</i></li>
+        <li><b>PWA &amp; offline</b> <i>— installable; every byte ships with the site</i></li>
+        <li><b>Recurring</b> <i>— monthly items add themselves</i></li>
+        <li><b>Export</b> <i>— PDF summary, CSV expenses</i></li>
+        <li><b>Batch scan</b> <i>— a queue of receipts in one go</i></li>
+        <li><b>Accessibility</b> <i>— keyboard, ARIA, focus rings, reduced motion</i></li>
         <li><b>Live deployment</b> <i>— GitHub Pages, public URL</i></li>
       </ul>
     </div>
@@ -132,24 +109,24 @@
   <div class="band">
     <div class="box">
       <h3>Beyond the brief</h3>
-      <p><span class="k">Voice entry.</span> Speak an expense — “Dev paid 600 for pizza, split equally” — or say who had what on a
-        scanned bill: “I had the vada, the rest between the others.” Whisper runs on the device.</p>
-      <p><span class="k">Live sync.</span> Share a gang by link and two phones stay in step, AES-GCM encrypted through a public
-        relay. No account, no server of ours. Join-by-link adds you as a member.</p>
-      <p><span class="k">Cross-group net position.</span> Everything you owe and are owed, netted across all groups and matched by person.</p>
-      <p><span class="k">3D character avatars</span> with a mix-and-match creator, a scroll-stacked feature tour, and a pointer layer
-        that lights up both people in a settlement row.</p>
+      <p><span class="k">Voice entry.</span> Speak an expense — “Dev paid 600 for pizza, split equally” — or say who had what
+        on a scanned bill: “I had the vada, the rest between the others.” Whisper runs on the device.</p>
+      <p><span class="k">Live sync.</span> Share a group by link and two phones stay in step, AES-GCM encrypted through a
+        public relay. No account, no server of ours.</p>
+      <p><span class="k">Cross-group net position.</span> Everything you owe and are owed, netted across all groups and
+        matched by person.</p>
+      <p><span class="k">3D character avatars</span> with a mix-and-match creator, and a pointer layer that lights up both
+        people in a settlement row.</p>
     </div>
     <div class="box">
       <h3>How it is built</h3>
-      <p><b>One file.</b> All of the app is <code>index.html</code> — CSS, markup and script inline. No bundler, no framework,
-        no backend, nothing to install. three.js is vendored so neither the first paint nor offline use depends on a CDN.</p>
-      <p><b>Money is never a float.</b> Everything is integer paise from parsing to settle-up. A documented largest-remainder
-        rule hands out the odd paisa, so ₹100 three ways is 33.34 + 33.33 + 33.33 and the parts always rebuild the whole.</p>
-      <p><b>The maths is tested, not trusted.</b> A DOM-free <code>split-logic</code> block holds allocation, itemised shares,
-        balances, settle-up and the parsers. <b>38 unit tests</b> pull it out of the HTML and run it in a sandbox, covering
-        rounding, tax proportioning, minimum-payment settlement and the natural-language cases.</p>
-      <p><b>Nothing heavy on first paint.</b> OCR, the category model and Whisper are fetched only when first used.</p>
+      <p><b>One file.</b> All of the app is <code>index.html</code> — CSS, markup and script inline. No bundler, no
+        framework, no backend. three.js is vendored, so neither the first paint nor offline use depends on a CDN.</p>
+      <p><b>Money is never a float.</b> Integer paise from parsing to settle-up. A documented largest-remainder rule hands
+        out the odd paisa, so ₹100 three ways is 33.34 + 33.33 + 33.33 and the parts always rebuild the whole.</p>
+      <p><b>Tested, not trusted.</b> A DOM-free <code>split-logic</code> block holds allocation, shares, balances,
+        settle-up and the parsers. 38 unit tests pull it out of the HTML and run it in a sandbox.</p>
+      <p><b>Nothing heavy on first paint.</b> OCR, the category model and Whisper load only when first used.</p>
     </div>
   </div>
 
